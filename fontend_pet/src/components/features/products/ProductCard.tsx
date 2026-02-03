@@ -1,8 +1,8 @@
 // frontend/src/components/features/products/ProductCard.tsx
-import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import type { Product } from "../../../types";
+import { getCategoryName } from "../../../utils/category";
 
 interface ProductCardProps {
   product: Product;
@@ -64,9 +64,9 @@ export default function ProductCard({
         )}
         
         {/* Category Badge */}
-        {product.categoryName && (
+        {product.category && (
           <div className="absolute top-2 left-2 bg-sky-700 text-white text-xs font-semibold px-3 py-1 rounded-full">
-            {product.categoryName}
+            {getCategoryName(product.category)}
           </div>
         )}
       </div>
@@ -82,14 +82,7 @@ export default function ProductCard({
         <h3 className="font-semibold text-gray-800 group-hover:text-sky-700 transition-colors mb-2 line-clamp-2">
           {product.name}
         </h3>
-        
-        {/* Product Specs */}
-        {(product.weight || product.volume || product.material) && (
-          <p className="text-xs text-gray-500 mb-2">
-            {product.weight || product.volume || product.material}
-          </p>
-        )}
-        
+
         {/* Price & Add to Cart */}
         <div className="flex items-center justify-between mt-3">
           <div>

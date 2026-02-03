@@ -1,5 +1,4 @@
 // frontend/src/components/home/Testimonials.tsx
-import React from "react";
 import { Star, Quote } from "lucide-react";
 import { TESTIMONIAL_DATA } from "../../utils/constants";
 import type { Testimonial } from "../../types";

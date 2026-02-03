@@ -83,11 +83,9 @@ export const PRODUCT_DATA = [
     price: 180000,
     imageUrl: hatmeoUrl,
     category: "food",
-    categoryName: "Thức ăn",
     stock: 50,
     description: "Thức ăn cao cấp dành cho mèo trưởng thành, giàu dinh dưỡng",
     brand: "Royal Canin",
-    weight: "2kg",
   },
   {
     id: 2,
@@ -95,11 +93,9 @@ export const PRODUCT_DATA = [
     price: 120000,
     imageUrl: daydatchoUrl,
     category: "accessories",
-    categoryName: "Phụ kiện",
     stock: 30,
     description: "Dây dắt chó chất lượng cao, bền đẹp, nhiều màu sắc",
     brand: "PetLove",
-    material: "Nylon",
   },
   {
     id: 3,
@@ -107,11 +103,9 @@ export const PRODUCT_DATA = [
     price: 140000,
     imageUrl: suatamtucungUrl,
     category: "grooming",
-    categoryName: "Grooming",
     stock: 45,
     description: "Sữa tắm dịu nhẹ, an toàn cho da thú cưng, mùi hương dễ chịu",
     brand: "Bio-Groom",
-    volume: "500ml",
   },
   {
     id: 4,
@@ -119,11 +113,9 @@ export const PRODUCT_DATA = [
     price: 48000,
     imageUrl: pateUrl,
     category: "food",
-    categoryName: "Thức ăn",
     stock: 100,
     description: "Pate dinh dưỡng cho mèo, nhiều vị khác nhau",
     brand: "Me-O",
-    weight: "80g",
   },
 ];
 

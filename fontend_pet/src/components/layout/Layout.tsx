@@ -1,8 +1,8 @@
 // frontend/src/components/layout/Layout.tsx
-import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import CartDrawer from "../cart/CartDrawer";
 
 /**
  * Layout - Main layout wrapper cho tất cả pages
@@ -24,6 +24,7 @@ export default function Layout() {
         <main className="flex-grow">
           <Outlet />
         </main>
+        <CartDrawer />
       </div>
     );
   }
@@ -44,14 +45,17 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col">
       {/* Fixed Navbar */}
       <Navbar />
-      
+
       {/* Main Content - với padding-top để tránh bị Navbar che */}
       <main className="flex-grow pt-16">
         <Outlet />
       </main>
-      
+
       {/* Footer */}
       <Footer />
+
+      {/* Cart Drawer */}
+      <CartDrawer />
     </div>
   );
 }

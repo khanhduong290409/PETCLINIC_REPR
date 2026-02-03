@@ -3,8 +3,10 @@ import { Link, NavLink } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
 import logoUrl from "../../assets/logo.png";
+import { useCart } from "../../contexts/CartContext";
 
 export default function Navbar() {
+  const { totalItems, toggleDrawer } = useCart();
   const item = "text-white/90 hover:text-amber-300 transition font-medium";
   const active = ({ isActive }: { isActive: boolean }) =>
     (isActive ? "text-white font-semibold" : "text-white/80") + "transition";
@@ -56,12 +58,18 @@ export default function Navbar() {
           >
             Đăng ký
           </Link>
-          <Link to="/cart" className=" ml-3 relative hover:text-amber-300 transition" aria-label="Giỏ hàng">
+          <button
+            onClick={toggleDrawer}
+            className="ml-3 relative hover:text-amber-300 transition"
+            aria-label="Giỏ hàng"
+          >
             <ShoppingCart size={22} />
-            <span className="absolute -top-2 -right-2 bg-amber-400 text-sky-900 text-xs font-bold w-5 h-5 grid place-items-center rounded-full">
-              0
-            </span>
-          </Link>
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-amber-400 text-sky-900 text-xs font-bold w-5 h-5 grid place-items-center rounded-full">
+                {totalItems}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>
