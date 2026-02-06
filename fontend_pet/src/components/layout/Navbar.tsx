@@ -4,9 +4,11 @@ import { ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
 import logoUrl from "../../assets/logo.png";
 import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Navbar() {
   const { totalItems, toggleDrawer } = useCart();
+  const { user, logout } = useAuth();
   const item = "text-white/90 hover:text-amber-300 transition font-medium";
   const active = ({ isActive }: { isActive: boolean }) =>
     (isActive ? "text-white font-semibold" : "text-white/80") + "transition";
@@ -51,13 +53,27 @@ export default function Navbar() {
 
         {/* Auth + Cart */}
         <div className="flex items-center gap-4">
-          <Link to="/login" className="hover:underline text-white/90">Đăng nhập</Link>
-          <Link
-            to="/register"
-            className="bg-white text-sky-700 px-3 py-1.5 rounded-md font-semibold hover:bg-white/90 transition"
-          >
-            Đăng ký
-          </Link>
+          {user ? (
+            <>
+              <span className="text-white/90">Xin chào, {user.fullName}</span>
+              <button
+                onClick={logout}
+                className="hover:underline text-white/90"
+              >
+                Đăng xuất
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="hover:underline text-white/90">Đăng nhập</Link>
+              <Link
+                to="/register"
+                className="bg-white text-sky-700 px-3 py-1.5 rounded-md font-semibold hover:bg-white/90 transition"
+              >
+                Đăng ký
+              </Link>
+            </>
+          )}
           <button
             onClick={toggleDrawer}
             className="ml-3 relative hover:text-amber-300 transition"

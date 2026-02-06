@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { CartItem, Product } from '../types';
 import { cartApi } from '../api/cartApi';
+import { useAuth } from './AuthContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -18,24 +19,31 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Mock user ID (sau này sẽ lấy từ auth)
-const MOCK_USER_ID = 1;
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fetch cart khi component mount
+  // Lấy user từ AuthContext
+  const { user } = useAuth();
+
+  // Fetch cart khi user thay đổi (login/logout)
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (user) {
+      fetchCart();
+    } else {
+      // Nếu logout thì xóa giỏ hàng
+      setItems([]);
+    }
+  }, [user]);
 
   // Fetch cart từ API
   const fetchCart = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const response = await cartApi.getCart(MOCK_USER_ID);
+      const response = await cartApi.getCart(user.id);
 
       // Convert response sang CartItem[]
       const cartItems: CartItem[] = response.items.map(item => ({
@@ -59,9 +67,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Thêm sản phẩm vào giỏ hàng (gọi API)
   const addItem = async (product: Product) => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await cartApi.addItem(MOCK_USER_ID, product.id, 1);
+      const response = await cartApi.addItem(user.id, product.id, 1);
 
       // Update state từ response
       const cartItems: CartItem[] = response.items.map(item => ({
@@ -80,9 +93,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Xóa sản phẩm khỏi giỏ hàng (gọi API)
   const removeItem = async (productId: number) => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const response = await cartApi.removeItem(MOCK_USER_ID, productId);
+      const response = await cartApi.removeItem(user.id, productId);
 
       // Update state từ response
       const cartItems: CartItem[] = response.items.map(item => ({
@@ -101,6 +116,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Cập nhật số lượng (gọi API)
   const updateQuantity = async (productId: number, quantity: number) => {
+    if (!user) return;
+
     if (quantity <= 0) {
       await removeItem(productId);
       return;
@@ -108,7 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true);
-      const response = await cartApi.updateQuantity(MOCK_USER_ID, productId, quantity);
+      const response = await cartApi.updateQuantity(user.id, productId, quantity);
 
       // Update state từ response
       const cartItems: CartItem[] = response.items.map(item => ({

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,6 +134,7 @@ public class CartService {
     // Map Cart entity sang DTO
     private CartResponse mapToCartResponse(Cart cart) {
         var items = cart.getItems().stream()
+            .sorted(Comparator.comparing(CartItem::getId)) // Sắp xếp theo ID để giữ thứ tự ổn định
             .map(item -> CartResponse.CartItemResponse.builder()
                 .id(item.getId())
                 .product(mapToProductResponse(item.getProduct()))
