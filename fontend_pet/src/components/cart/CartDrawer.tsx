@@ -1,8 +1,10 @@
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 
 export default function CartDrawer() {
   const { items, isOpen, totalPrice, updateQuantity, removeItem, closeDrawer } = useCart();
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
@@ -107,8 +109,8 @@ export default function CartDrawer() {
             {/* Checkout Button */}
             <button
               onClick={() => {
-                alert('Chức năng thanh toán đang phát triển');
                 closeDrawer();
+                navigate('/checkout');
               }}
               className="w-full bg-sky-600 text-white py-3 rounded-lg font-semibold hover:bg-sky-700 transition"
             >

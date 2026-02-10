@@ -2,6 +2,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
+import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+import OrderDetail from "./pages/OrderDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { CartProvider } from "./contexts/CartContext";
@@ -15,6 +19,10 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "products", element: <Products /> },
+      { path: "products/:id", element: <ProductDetail /> },
+      { path: "checkout", element: <Checkout /> },
+      { path: "orders", element: <Orders /> },//lich su don hang
+      { path: "orders/:id", element: <OrderDetail /> },
       { path: "about", element: <Home /> },
       { path: "services", element: <Home /> },
       { path: "*", element: <div className="p-12 text-center">404 — Trang không tồn tại</div> },
