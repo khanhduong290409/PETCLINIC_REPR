@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(mvn clean compile:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(\"d:\\\\PETCLINIC_REPR\\\\fontend_pet\\\\public\\\\assets\\\\default-dog.svg\" << 'SVGEOF'\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\">\n  <rect width=\"200\" height=\"200\" fill=\"#E3F2FD\" rx=\"20\"/>\n  <text x=\"100\" y=\"115\" font-size=\"80\" text-anchor=\"middle\">🐕</text>\n</svg>\nSVGEOF)",
+      "Bash(\"d:\\\\PETCLINIC_REPR\\\\fontend_pet\\\\public\\\\assets\\\\default-bird.svg\" << 'SVGEOF'\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\">\n  <rect width=\"200\" height=\"200\" fill=\"#E8F5E9\" rx=\"20\"/>\n  <text x=\"100\" y=\"115\" font-size=\"80\" text-anchor=\"middle\">🐦</text>\n</svg>\nSVGEOF)",
+      "Bash(\"d:\\\\PETCLINIC_REPR\\\\fontend_pet\\\\public\\\\assets\\\\default-hamster.svg\" << 'SVGEOF'\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\">\n  <rect width=\"200\" height=\"200\" fill=\"#FFF3E0\" rx=\"20\"/>\n  <text x=\"100\" y=\"115\" font-size=\"80\" text-anchor=\"middle\">🐹</text>\n</svg>\nSVGEOF)",
+      "Bash(\"d:\\\\PETCLINIC_REPR\\\\fontend_pet\\\\public\\\\assets\\\\default-pet.svg\" << 'SVGEOF'\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\">\n  <rect width=\"200\" height=\"200\" fill=\"#F5F5F5\" rx=\"20\"/>\n  <text x=\"100\" y=\"115\" font-size=\"80\" text-anchor=\"middle\">🐾</text>\n</svg>\nSVGEOF)"
     ]
   }
 }

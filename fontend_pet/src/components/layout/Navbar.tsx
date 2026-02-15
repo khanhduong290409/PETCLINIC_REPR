@@ -56,6 +56,9 @@ export default function Navbar() {
           {user ? (
             <>
               <span className="text-white/90">Xin chào, {user.fullName}</span>
+              <Link to="/my-pets" className="hover:text-amber-300 text-white/90 transition">
+                Thú cưng
+              </Link>
               <Link to="/orders" className="hover:text-amber-300 text-white/90 transition">
                 Đơn hàng
               </Link>

@@ -37,6 +37,9 @@ public class Pet extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     public enum Species {
         DOG, CAT, BIRD, RABBIT, HAMSTER, OTHER
     }
