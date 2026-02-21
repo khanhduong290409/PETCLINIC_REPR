@@ -45,6 +45,9 @@ public class Appointment extends BaseEntity {
     @Builder.Default
     private AppointmentStatus status = AppointmentStatus.PENDING;
 
+    @Column(name = "booking_code", nullable = false)
+    private String bookingCode;
+
     @Column(columnDefinition = "TEXT")
     private String notes; // Ghi chú từ user khi đặt lịch
 

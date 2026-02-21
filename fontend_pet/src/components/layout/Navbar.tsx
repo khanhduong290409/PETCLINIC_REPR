@@ -59,6 +59,12 @@ export default function Navbar() {
               <Link to="/my-pets" className="hover:text-amber-300 text-white/90 transition">
                 Thú cưng
               </Link>
+              <Link to="/book-appointment" className="hover:text-amber-300 text-white/90 transition">
+                Đặt lịch
+              </Link>
+              <Link to="/appointments" className="hover:text-amber-300 text-white/90 transition">
+                Lịch khám
+              </Link>
               <Link to="/orders" className="hover:text-amber-300 text-white/90 transition">
                 Đơn hàng
               </Link>
