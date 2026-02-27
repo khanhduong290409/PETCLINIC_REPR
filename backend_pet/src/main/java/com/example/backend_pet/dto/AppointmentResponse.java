@@ -16,7 +16,9 @@ public class AppointmentResponse {
     private String petImageUrl;
     private String serviceTitle;
     private BigDecimal servicePrice;
+    private Long doctorId;            // thêm để frontend pre-select dropdown
     private String doctorName;        // null nếu chưa assign
+    private String ownerName;         // thêm để admin biết ai đặt
     private String appointmentDate;
     private String appointmentTime;
     private String status;

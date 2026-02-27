@@ -68,6 +68,16 @@ export default function Navbar() {
               <Link to="/orders" className="hover:text-amber-300 text-white/90 transition">
                 Đơn hàng
               </Link>
+              {user.role === 'ADMIN' && (
+                <Link to="/admin/appointments" className="hover:text-amber-300 text-amber-400 font-semibold transition">
+                  Admin
+                </Link>
+              )}
+              {user.role === 'DOCTOR' && (
+                <Link to="/doctor/appointments" className="hover:text-amber-300 text-green-400 font-semibold transition">
+                  Lịch của tôi
+                </Link>
+              )}
               <button
                 onClick={logout}
                 className="hover:underline text-white/90"
