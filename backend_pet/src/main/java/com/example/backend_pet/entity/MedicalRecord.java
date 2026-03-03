@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class MedicalRecord extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)

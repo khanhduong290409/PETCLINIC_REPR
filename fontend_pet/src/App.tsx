@@ -11,6 +11,7 @@ import BookAppointment from "./pages/BookAppointment";
 import MyAppointments from "./pages/MyAppointments";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
+import MedicalRecord from "./pages/doctor/MedicalRecord";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { CartProvider } from "./contexts/CartContext";
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: "appointments", element: <MyAppointments /> },
       { path: "admin/appointments", element: <AdminAppointments /> },
       { path: "doctor/appointments", element: <DoctorAppointments /> },
+      { path: "doctor/medical/:bookingCode", element: <MedicalRecord /> },
       { path: "about", element: <Home /> },
       { path: "services", element: <Home /> },
       { path: "*", element: <div className="p-12 text-center">404 — Trang không tồn tại</div> },

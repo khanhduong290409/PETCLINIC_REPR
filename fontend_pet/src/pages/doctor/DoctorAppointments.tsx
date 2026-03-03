@@ -56,7 +56,7 @@ export default function DoctorAppointments() {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const data = await doctorApi.getMyAppointments(user!.id);
+      const data = await doctorApi.getMyAppointments(user!.id); 
       setAppointments(data);
     } catch (err) {
       console.error(err);
@@ -244,16 +244,24 @@ export default function DoctorAppointments() {
                 </div>
               )}
 
-              {/* Nút xác nhận đã khám — chỉ hiện khi CONFIRMED */}
-              {group.status === 'CONFIRMED' && (
-                <div className="mt-4 flex justify-end">
+              {/* Nút hành động */}
+              {(group.status === 'CONFIRMED' || group.status === 'COMPLETED') && (
+                <div className="mt-4 flex justify-end gap-2">
                   <button
-                    onClick={() => handleComplete(group)}
-                    disabled={completing === group.bookingCode}
-                    className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
+                    onClick={() => navigate(`/doctor/medical/${group.bookingCode}`)}
+                    className="bg-sky-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
                   >
-                    {completing === group.bookingCode ? 'Đang xử lý...' : 'Xác nhận đã khám xong'}
+                    Ghi bệnh án
                   </button>
+                  {group.status === 'CONFIRMED' && (
+                    <button
+                      onClick={() => handleComplete(group)}
+                      disabled={completing === group.bookingCode}
+                      className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
+                    >
+                      {completing === group.bookingCode ? 'Đang xử lý...' : 'Xác nhận đã khám xong'}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
