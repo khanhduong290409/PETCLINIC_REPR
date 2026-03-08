@@ -7,13 +7,10 @@ import com.example.backend_pet.entity.MedicalRecord;
 import com.example.backend_pet.repository.AppointmentRepository;
 import com.example.backend_pet.repository.MedicalRecordRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 
 @Service
