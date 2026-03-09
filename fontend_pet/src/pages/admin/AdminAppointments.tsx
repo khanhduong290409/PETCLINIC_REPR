@@ -45,10 +45,6 @@ export default function AdminAppointments() {
   const [filterStatus, setFilterStatus] = useState('ALL');
 
   useEffect(() => {
-    if (!user || user.role !== 'ADMIN') {
-      navigate('/');
-      return;
-    }
     loadData();
   }, [user]);
 

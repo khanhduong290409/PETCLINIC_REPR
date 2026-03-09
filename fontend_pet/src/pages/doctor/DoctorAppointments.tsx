@@ -46,10 +46,6 @@ export default function DoctorAppointments() {
   const [completing, setCompleting] = useState<string | null>(null); // bookingCode đang xử lý
 
   useEffect(() => {
-    if (!user || user.role !== 'DOCTOR') {
-      navigate('/');
-      return;
-    }
     loadAppointments();
   }, [user]);
 

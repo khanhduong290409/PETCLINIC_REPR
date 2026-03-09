@@ -23,10 +23,6 @@ export default function MedicalRecord() {
 
 
     useEffect(() => {
-        if(!user || user.role != "DOCTOR") {
-            navigate('/');
-            return;
-        }
         loadRecords();
     }, [user]);
     

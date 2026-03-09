@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Stethoscope } from 'lucide-react';
+import { ArrowLeft, Calendar, Stethoscope } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
 import { petApi } from '../api/petApi';

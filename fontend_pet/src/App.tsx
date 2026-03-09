@@ -17,6 +17,7 @@ import Register from "./pages/Register";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./index.css"
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -32,9 +33,22 @@ const router = createBrowserRouter([
       { path: "my-pets", element: <MyPets /> },
       { path: "book-appointment", element: <BookAppointment /> },
       { path: "appointments", element: <MyAppointments /> },
-      { path: "admin/appointments", element: <AdminAppointments /> },
-      { path: "doctor/appointments", element: <DoctorAppointments /> },
-      { path: "doctor/medical/:bookingCode", element: <MedicalRecord /> },
+      { path: "admin/appointments", element: (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+          <AdminAppointments />
+        </ProtectedRoute>
+      ) },
+      { path: "doctor/appointments", element: (
+        <ProtectedRoute allowedRoles={['DOCTOR']}>
+          <DoctorAppointments />
+        </ProtectedRoute>
+      ) },
+      { path: "doctor/medical/:bookingCode", element: 
+      (
+        <ProtectedRoute allowedRoles={['DOCTOR']}>
+          <MedicalRecord />
+        </ProtectedRoute>
+      ) },
       { path: "about", element: <Home /> },
       { path: "services", element: <Home /> },
       { path: "*", element: <div className="p-12 text-center">404 — Trang không tồn tại</div> },
