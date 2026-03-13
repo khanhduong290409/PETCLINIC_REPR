@@ -14,6 +14,7 @@ import DoctorAppointments from "./pages/doctor/DoctorAppointments";
 import MedicalRecord from "./pages/doctor/MedicalRecord";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import OAuth2Callback from "./pages/OAuth2Callback";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./index.css"
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
   },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
+  { path: "/oauth2/callback", element: <OAuth2Callback /> },
 ]);
 
 export default function App() {

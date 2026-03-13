@@ -1,0 +1,119 @@
+-------- LUỒNG XỬ LÝ CỦA CHỨC NĂNG ĐĂNG NHẬP BẰNG GOOGLE -----
+
+
+Bước 1 — User bấm nút
+
+sau khi user nhấn vào nút đăng nhập google ( <a href="http://localhost:8080/oauth2/authorization/google">
+ ) thì nó sẽ gửi request về backend và spring security sẽ nhận request này và tự build url của google 
+  
+  https://accounts.google.com/o/oauth2/auth
+  ?client_id=224425... <- lấy từ properties 
+  &redirect_uri=http://localhost:8080/login/oauth2/code/google <- sau khi xác thực xong thì về url này 
+  &scope=email,profile
+  &response_type=code
+  &state=abc123  ← Spring tự sinh để chống giả mạo
+
+Rồi trả về response 302 Redirect — trình duyệt tự động chuyển sang Google.
+
+Bước 2 — Google xác thực
+
+User thấy trang chọn tài khoản Google. Sau khi chọn và đồng ý, Google tạo ra 1 authorization code 
+(chuỗi tạm thời, dùng 1 lần, hết hạn sau vài phút).
+
+Bước 3 — Google redirect về Spring
+
+http://localhost:8080/login/oauth2/code/google
+  ?code=4/0AX4XfWh...   ← authorization code
+  &state=abc123          ← Spring kiểm tra khớp với state ban đầu
+
+Tại sao về đúng URL này?
+Vì lúc bước 1, Spring đã báo Google: 
+"Sau khi xong thì redirect về địa chỉ này" — đó chính là redirect_uri 
+trong URL ở bước 1. Và địa chỉ này phải khớp với Authorized redirect URIs 
+mà bạn đã điền trên Google Cloud Console.
+/login/oauth2/code/google là endpoint Spring Security tự tạo để đón nhận 
+callback từ Google. Bạn không cần viết controller cho endpoint này.
+
+Bước 4 — Spring đổi code lấy thông tin user
+
+Spring nhận được code từ Google
+      ↓
+Spring gọi API Google để đổi code lấy Access Token:
+POST https://oauth2.googleapis.com/token
+  code=4/0AX4XfWh...
+  client_id=224425...
+  client_secret=GOCSPX-...   ← Client Secret dùng ở đây
+      ↓
+Google trả về Access Token
+      ↓
+Spring dùng Access Token gọi tiếp:
+GET https://www.googleapis.com/oauth2/v3/userinfo
+  Authorization: Bearer <access_token>
+      ↓
+Google trả về thông tin user và tự đóng gói thành OAuth2User object:
+{
+  "email": "duongproduction29@gmail.com",
+  "name": "Dương Production",
+  "picture": "https://..."
+}
+      ↓
+Spring truyền thông tin này vào CustomOAuth2UserService.loadUser()
+
+Bước 5 — CustomOAuth2UserService.loadUser() được gọi
+
+Class này có nhiệm vụ duy nhất: Sau khi Spring lấy được thông tin từ Google, 
+class này nhận thông tin đó và đồng bộ với DB của mình — tạo tài khoản nếu là lần đầu đăng nhập, bỏ qua nếu đã có.
+
+
+Bước 6 — OAuth2SuccessHandler.onAuthenticationSuccess() được gọi
+
+Sau khi loadUser() thành công, Spring gọi tiếp handler này:
+(mục đích là tạo url để gửi đến fontend kèm theo id và các value của user để đồng bộ với fontend)
+sau đó dùng searchparam để hứng các value đấy )
+
+@Override
+public void onAuthenticationSuccess(..., Authentication authentication) throws IOException {
+    ...
+    ...
+    // Build URL redirect về frontend kèm thông tin user
+    String redirectUrl = "http://localhost:5173/oauth2/callback"
+            + "?id=" + user.getId()
+            + "&email=" + URLEncoder.encode(user.getEmail(), ...)
+            + "&fullName=" + URLEncoder.encode(user.getFullName(), ...)
+            + "&role=" + user.getRole().name();
+
+    // Redirect về frontend
+    response.sendRedirect(redirectUrl);
+
+Tại sao không gọi CustomOAuth2UserService để lấy user mà phải query DB lại?
+
+Vì loadUser() trả về OAuth2User — đây là object của Spring Security, chứa thông tin từ Google. 
+Nó không có id trong DB của mình (Google không biết DB của mình). Phải query DB theo email để lấy id thật.
+
+Bước 7 — Frontend nhận callback
+
+http://localhost:5173/oauth2/callback
+  ?id=8
+  &email=duongproduction29%40gmail.com
+  &fullName=D%C6%B0%C6%A1ng%20Production
+  &role=USER
+
+OAuth2Callback.tsx đọc params, lưu vào AuthContext và localStorage: 
+
+bằng loginwithdata ( chỉ có mục đích là setuser ở font end và lưu vào localstorage thôi) ở AuthContext.
+
+useEffect(() => {
+    const id       = searchParams.get('id');
+    const email    = searchParams.get('email');
+    const fullName = searchParams.get('fullName');
+    const role     = searchParams.get('role');
+
+    // Lưu vào AuthContext + localStorage (giống đăng nhập thường)
+    loginWithData({ id: Number(id), email, fullName, phone: '', role });
+
+    navigate('/');  // về trang chủ
+}, []);
+
+
+
+

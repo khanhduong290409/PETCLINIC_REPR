@@ -46,6 +46,9 @@ public class CartService {
     }
 
     // Lấy cart của user (dạng DTO)
+    // @Transactional riêng để override class-level readOnly=true
+    // vì getOrCreateCart có thể INSERT khi user chưa có cart
+    @Transactional
     public CartResponse getCart(Long userId) {
         Cart cart = getOrCreateCart(userId);
         return mapToCartResponse(cart);

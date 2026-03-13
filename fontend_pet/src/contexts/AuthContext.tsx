@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<string | null>;
   register: (data: RegisterRequest) => Promise<string | null>;
   logout: () => void;
+  loginWithData: (userData: User) => void; // dùng cho đăng nhập Google
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -96,8 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user');
   };
 
+  // Đăng nhập bằng Google — nhận thẳng object user từ OAuth2Callback
+  const loginWithData = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithData }}>
       {children}
     </AuthContext.Provider>
   );

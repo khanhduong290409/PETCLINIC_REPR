@@ -70,6 +70,26 @@ export default function Login() {
           </button>
         </form>
 
+        {/* Đường kẻ phân cách */}
+        <div className="flex items-center my-4">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-3 text-gray-400 text-sm">hoặc</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        {/* Nút đăng nhập bằng Google */}
+        <a
+          href="http://localhost:8080/oauth2/authorization/google"
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2.5 hover:bg-gray-50 transition"
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          <span className="text-gray-700 font-medium">Đăng nhập bằng Google</span>
+        </a>
+
         <p className="text-center mt-4 text-gray-600">
           Chưa có tài khoản?{' '}
           <Link to="/register" className="text-sky-600 hover:underline">
