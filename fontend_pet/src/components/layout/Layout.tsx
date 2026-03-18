@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import CartDrawer from "../cart/CartDrawer";
+import ChatWidget from "../ChatWidget";
 
 /**
  * Layout - Main layout wrapper cho tất cả pages
@@ -25,6 +26,7 @@ export default function Layout() {
           <Outlet />
         </main>
         <CartDrawer />
+        <ChatWidget />
       </div>
     );
   }
@@ -56,6 +58,9 @@ export default function Layout() {
 
       {/* Cart Drawer */}
       <CartDrawer />
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }
