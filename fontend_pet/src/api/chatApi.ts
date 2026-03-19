@@ -1,4 +1,4 @@
-const API = 'http://localhost:8080/api/chat';
+const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/chat`;
 
 export const chatApi = {
     async sendMessage(message: string): Promise<string> {
