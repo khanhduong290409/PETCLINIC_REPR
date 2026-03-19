@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApi } from '../../api/adminApi';
 import type { AdminAppointment, DoctorInfo } from '../../api/adminApi';
@@ -37,7 +36,6 @@ interface AdminBookingGroup {
 
 export default function AdminAppointments() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const [appointments, setAppointments] = useState<AdminAppointment[]>([]);
   const [doctors, setDoctors] = useState<DoctorInfo[]>([]);

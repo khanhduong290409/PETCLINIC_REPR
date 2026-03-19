@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { medicalRecordApi, type MedicalRequest, type MedicalResponse } from "../../api/medicalRecordApi";
@@ -13,7 +13,6 @@ const SPECIES_EMOJI: Record<string, string> = {
 export default function MedicalRecord() {
     const { user } = useAuth();
     const { bookingCode } = useParams();
-    const navigate  = useNavigate();
 
     const [records, setRecords ] = useState<MedicalResponse[]>([]);
     const [loading, setLoading] = useState(true);
