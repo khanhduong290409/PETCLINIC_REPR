@@ -31,7 +31,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             .password("GOOGLE_AUTH")
             .role(User.Role.USER)
             .build();
-
+            userRepository.save(newUser);
         }
         return oAuth2User;
     }
