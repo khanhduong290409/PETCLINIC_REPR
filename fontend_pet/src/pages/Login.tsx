@@ -79,7 +79,7 @@ export default function Login() {
 
         {/* Nút đăng nhập bằng Google */}
         <a
-          href="http://localhost:8080/oauth2/authorization/google"
+          href={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`}
           className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2.5 hover:bg-gray-50 transition"
         >
           <img
