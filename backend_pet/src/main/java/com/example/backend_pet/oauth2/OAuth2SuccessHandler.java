@@ -31,7 +31,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("user not found"));
-        String redirectUrl = "http://localhost:5173/oauth2/callback"
+        String frontendUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:5173";
+        String redirectUrl = frontendUrl + "/oauth2/callback"
         + "?id=" + user.getId()
         + "&email=" + URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8)
         + "&fullName=" + URLEncoder.encode(user.getFullName(), StandardCharsets.UTF_8)

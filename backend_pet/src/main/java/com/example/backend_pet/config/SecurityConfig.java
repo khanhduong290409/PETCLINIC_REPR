@@ -28,16 +28,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) {
         http
-        .csrf(c -> c.disable())
-        .cors(c -> c.configurationSource(corsConfigurationSource()))
-        .authorizeHttpRequests(a -> a.anyRequest().permitAll())
+        .csrf(c -> c.disable())//csrf là 1 cơ chế bảo vệ form submit mặc định của spring 
+        // tắt đi bởi vì mình dùng react + api riêng , ko dùng form html của spring 
+        //nếu ko tắt thì  -> mọi request đều bị từ react đều bị chặn
+        .cors(c -> c.configurationSource(corsConfigurationSource()))//Cho phép React ở localhost:5173 gọi API sang Spring ở port khác
+        .authorizeHttpRequests(a -> a.anyRequest().permitAll())//Quy định ai được truy cập endpoint nào, tất cả mọi người đều gọi được api ko cần đăng nhập 
         .oauth2Login(o -> o.userInfoEndpoint(u -> u.userService(customOAuth2UserService)).successHandler(oAuth2SuccessHandler));
+        //.userService(customOAuth2UserService) → Sau khi Google xác thực xong, gọi CustomOAuth2UserService để lấy/lưu thông tin user
+        //.successHandler(oAuth2SuccessHandler) → Đăng nhập thành công thì làm gì (thường là tạo JWT rồi redirect về React)
         return http.build();
 
     }
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        String frontendUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:5173";
+        config.setAllowedOrigins(List.of("http://localhost:5173", frontendUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
