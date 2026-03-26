@@ -1,0 +1,81 @@
+tại sao để dùng được grod api thì cần những thứ này ? 
+ Map<String, String> systemMsg = new HashMap<>();
+            systemMsg.put("role", "system");
+            systemMsg.put("content", SYSTEM_PROMPT);
+
+            Map<String, String> userMsg = new HashMap<>();
+            userMsg.put("role", "user");
+            userMsg.put("content", userMessage);
+                        // Headers với Bearer token
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(GROQ_URL, entity, Map.class);
+
+            // Parse response (OpenAI-compatible format)
+            List<Map> choices = (List<Map>) response.getBody().get("choices");
+            Map message = (Map) choices.get(0).get("message");
+            return (String) message.get("content");
+            
+lí do là bởi vì grod api yêu cầu như vậy. 
+grod có tài liệu quy định rõ: muón gọi AI thì phải gửi HTTP request đúng format. code chỉ đang làm theo đúng format đó 
+
+Groq yêu cầu gì?
+
+Groq yêu cầu gửi một HTTP POST với:
+1. Headers phải có:
+Content-Type: application/json
+Authorization: Bearer gsk_xxx
+
+2. Body phải có dạng JSON:
+{
+    "model": "llama-3.1-8b-instant",
+    "messages": [
+        { "role": "system", "content": "hướng dẫn cho AI" },
+        { "role": "user",   "content": "câu hỏi của user" }
+    ]
+}
+Đó là quy định của Groq. Không làm đúng → bị lỗi 400/401.
+
+Tại sao tạo 2 Map cho system và user?
+
+Vì Groq yêu cầu mảng messages gồm nhiều object, mỗi object có role và content.
+Map<String, String> systemMsg = new HashMap<>();
+systemMsg.put("role", "system");
+systemMsg.put("content", SYSTEM_PROMPT);
+
+Tại sao tạo requestBody?
+Vì HTTP request cần có body là một JSON object bao gồm model và messages.
+Map<String, Object> requestBody = new HashMap<>();
+requestBody.put("model", "llama-3.1-8b-instant");
+requestBody.put("messages", List.of(systemMsg, userMsg));
+
+{
+    "model": "llama-3.1-8b-instant",
+    "messages": [ {...}, {...} ]
+}
+
+"model" → báo cho Groq biết dùng AI model nào. Groq có nhiều model khác nhau, phải chỉ định rõ.
+"messages" → danh sách tin nhắn, Groq đọc vào để hiểu context và trả lời
+
+Tại sao tạo HttpHeaders?
+
+Vì HTTP request không chỉ có body, nó còn có headers - phần metadata đi kèm.
+HttpHeaders headers = new HttpHeaders();
+headers.setContentType(MediaType.APPLICATION_JSON);  // (1)
+headers.setBearerAuth(apiKey);          // (2)
+
+1) Content-Type: application/json
+Báo cho Groq server biết body gửi lên là JSON, không phải text hay form data. Nếu không có → server không biết đọc body theo format nào → lỗi.
+
+(2) Authorization: Bearer gsk_xxx
+Groq cần biết ai đang gọi API để tính quota và kiểm soát truy cập. Bearer token là cách xác thực phổ biến nhất - giống như mật khẩu đính kèm mỗi request.
+
+Tại sao tạo HttpEntity?
+
+HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+RestTemplate yêu cầu body và headers phải được gộp vào 1 object HttpEntity trước khi gửi. Đây chỉ là cú pháp của Spring, không có lý do kỹ thuật sâu hơn.

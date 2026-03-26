@@ -17,6 +17,7 @@ import Register from "./pages/Register";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import "./index.css"
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -62,10 +63,12 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <RouterProvider router={router} />
-      </CartProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <RouterProvider router={router} />
+        </CartProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

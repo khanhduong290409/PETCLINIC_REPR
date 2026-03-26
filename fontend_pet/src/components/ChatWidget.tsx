@@ -56,7 +56,7 @@ export default function ChatWidget() {
                     {/* Header */}
                     <div className="bg-sky-600 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span className="text-2xl">🐾</span>
+                            <img src="/assets/default-pet.svg" alt="PetClinic" className="w-8 h-8" />
                             <div>
                                 <p className="text-white font-semibold text-sm">PetClinic AI</p>
                                 <p className="text-sky-200 text-xs">Luôn sẵn sàng hỗ trợ bạn</p>
@@ -118,7 +118,7 @@ export default function ChatWidget() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
             >
-                {isOpen ? '✕' : '🐾'}
+                {isOpen ? '✕' : <img src="/assets/default-pet.svg" alt="Chat" className="w-7 h-7" />}
             </button>
         </div>
 

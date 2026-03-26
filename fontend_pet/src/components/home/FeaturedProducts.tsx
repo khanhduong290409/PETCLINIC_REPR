@@ -1,19 +1,17 @@
 // frontend/src/components/home/FeaturedProducts.tsx
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { PRODUCT_DATA } from "../../utils/constants";
+import { useEffect, useState } from "react";
+import { productApi } from "../../api/productApi";
 import ProductCard from "../features/products/ProductCard";
-import { useCart } from "../../contexts/CartContext";
+import type { Product } from "../../types";
 
-/**
- * FeaturedProducts - Section hiển thị sản phẩm nổi bật trên trang chủ
- * Chỉ hiển thị 4 sản phẩm đầu tiên
- */
 export default function FeaturedProducts() {
-  const { addItem } = useCart();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
-  // Lấy 4 sản phẩm featured đầu tiên
-  const featuredProducts = PRODUCT_DATA.slice(0, 4);
+  useEffect(() => {
+    productApi.getAll().then(products => setFeaturedProducts(products.slice(0, 4)));
+  }, []);
 
   return (
     <section id="products" className="py-12 bg-sky-50">
@@ -44,7 +42,7 @@ export default function FeaturedProducts() {
         {/* Product Grid */}
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {featuredProducts.map(product => (
-            <ProductCard key={product.id} product={product} onAddToCart={addItem} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 

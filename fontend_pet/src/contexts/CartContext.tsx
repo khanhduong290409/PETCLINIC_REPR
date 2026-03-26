@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { CartItem, Product } from '../types';
 import { cartApi } from '../api/cartApi';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -10,7 +11,8 @@ interface CartContextType {
   totalItems: number;
   totalPrice: number;
   loading: boolean;
-  addItem: (product: Product) => Promise<void>;
+  loadingProductId: number | null;
+  addItem: (product: Product, quantity?: number) => Promise<void>;
   removeItem: (productId: number) => Promise<void>;
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   toggleDrawer: () => void;
@@ -23,9 +25,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingProductId, setLoadingProductId] = useState<number | null>(null);
 
-  // Lấy user từ AuthContext
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   // Fetch cart khi user thay đổi (login/logout)
   useEffect(() => {
@@ -66,15 +69,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   // Thêm sản phẩm vào giỏ hàng (gọi API)
-  const addItem = async (product: Product) => {
+  const addItem = async (product: Product, quantity: number = 1) => {
     if (!user) {
-      alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+      showToast('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng', 'info');
       return;
     }
 
     try {
       setLoading(true);
-      const response = await cartApi.addItem(user.id, product.id, 1);
+      setLoadingProductId(product.id);
+      const response = await cartApi.addItem(user.id, product.id, quantity);
 
       // Update state từ response
       const cartItems: CartItem[] = response.items.map(item => ({
@@ -83,38 +87,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }));
 
       setItems(cartItems);
+      showToast(`Đã thêm ${quantity} "${product.name}" vào giỏ hàng`, 'success');
     } catch (error) {
       console.error('Failed to add item:', error);
-      alert('Không thể thêm sản phẩm vào giỏ hàng');
+      showToast('Không thể thêm sản phẩm vào giỏ hàng', 'error');
     } finally {
       setLoading(false);
+      setLoadingProductId(null);
     }
   };
 
-  // Xóa sản phẩm khỏi giỏ hàng (gọi API)
+  // Xóa sản phẩm khỏi giỏ hàng — optimistic: xóa UI ngay, rollback nếu API lỗi
   const removeItem = async (productId: number) => {
     if (!user) return;
 
+    // Lưu lại để rollback nếu cần
+    const previousItems = items;
+
+    // Xóa ngay khỏi UI (không đợi API)
+    setItems(prev => prev.filter(item => item.product.id !== productId));
+
     try {
-      setLoading(true);
-      const response = await cartApi.removeItem(user.id, productId);
-
-      // Update state từ response
-      const cartItems: CartItem[] = response.items.map(item => ({
-        product: item.product,
-        quantity: item.quantity,
-      }));
-
-      setItems(cartItems);
+      await cartApi.removeItem(user.id, productId);
     } catch (error) {
       console.error('Failed to remove item:', error);
-      alert('Không thể xóa sản phẩm');
-    } finally {
-      setLoading(false);
+      // Rollback nếu API lỗi
+      setItems(previousItems);
+      showToast('Không thể xóa sản phẩm', 'error');
     }
   };
 
-  // Cập nhật số lượng (gọi API)
+  // Cập nhật số lượng — optimistic: đổi qty UI ngay, đồng bộ API ngầm
   const updateQuantity = async (productId: number, quantity: number) => {
     if (!user) return;
 
@@ -123,22 +126,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    try {
-      setLoading(true);
-      const response = await cartApi.updateQuantity(user.id, productId, quantity);
+    const previousItems = items;
 
-      // Update state từ response
+    // Cập nhật qty ngay trên UI
+    setItems(prev => prev.map(item =>
+      item.product.id === productId ? { ...item, quantity } : item
+    ));
+
+    try {
+      const response = await cartApi.updateQuantity(user.id, productId, quantity);
+      // Đồng bộ lại với server sau khi API thành công
       const cartItems: CartItem[] = response.items.map(item => ({
         product: item.product,
         quantity: item.quantity,
       }));
-
       setItems(cartItems);
     } catch (error) {
       console.error('Failed to update quantity:', error);
-      alert('Không thể cập nhật số lượng');
-    } finally {
-      setLoading(false);
+      setItems(previousItems);
+      showToast('Không thể cập nhật số lượng', 'error');
     }
   };
 
@@ -156,6 +162,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         totalItems,
         totalPrice,
         loading,
+        loadingProductId,
         addItem,
         removeItem,
         updateQuantity,

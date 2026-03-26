@@ -1,5 +1,11 @@
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin`;
-
+// import.meta.env.VITE_API_URL → đọc biến môi trường tên VITE_API_URL
+//Khi nào thêm VITE_API_URL?
+//Sau khi deploy backend lên Railway xong, Railway sẽ cho bạn 1 URL dạng:
+//https://petclinic-backend.up.railway.app
+//Lúc đó vào Vercel → Settings → Environment Variables → thêm:
+//VITE_API_URL = https://petclinic-backend.up.railway.app
+//→ Redeploy → frontend gọi đúng backend trên cloud.
 export interface AdminAppointment {
   id: number;
   bookingCode: string;

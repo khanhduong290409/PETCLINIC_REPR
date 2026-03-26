@@ -26,8 +26,6 @@ export default function OAuth2Callback() {
     "role"     → "USER"
 }
    */
-
-
   useEffect(() => {
     const id       = searchParams.get('id');
     const email    = searchParams.get('email');

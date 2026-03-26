@@ -30,15 +30,6 @@ const DEFAULT_PET_IMAGES: Record<string, string> = {
   OTHER: '/assets/default-pet.svg',
 };
 
-// Emoji fallback khi ảnh mặc định không có
-const SPECIES_EMOJI: Record<string, string> = {
-  DOG: '🐕',
-  CAT: '🐱',
-  BIRD: '🐦',
-  RABBIT: '🐰',
-  HAMSTER: '🐹',
-  OTHER: '🐾',
-};
 
 // Form trống ban đầu
 const EMPTY_FORM = {
@@ -68,6 +59,7 @@ export default function MyPets() {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [currentImageUrl, setCurrentImageUrl] = useState<string>(''); // ảnh hiện tại khi sửa
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     if (user) fetchPets();
@@ -111,7 +103,7 @@ export default function MyPets() {
     });
     setSelectedFile(null);
     setPreviewUrl('');
-    setCurrentImageUrl(pet.imageUrl || '');
+    setCurrentImageUrl(pet.imageUrl?pet.imageUrl : '');
     setError('');
     setShowForm(true);
   };
@@ -168,9 +160,9 @@ const file = e.target.files?.[0]    ← Lấy file ra
     const reader = new FileReader();//API có sẵn để đọc file từ máy user
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-          // reader.result chứa kết quả  là 1 một chuỗi base64 dạng:
+    }; // reader.onloadend chỉ được gọi khi ta gọi 1 lệnh đọc ( ở đây là readasurl)
+    reader.readAsDataURL(file); // đây là lí do vì sao viết reader.onloadend trước reader.readasurl
+      // reader.result chứa kết quả  là 1 một chuỗi base64 dạng:
       //"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA..."
       /**
 data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...
@@ -210,10 +202,15 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
 
     try {
       // Upload ảnh trước nếu có chọn file
-      let imageUrl = '';
+      let imageUrl;
       if (selectedFile) {
-        imageUrl = await petApi.uploadImage(selectedFile); // thế 
-      }
+        imageUrl = await petApi.uploadImage(selectedFile);
+      } else if(currentImageUrl != '' && !Object.values(DEFAULT_PET_IMAGES).includes(currentImageUrl)) {
+        imageUrl = currentImageUrl;
+      } else {
+        imageUrl = DEFAULT_PET_IMAGES[form.species] || DEFAULT_PET_IMAGES.OTHER;
+      };
+
 
       const petData: PetRequest = {
         userId: user.id,
@@ -224,7 +221,7 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
         weight: form.weight ? Number(form.weight) : null,
         gender: form.gender,
         notes: form.notes,
-        imageUrl: imageUrl, // Gửi URL ảnh (rỗng nếu không upload → backend set ảnh mặc định)
+        imageUrl: imageUrl, 
       };
 
       if (editingPetId) {
@@ -258,7 +255,10 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
 
   // Lấy URL ảnh hiển thị cho pet (fallback sang emoji nếu ảnh lỗi)
   const getPetImageUrl = (pet: PetResponse) => {
-    return pet.imageUrl || DEFAULT_PET_IMAGES[pet.species] || DEFAULT_PET_IMAGES.OTHER;
+    if (pet.imageUrl && !Object.values(DEFAULT_PET_IMAGES).includes(pet.imageUrl)) {
+      return pet.imageUrl;
+    }
+    return DEFAULT_PET_IMAGES[pet.species] || DEFAULT_PET_IMAGES.OTHER;
   };
 
   // Chưa đăng nhập
@@ -312,18 +312,12 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
                 <img
                   src={getPetImageUrl(pet)}
                   alt={pet.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full ${Object.values(DEFAULT_PET_IMAGES).includes(getPetImageUrl(pet)) ? 'object-contain p-4' : 'object-cover'}`}
                   onError={(e) => {
-                    // Nếu ảnh lỗi → hiển thị emoji
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.emoji-fallback')) {
-                      const emoji = document.createElement('div');
-                      emoji.className = 'emoji-fallback absolute inset-0 flex items-center justify-center text-6xl bg-gray-100';
-                      emoji.textContent = SPECIES_EMOJI[pet.species] || '🐾';
-                      parent.appendChild(emoji);
-                    }
+                    const target = e.target as HTMLImageElement; // nếu ảnh lỗi, lấy thẻ img bị lỗi
+                    target.onerror = null; // tắt error để tránh vòng lặp vô tận 
+                    target.src = DEFAULT_PET_IMAGES[pet.species] || DEFAULT_PET_IMAGES.OTHER; //set lại ảnh default
+                    target.className = 'w-full h-full object-contain p-4'; // set lại css 
                   }}
                 />
               </div>
@@ -403,10 +397,10 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
                     <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                      ) : currentImageUrl ? (
+                      ) : currentImageUrl && !Object.values(DEFAULT_PET_IMAGES).includes(currentImageUrl) ? (
                         <img src={currentImageUrl} alt="Current" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-3xl">{SPECIES_EMOJI[form.species] || '🐾'}</span>
+                        <img src={DEFAULT_PET_IMAGES[form.species] || DEFAULT_PET_IMAGES.OTHER} alt="Default" className="w-full h-full object-contain p-2" />
                       )}
                     </div>
 

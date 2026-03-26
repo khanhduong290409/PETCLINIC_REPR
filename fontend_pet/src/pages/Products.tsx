@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { productApi } from '../api/productApi';
-import { useCart } from '../contexts/CartContext';
 import ProductCard from '../components/features/products/ProductCard';
 import type { Product } from '../types';
 
@@ -8,7 +7,6 @@ export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { addItem } = useCart();
 
   // Fetch products khi component mount
   useEffect(() => {
@@ -70,7 +68,6 @@ export default function Products() {
             <ProductCard
               key={product.id}
               product={product}
-              onAddToCart={addItem}
             />
           ))}
         </div>

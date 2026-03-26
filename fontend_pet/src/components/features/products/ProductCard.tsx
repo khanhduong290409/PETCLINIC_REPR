@@ -3,34 +3,27 @@ import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import type { Product } from "../../../types";
 import { getCategoryName } from "../../../utils/category";
+import { useCart } from "../../../contexts/CartContext";
 
 interface ProductCardProps {
   product: Product;
   showAddToCart?: boolean;
-  onAddToCart?: (product: Product) => void;
 }
 
 /**
  * ProductCard - Reusable product card component
  * Có thể dùng ở Home page, Product List page, Related Products, etc.
  */
-export default function ProductCard({ 
-  product, 
+export default function ProductCard({
+  product,
   showAddToCart = true,
-  onAddToCart 
 }: ProductCardProps) {
-  
+  const { addItem } = useCart();
+
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent link navigation
+    e.preventDefault();
     e.stopPropagation();
-    
-    if (onAddToCart) {
-      onAddToCart(product);
-    } else {
-      // Default behavior: log or show toast
-      console.log("Add to cart:", product.name);
-      // TODO: Integrate with CartContext
-    }
+    addItem(product, 1);
   };
 
   const isOutOfStock = product.stock === 0;

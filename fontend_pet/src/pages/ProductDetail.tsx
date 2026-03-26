@@ -32,12 +32,9 @@ export default function ProductDetail() {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    for (let i = 0; i < quantity; i++) {
-      addItem(product);
-    }
-    alert(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+    await addItem(product, quantity);
   };
 
   if (loading) {

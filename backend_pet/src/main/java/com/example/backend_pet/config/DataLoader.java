@@ -63,56 +63,6 @@ public class DataLoader implements CommandLineRunner {
             System.out.println("✅ Created doctor: doctor@petclinic.com / doctor123");
         }
 
-        // Tạo sample products
-        if (productRepository.count() == 0) {
-            Product p1 = Product.builder()
-                .name("Hạt cho mèo Royal Canin")
-                .price(new BigDecimal("180000"))
-                .imageUrl("/assets/hatmeo.jpg")
-                .category("food")
-                .stock(50)
-                .description("Thức ăn cao cấp dành cho mèo trưởng thành, giàu dinh dưỡng")
-                .brand("Royal Canin")
-                .build();
-
-            Product p2 = Product.builder()
-                .name("Dây dắt chó PetLove")
-                .price(new BigDecimal("120000"))
-                .imageUrl("/assets/daydatcho.webp")
-                .category("accessories")
-                .stock(30)
-                .description("Dây dắt chó chất lượng cao, bền đẹp, nhiều màu sắc")
-                .brand("PetLove")
-                .build();
-
-            Product p3 = Product.builder()
-                .name("Sữa tắm thú cưng Bio-Groom")
-                .price(new BigDecimal("140000"))
-                .imageUrl("/assets/suatamchomeo.jpg")
-                .category("grooming")
-                .stock(45)
-                .description("Sữa tắm dịu nhẹ, an toàn cho da thú cưng, mùi hương dễ chịu")
-                .brand("Bio-Groom")
-                .build();
-
-            Product p4 = Product.builder()
-                .name("Pate cho mèo Me-O")
-                .price(new BigDecimal("48000"))
-                .imageUrl("/assets/patechomeo.webp")
-                .category("food")
-                .stock(100)
-                .description("Pate dinh dưỡng cho mèo, nhiều vị khác nhau")
-                .brand("Me-O")
-                .build();
-
-            productRepository.save(p1);
-            productRepository.save(p2);
-            productRepository.save(p3);
-            productRepository.save(p4);
-
-            System.out.println("✅ Created 4 sample products");
-        }
-
         // Tạo sample pet services (dịch vụ khám)
         if (petServiceRepository.count() == 0) {
             petServiceRepository.save(PetService.builder()
