@@ -1,28 +1,45 @@
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../contexts/CartContext';
 
 export default function CartDrawer() {
   const { items, isOpen, totalPrice, updateQuantity, removeItem, closeDrawer } = useCart();
   const navigate = useNavigate();
+  const [closing, setClosing] = useState(false);
 
-  if (!isOpen) return null;
+  // Reset closing khi drawer mở lại
+  useEffect(() => {
+    if (isOpen) setClosing(false);
+  }, [isOpen]);
+
+  // Đóng có animation: chạy slide-out 300ms rồi mới unmount
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      closeDrawer();
+      setClosing(false);
+    }, 300);
+  };
+
+  // Giữ component render trong lúc đang closing để animation kịp chạy
+  if (!isOpen && !closing) return null;
 
   return (
     <>
-      {/* Overlay */}
+      {/* Overlay - fade out khi đóng */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
-        onClick={closeDrawer}
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${closing ? 'opacity-0' : 'opacity-100'}`}
+        onClick={handleClose}
       />
 
-      {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
+      {/* Drawer - slide in khi mở, slide out khi đóng */}
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-bold text-gray-800">Giỏ hàng</h2>
           <button
-            onClick={closeDrawer}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-full transition"
             aria-label="Đóng giỏ hàng"
           >
@@ -109,8 +126,8 @@ export default function CartDrawer() {
             {/* Checkout Button */}
             <button
               onClick={() => {
-                closeDrawer();
-                navigate('/checkout');
+                handleClose();
+                setTimeout(() => navigate('/checkout'), 300);
               }}
               className="w-full bg-sky-600 text-white py-3 rounded-lg font-semibold hover:bg-sky-700 transition"
             >

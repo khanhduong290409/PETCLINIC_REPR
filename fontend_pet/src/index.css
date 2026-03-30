@@ -47,3 +47,40 @@
   animation: fade-in 0.3s ease both;
 }
 
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 0.2s ease both;
+}
+
+/* Navbar link — underline trượt vào từ trái khi hover/active */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: rgb(251 191 36); /* amber-400 */
+  border-radius: 1px;
+  transition: width 0.2s ease;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+

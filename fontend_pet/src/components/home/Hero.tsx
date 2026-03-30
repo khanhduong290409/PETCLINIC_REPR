@@ -1,8 +1,11 @@
 // src/components/Hero.tsx
 import bgUrl from "../../assets/clinic-hero.png";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Hero() {
+  const { user } = useAuth();
+
   return (
     <section
       className="relative min-h-[560px] h-[78vh] w-full overflow-hidden"
@@ -35,7 +38,7 @@ export default function Hero() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                to="/appointments/new"
+                to={user ? "/book-appointment" : "/login"}
                 className="bg-amber-400 text-sky-900 px-5 py-2.5 rounded-xl font-semibold shadow hover:bg-amber-300 transition"
               >
                 Đặt lịch khám ngay

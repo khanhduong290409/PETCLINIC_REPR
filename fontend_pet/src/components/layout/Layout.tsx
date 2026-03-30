@@ -49,7 +49,7 @@ export default function Layout() {
       <Navbar />
 
       {/* Main Content - với padding-top để tránh bị Navbar che */}
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-14">
         <Outlet />
       </main>
 
