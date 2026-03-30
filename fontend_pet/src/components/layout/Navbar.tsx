@@ -30,7 +30,7 @@ export default function Navbar() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [dropdownOpen]);
       //gắn thì pahir gỡ, ko thì listender "trôi nổi" trên document mãi mãi dù component đã chết
 
 
