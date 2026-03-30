@@ -20,7 +20,7 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       //cần check dropdown đã được mount vào DOM chưa bởi vì nếu chưa đăng nhập thì dropdown không xuất hiện
       //bên dưới file có giải thích dòng check này 
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node) && dropdownOpen) {
         setClosingDropdown(true);
         setTimeout(() => {
           setDropdownOpen(false);
@@ -31,13 +31,15 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+      //gắn thì pahir gỡ, ko thì listender "trôi nổi" trên document mãi mãi dù component đã chết
+
 
   // Custom smooth scroll — easeInOutCubic, 900ms
   const smoothScrollTo = (targetY: number) => {
-    const startY = window.scrollY;
-    const distance = targetY - startY;
-    const duration = 900;
-    let startTime: number | null = null;
+    const startY = window.scrollY;// vi tri cuon hien tai cua trang dang dung o dau 
+    const distance = targetY - startY;// tinh khoang cach tu vi tri hien tai va vi tri cua target
+    const duration = 900; // thoi gian cuon la 0.9s
+    let startTime: number | null = null; // bien luu thoi gian bat dau animation
 
     const easeInOutCubic = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -57,12 +59,24 @@ export default function Navbar() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLAnchorElement;
+     // Chỉ xử lý khi click vào thẻ <a href="#...">
       if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#")) {
+        //lấy giá trị href rồi cắt bỏ ký tự đầu tiên ( dấu # )
+        //"#about"    → "about"
+        //"#services" → "services"
         const id = target.getAttribute("href")!.slice(1);
+        // tìm element có id tương ứng trên trang 
+        /*
+        <section id="about">
+        </section>
+        ↑
+        el = phần tử này
+         */
         const el = document.getElementById(id);
         if (el) {
+          //chặn browser nhảy cóc mặc định đến #about
           e.preventDefault();
-          // Trừ 56px chiều cao navbar để không bị che
+          // Trừ 56px chiều cao navbar để không bị che(tại vì navbar luôn hiện khi cuộn theo chứ ko phải bị mất khi cuộn xuống)
           const offsetTop = el.getBoundingClientRect().top + window.scrollY - 56;
           smoothScrollTo(offsetTop);
         }
@@ -248,4 +262,8 @@ export default function Navbar() {
 
 dropdownRef.current.contains(e.target as Node)
 → "Click vừa rồi có nằm bên trong div dropdown không?"
+click vào tên user      → contains = true  (trong dropdown)
+click vào menu item     → contains = true  (trong dropdown)
+click ra ngoài trang    → contains = false (ngoài dropdown)
+check cả nút bật dropdown ( toogle )
  */
