@@ -91,6 +91,26 @@ export default function Navbar() {
 
   const anchorClass = "nav-link text-sm font-medium text-white/70 hover:text-white transition-colors";
 
+  // Dùng chung cho "Giới thiệu" (#about) và "Dịch vụ" (#services):
+  // - Đang ở trang chủ → scroll đến section
+  // - Đang ở trang khác → navigate về home, chờ render xong rồi scroll
+  const handleHomeAnchorClick = (e: React.MouseEvent, sectionId: string) => {
+    e.preventDefault();
+    const scrollToSection = () => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const offsetTop = el.getBoundingClientRect().top + window.scrollY - 56;
+        smoothScrollTo(offsetTop);
+      }
+    };
+    if (location.pathname === '/') {
+      scrollToSection();
+    } else {
+      navigate('/');
+      setTimeout(scrollToSection, 300);
+    }
+  };
+
   // Khi click "Sản phẩm" trên navbar:
   // - Đang ở trang chủ → scroll đến section #products
   // - Đang ở trang khác → navigate thẳng đến /products
@@ -147,8 +167,8 @@ export default function Navbar() {
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7">
           <NavLink to="/" className={navLinkClass} onClick={() => smoothScrollTo(0)}>Trang chủ</NavLink>
-          <a href="#about"    className={anchorClass}>Giới thiệu</a>
-          <a href="#services" className={anchorClass}>Dịch vụ</a>
+          <a href="#about"    className={anchorClass} onClick={(e) => handleHomeAnchorClick(e, 'about')}>Giới thiệu</a>
+          <a href="#services" className={anchorClass} onClick={(e) => handleHomeAnchorClick(e, 'services')}>Dịch vụ</a>
           <a href="#products" className={anchorClass} onClick={handleProductsClick}>Sản phẩm</a>
           <a href="#appointment-cta" className={anchorClass} onClick={handleBookClick}>
             Đặt lịch
