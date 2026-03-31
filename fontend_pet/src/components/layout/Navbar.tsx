@@ -91,24 +91,35 @@ export default function Navbar() {
 
   const anchorClass = "nav-link text-sm font-medium text-white/70 hover:text-white transition-colors";
 
+  // Khi click "Sản phẩm" trên navbar:
+  // - Đang ở trang chủ → scroll đến section #products
+  // - Đang ở trang khác → navigate thẳng đến /products
+  const handleProductsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      const el = document.getElementById('products');
+      if (el) {
+        const offsetTop = el.getBoundingClientRect().top + window.scrollY - 56;
+        smoothScrollTo(offsetTop);
+      }
+    } else {
+      navigate('/products');
+    }
+  };
+
   // Khi click "Đặt lịch" trên navbar:
-  // - Đang ở trang chủ → scroll đến section
-  // - Đang ở trang khác → navigate về home, chờ render xong rồi scroll
+  // - Đang ở trang chủ → scroll đến section #appointment-cta
+  // - Đang ở trang khác → navigate thẳng đến /book-appointment
   const handleBookClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const scrollToSection = () => {
+    if (location.pathname === '/') {
       const el = document.getElementById('appointment-cta');
       if (el) {
         const offsetTop = el.getBoundingClientRect().top + window.scrollY - 56;
         smoothScrollTo(offsetTop);
       }
-    };
-
-    if (location.pathname === '/') {
-      scrollToSection();
     } else {
-      navigate('/');
-      setTimeout(scrollToSection, 300);
+      navigate('/book-appointment');
     }
   };
 
@@ -138,7 +149,7 @@ export default function Navbar() {
           <NavLink to="/" className={navLinkClass} onClick={() => smoothScrollTo(0)}>Trang chủ</NavLink>
           <a href="#about"    className={anchorClass}>Giới thiệu</a>
           <a href="#services" className={anchorClass}>Dịch vụ</a>
-          <a href="#products" className={anchorClass}>Sản phẩm</a>
+          <a href="#products" className={anchorClass} onClick={handleProductsClick}>Sản phẩm</a>
           <a href="#appointment-cta" className={anchorClass} onClick={handleBookClick}>
             Đặt lịch
           </a>
