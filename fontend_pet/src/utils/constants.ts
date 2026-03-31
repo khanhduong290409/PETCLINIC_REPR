@@ -1,123 +1,75 @@
 // frontend/src/utils/constants.ts
-import khamTongQuatUrl from "../assets/doctor.jpg";
-import noikhoaUrl from "../assets/doctor.jpg";
-import sanUrl from "../assets/doctor.jpg";
-import capcuuUrl from "../assets/doctor.jpg";
-import ngoaikhoaUrl from "../assets/doctor.jpg";
-import chandoanUrl from "../assets/doctor.jpg";
-
-import hatmeoUrl from "../assets/hatmeo.jpg";
-import daydatchoUrl from "../assets/daydatcho.webp";
-import suatamtucungUrl from "../assets/suatamchomeo.jpg";
-import pateUrl from "../assets/patechomeo.webp";
+import khamTongQuatUrl from "../assets/kham-tong-quat-pet.webp";
+import vacxinUrl from "../assets/tiem-vacxin-pet.webp";
+import cattiaUrl from "../assets/cattiapet.jpg";
+import khachsanUrl from "../assets/khach-san-pet.webp";
+import huanluyenUrl from "../assets/huan-luyen-pet.webp";
+import noikhoaUrl from "../assets/kham-noi-khoa-pet.webp";
 
 // ==================== SERVICE DATA ====================
 export const SERVICE_DATA = [
   {
     id: 1,
-    title: "Khám & Điều Trị Tổng Quát Thú Cưng",
-    description: "Cung cấp dịch vụ khám sức khỏe định kỳ, tư vấn dinh dưỡng, tiêm phòng...",
+    title: "Khám ngoại khoa",
+    description: "Cung cấp dịch vụ khám các bệnh lí và biểu hiện bên ngoài của thú cưng.",
     imageUrl: khamTongQuatUrl,
-    price: 200000,
+    price: 300000,
     duration: 30,
     category: "checkup",
     position: "left",
   },
   {
     id: 2,
-    title: "Chuyên Khoa Nội",
-    description: "Điều trị bệnh lý nội khoa ở chó mèo như tim mạch, tiêu hóa, hô hấp...",
-    imageUrl: noikhoaUrl,
-    price: 300000,
-    duration: 45,
+    title: "Tiêm Phòng Vacxin",
+    description: "Tiêm Vacxin phòng bệnh phổ biến ở các loài động vật.",
+    imageUrl: vacxinUrl,
+    price: 200000,
+    duration: 15,
     category: "internal",
     position: "left",
   },
   {
     id: 3,
-    title: "Chuyên Khoa Sản",
-    description: "Chăm sóc sức khỏe sinh sản toàn diện cho thú cưng, hỗ trợ đỡ đẻ...",
-    imageUrl: sanUrl,
-    price: 500000,
-    duration: 60,
-    category: "obstetrics",
+    title: "Khám nội khoa",
+    description: "Cung cấp dịch vụ X-quang, siêu âm, xét nghiệm máu chính xác.",
+    imageUrl: noikhoaUrl,
+    price: 250000,
+    duration: 90,
+    category: "diagnostic",
     position: "left",
   },
   {
     id: 4,
-    title: "Cấp Cứu Thú Cưng 24/7",
-    description: "Đội ngũ bác sĩ thú y nhiều kinh nghiệm, sẵn sàng mọi lúc với thiết bị hiện đại.",
-    imageUrl: capcuuUrl,
-    price: 400000,
-    duration: 30,
+    title: "Khách Sạn Thú Cưng	",
+    description: "Nhận giữ pet và chăm sóc cho pet tại cửa hàng ngày và đêm",
+    imageUrl: khachsanUrl,
+    price: 250000,
+    duration: 11 +" giờ " + 30,
     category: "emergency",
     position: "right",
   },
   {
     id: 5,
-    title: "Chuyên Khoa Ngoại",
-    description: "Phẫu thuật an toàn, hiệu quả cho thú cưng, từ triệt sản đến phẫu thuật phức tạp.",
-    imageUrl: ngoaikhoaUrl,
+    title: "Huấn Luyện",
+    description: "Huấn luyện thú cưng các động tác và thói quen đơn giản.",
+    imageUrl: huanluyenUrl,
     price: 800000,
-    duration: 90,
+    duration: "không giới hạn bao nhiêu " ,
     category: "surgery",
     position: "right",
   },
   {
     id: 6,
-    title: "Chẩn Đoán Hình Ảnh",
-    description: "Cung cấp dịch vụ X-quang, siêu âm, xét nghiệm máu chính xác.",
-    imageUrl: chandoanUrl,
-    price: 250000,
-    duration: 30,
-    category: "diagnostic",
+    title: "TGrooming & Spa",
+    description: "Tắm gội, Cắt tỉa, Combo tắm cắt tia, Vệ sinh tai",
+    imageUrl: cattiaUrl,
+    price: 150000,
+    duration: 60,
+    category: "obstetrics",
     position: "right",
   },
 ];
 
-// ==================== PRODUCT DATA ====================
-export const PRODUCT_DATA = [
-  {
-    id: 1,
-    name: "Hạt cho mèo",
-    price: 180000,
-    imageUrl: hatmeoUrl,
-    category: "food",
-    stock: 50,
-    description: "Thức ăn cao cấp dành cho mèo trưởng thành, giàu dinh dưỡng",
-    brand: "Royal Canin",
-  },
-  {
-    id: 2,
-    name: "Dây dắt chó",
-    price: 120000,
-    imageUrl: daydatchoUrl,
-    category: "accessories",
-    stock: 30,
-    description: "Dây dắt chó chất lượng cao, bền đẹp, nhiều màu sắc",
-    brand: "PetLove",
-  },
-  {
-    id: 3,
-    name: "Sữa tắm thú cưng",
-    price: 140000,
-    imageUrl: suatamtucungUrl,
-    category: "grooming",
-    stock: 45,
-    description: "Sữa tắm dịu nhẹ, an toàn cho da thú cưng, mùi hương dễ chịu",
-    brand: "Bio-Groom",
-  },
-  {
-    id: 4,
-    name: "Pate cho mèo",
-    price: 48000,
-    imageUrl: pateUrl,
-    category: "food",
-    stock: 100,
-    description: "Pate dinh dưỡng cho mèo, nhiều vị khác nhau",
-    brand: "Me-O",
-  },
-];
 
 // ==================== TESTIMONIAL DATA ====================
 export const TESTIMONIAL_DATA = [
@@ -126,7 +78,7 @@ export const TESTIMONIAL_DATA = [
     customerName: "Anh Khoa",
     petName: "Milu",
     rating: 5,
-    comment: "Bác sĩ tận tâm, đặt lịch nhanh gọn. Boss khỏe hơn hẳn!",
+    comment: "Bác sĩ tận tâm, đặt lịch nhanh gọn, dịch vụ tốt giá vừa phải.",
     date: "2024-01-15",
     avatar: null,
   },
@@ -144,7 +96,7 @@ export const TESTIMONIAL_DATA = [
     customerName: "Bạn Huy",
     petName: "Bé Bông",
     rating: 5,
-    comment: "Tư vấn dinh dưỡng hợp lý, boss ăn ngon miệng.",
+    comment: "Tư vấn dinh dưỡng hợp lý, boss ăn ngon.",
     date: "2024-01-25",
     avatar: null,
   },

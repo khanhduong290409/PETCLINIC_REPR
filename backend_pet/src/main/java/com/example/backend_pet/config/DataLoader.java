@@ -1,24 +1,16 @@
 package com.example.backend_pet.config;
 
-import com.example.backend_pet.entity.PetService;
-import com.example.backend_pet.entity.Product;
 import com.example.backend_pet.entity.User;
-import com.example.backend_pet.repository.PetServiceRepository;
-import com.example.backend_pet.repository.ProductRepository;
 import com.example.backend_pet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
-    private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final PetServiceRepository petServiceRepository;
 
     @Override
     public void run(String... args) {
@@ -61,51 +53,6 @@ public class DataLoader implements CommandLineRunner {
                 .build();
             userRepository.save(doctor);
             System.out.println("✅ Created doctor: doctor@petclinic.com / doctor123");
-        }
-
-        // Tạo sample pet services (dịch vụ khám)
-        if (petServiceRepository.count() == 0) {
-            petServiceRepository.save(PetService.builder()
-                    .title("Khám tổng quát")
-                    .description("Kiểm tra sức khỏe toàn diện cho thú cưng")
-                    .price(new BigDecimal("200000"))
-                    .duration(30)
-                    .category("checkup")
-                    .build());
-
-            petServiceRepository.save(PetService.builder()
-                    .title("Tiêm phòng")
-                    .description("Tiêm vaccine phòng bệnh cho chó mèo")
-                    .price(new BigDecimal("150000"))
-                    .duration(15)
-                    .category("vaccination")
-                    .build());
-
-            petServiceRepository.save(PetService.builder()
-                    .title("Tắm spa")
-                    .description("Tắm sạch, sấy khô, xịt thơm cho thú cưng")
-                    .price(new BigDecimal("120000"))
-                    .duration(45)
-                    .category("grooming")
-                    .build());
-
-            petServiceRepository.save(PetService.builder()
-                    .title("Cắt tỉa lông")
-                    .description("Cắt tỉa lông tạo kiểu đẹp cho thú cưng")
-                    .price(new BigDecimal("180000"))
-                    .duration(60)
-                    .category("grooming")
-                    .build());
-
-            petServiceRepository.save(PetService.builder()
-                    .title("Khám răng")
-                    .description("Kiểm tra và vệ sinh răng miệng cho thú cưng")
-                    .price(new BigDecimal("250000"))
-                    .duration(30)
-                    .category("dental")
-                    .build());
-
-            System.out.println("✅ Created 5 sample pet services");
         }
     }
 }

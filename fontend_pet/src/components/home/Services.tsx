@@ -35,7 +35,7 @@ export default function Services() {
               alt="Bác sĩ và thú cưng"
               className="
                 rounded-3xl shadow-lg ring-4 ring-white object-cover
-                w-[320px] md:w-[420px] lg:w-[520px] h-auto max-h-[520px]
+                w-80 md:w-105 lg:w-130 h-auto max-h-130
               "
             />
           </div>
@@ -62,13 +62,13 @@ interface ServiceColumnProps {
  */
 function ServiceColumn({ services, align }: ServiceColumnProps) {
   const isRight = align === 'right';
-  
+
   return (
     <div className={`flex flex-col gap-6 ${isRight ? 'text-right sm:pr-2' : 'text-left sm:pl-2'}`}>
       {services.map((service) => (
-        <ServiceCard 
-          key={service.id} 
-          service={service} 
+        <ServiceCard
+          key={service.id}
+          service={service}
           align={align}
         />
       ))}
@@ -86,17 +86,17 @@ interface ServiceCardProps {
  */
 function ServiceCard({ service, align }: ServiceCardProps) {
   const isRight = align === 'right';
-  
+
   return (
-    <div 
+    <div
       className={`flex items-center gap-4 ${isRight ? 'justify-end' : 'justify-start'}`}
     >
       {/* Nếu align right, hiển thị content trước image */}
       {isRight && <ServiceContent service={service} />}
-      
+
       {/* Service image */}
       <ServiceImage service={service} />
-      
+
       {/* Nếu align left, hiển thị image trước content */}
       {!isRight && <ServiceContent service={service} />}
     </div>
@@ -122,7 +122,7 @@ function ServiceImage({ service }: { service: Service }) {
  */
 function ServiceContent({ service }: { service: Service }) {
   return (
-    <div className="max-w-[260px]">
+    <div className="max-w-65">
       <h3 className="font-bold text-sky-900 text-base md:text-lg mb-1">
         {service.title}
       </h3>

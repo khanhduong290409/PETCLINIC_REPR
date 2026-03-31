@@ -54,39 +54,8 @@ export default function Navbar() {
 
     requestAnimationFrame(step);
   };
-
-  // Smooth scroll cho anchor nội trang
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLAnchorElement;
-     // Chỉ xử lý khi click vào thẻ <a href="#...">
-      if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#")) {
-        //lấy giá trị href rồi cắt bỏ ký tự đầu tiên ( dấu # )
-        //"#about"    → "about"
-        //"#services" → "services"
-        const id = target.getAttribute("href")!.slice(1);
-        // tìm element có id tương ứng trên trang 
-        /*
-        <section id="about">
-        </section>
-        ↑
-        el = phần tử này
-         */
-        const el = document.getElementById(id);
-        if (el) {
-          //chặn browser nhảy cóc mặc định đến #about
-          e.preventDefault();
-          // Trừ 56px chiều cao navbar để không bị che(tại vì navbar luôn hiện khi cuộn theo chứ ko phải bị mất khi cuộn xuống)
-          const offsetTop = el.getBoundingClientRect().top + window.scrollY - 56;
-          smoothScrollTo(offsetTop);
-        }
-      }
-    };
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
-
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+// ----ĐÃ XOÁ USEEFFECT DÙNG ĐỂ SCROLL TRANG----
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `nav-link text-sm font-medium transition-colors ${isActive ? "text-white active" : "text-white/70 hover:text-white"}`;
 
   const anchorClass = "nav-link text-sm font-medium text-white/70 hover:text-white transition-colors";
