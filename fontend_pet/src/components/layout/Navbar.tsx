@@ -173,7 +173,7 @@ export default function Navbar() {
           <a href="#appointment-cta" className={anchorClass} onClick={handleBookClick}>
             Đặt lịch
           </a>
-          <a href="#feedback" className={anchorClass}>Feedback</a>
+          <a href="#feedback" className={anchorClass} onClick={(e) => handleHomeAnchorClick(e, 'feedback')}>Feedback</a>
         </nav>
 
         {/* Right side */}
