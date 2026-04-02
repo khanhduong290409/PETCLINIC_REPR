@@ -1,7 +1,8 @@
 // Pet API calls
 
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
-const BACKEND_URL = 'http://localhost:8080';
+const CLOUDINARY_CLOUD_NAME = 'dm1xwivqn';
+const CLOUDINARY_UPLOAD_PRESET = 'v5nd8djy';
 
 export interface PetResponse {
   id: number;
@@ -66,18 +67,21 @@ export const petApi = {
     if (!response.ok) throw new Error('Failed to delete pet');
   },
 
-  // Upload ảnh pet
+  // Upload ảnh pet lên Cloudinary
   async uploadImage(file: File): Promise<string> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); // cloudinary có 2 cách upload: signed: cần secret key ở backend để ký request ( bảo mật hơn) 
+    // và cách 2 là dùng upload_preset, ko cần secret key, fontend gọi thẳng được
+    formData.append('folder', 'PetsClinic'); // dòng này để nói với cloudinary: lưu ảnh vào folder tên PetsClinic trong account
+    //nếu ko có dòng này thì ảnh vẫn được lưu nhưng nằm ở thư mục gốc, lộn xộn.
 
-    const response = await fetch(`${API_BASE_URL}/upload`, {
-      method: 'POST',
-      body: formData, // Không set Content-Type, browser tự thêm boundary
-    });
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      { method: 'POST', body: formData }
+    );
     if (!response.ok) throw new Error('Failed to upload image');
     const data = await response.json();
-    // Trả về full URL: http://localhost:8080/uploads/xxx.jpg
-    return `${BACKEND_URL}${data.url}`;
+    return data.secure_url;
   },
 };

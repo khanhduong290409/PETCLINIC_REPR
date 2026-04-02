@@ -17,6 +17,7 @@ interface CartContextType {
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   toggleDrawer: () => void;
   closeDrawer: () => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -154,6 +155,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Đóng drawer
   const closeDrawer = () => setIsOpen(false);
 
+  // Xóa toàn bộ giỏ hàng (dùng sau khi đặt hàng thành công)
+  const clearCart = () => setItems([]);
+
   return (
     <CartContext.Provider
       value={{
@@ -168,6 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         toggleDrawer,
         closeDrawer,
+        clearCart,
       }}
     >
       {children}

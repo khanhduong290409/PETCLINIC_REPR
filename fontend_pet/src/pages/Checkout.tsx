@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { orderApi } from '../api/orderApi';
 
 export default function Checkout() {
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -63,7 +63,8 @@ export default function Checkout() {
         notes,
       });
 
-      // Đặt hàng thành công → Chuyển đến trang chi tiết đơn hàng
+      // Đặt hàng thành công → Xóa giỏ hàng rồi chuyển trang
+      clearCart();
       navigate(`/orders/${order.id}`, { state: { justCreated: true } });
     } catch (err) {
       console.error('Failed to create order:', err);

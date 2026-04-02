@@ -129,9 +129,11 @@ public class CartService {
     // Xóa toàn bộ giỏ hàng
     @Transactional
     public void clearCart(Long userId) {
+        System.out.println("đã đến function clearCart ");
         Cart cart = getOrCreateCart(userId);
         cart.getItems().clear();
         cartRepository.save(cart);
+        System.out.println("đã xoá cart thành công ");
     }
 
     // Map Cart entity sang DTO
