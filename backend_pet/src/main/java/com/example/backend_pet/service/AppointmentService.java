@@ -37,9 +37,6 @@ public class AppointmentService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        com.example.backend_pet.entity.PetService service = petServiceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new RuntimeException("Service not found"));
-
         LocalDate date = LocalDate.parse(request.getAppointmentDate());
         LocalTime time = LocalTime.parse(request.getAppointmentTime());
 
@@ -58,17 +55,22 @@ public class AppointmentService {
                 throw new RuntimeException("Pet " + petId + " không thuộc user này");
             }
 
-            Appointment appointment = Appointment.builder()
-                    .user(user)
-                    .pet(pet)
-                    .service(service)
-                    .appointmentDate(date)
-                    .appointmentTime(time)
-                    .bookingCode(bookingCode)
-                    .notes(request.getNotes())
-                    .build();
+            for (Long serviceId : request.getServiceIds()) {
+                com.example.backend_pet.entity.PetService service = petServiceRepository.findById(serviceId)
+                        .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
 
-            appointments.add(appointmentRepository.save(appointment));
+                Appointment appointment = Appointment.builder()
+                        .user(user)
+                        .pet(pet)
+                        .service(service)
+                        .appointmentDate(date)
+                        .appointmentTime(time)
+                        .bookingCode(bookingCode)
+                        .notes(request.getNotes())
+                        .build();
+
+                appointments.add(appointmentRepository.save(appointment));
+            }
         }
 
         return appointments.stream()

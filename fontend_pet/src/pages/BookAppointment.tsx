@@ -35,7 +35,7 @@ export default function BookAppointment() {
   const [error, setError] = useState('');
 
   // Form state
-  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
   const [selectedPetIds, setSelectedPetIds] = useState<number[]>([]);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
@@ -61,6 +61,15 @@ export default function BookAppointment() {
     }
   };
 
+  // Toggle chọn dịch vụ (checkbox)
+  const toggleService = (serviceId: number) => {
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  };
+
   // Toggle chọn pet (checkbox)
   const togglePet = (petId: number) => {
     setSelectedPetIds((prev) =>
@@ -71,8 +80,9 @@ export default function BookAppointment() {
   };
 
   // Tính tổng tiền
-  const selectedService = services.find((s) => s.id === selectedServiceId);
-  const totalPrice = selectedService ? selectedService.price * selectedPetIds.length : 0;
+  const selectedServices = services.filter((s) => selectedServiceIds.includes(s.id));
+  const totalServicePrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const totalPrice = totalServicePrice * selectedPetIds.length;
 
   // Ngày tối thiểu = ngày mai
   const tomorrow = new Date();
@@ -84,7 +94,7 @@ export default function BookAppointment() {
     if (!user) return;
 
     // Validate
-    if (!selectedServiceId) { setError('Vui lòng chọn dịch vụ'); return; }
+    if (selectedServiceIds.length === 0) { setError('Vui lòng chọn ít nhất 1 dịch vụ'); return; }
     if (selectedPetIds.length === 0) { setError('Vui lòng chọn ít nhất 1 thú cưng'); return; }
     if (!appointmentDate) { setError('Vui lòng chọn ngày khám'); return; }
     if (!appointmentTime) { setError('Vui lòng chọn giờ khám'); return; }
@@ -96,7 +106,7 @@ export default function BookAppointment() {
       await appointmentApi.createAppointments({
         userId: user.id,
         petIds: selectedPetIds,
-        serviceId: selectedServiceId,
+        serviceIds: selectedServiceIds,
         appointmentDate,
         appointmentTime,
         notes,
@@ -155,16 +165,14 @@ export default function BookAppointment() {
                   <label
                     key={service.id}
                     className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition ${
-                      selectedServiceId === service.id ? 'border-sky-500 bg-sky-50' : ''
+                      selectedServiceIds.includes(service.id) ? 'border-sky-500 bg-sky-50' : ''
                     }`}
                   >
                     <input
-                      type="radio"
-                      name="service"
-                      value={service.id}
-                      checked={selectedServiceId === service.id}
-                      onChange={() => setSelectedServiceId(service.id)}
-                      className="text-sky-600"
+                      type="checkbox"
+                      checked={selectedServiceIds.includes(service.id)}
+                      onChange={() => toggleService(service.id)}
+                      className="text-sky-600 rounded"
                     />
                     <div className="flex-1">
                       <p className="font-semibold">{service.title}</p>
@@ -282,9 +290,20 @@ export default function BookAppointment() {
               <h2 className="text-lg font-bold text-gray-800 mb-4">Tóm tắt đặt lịch</h2>
 
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Dịch vụ:</span>
-                  <span className="font-semibold">{selectedService?.title || '—'}</span>
+                <div>
+                  <span className="text-gray-500">Dịch vụ ({selectedServiceIds.length}):</span>
+                  {selectedServices.length > 0 ? (
+                    <div className="mt-1 space-y-1">
+                      {selectedServices.map((s) => (
+                        <div key={s.id} className="flex justify-between">
+                          <span className="font-semibold">{s.title}</span>
+                          <span className="text-rose-600">{s.price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="ml-1 font-semibold">—</span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Số thú cưng:</span>
@@ -311,10 +330,9 @@ export default function BookAppointment() {
                   <span className="text-gray-500">Giờ:</span>
                   <span className="font-semibold">{appointmentTime || '—'}</span>
                 </div>
-                {selectedService && (
+                {selectedServices.length > 0 && selectedPetIds.length > 0 && (
                   <div className="flex justify-between text-xs text-gray-400">
-                    <span>Đơn giá:</span>
-                    <span>{selectedService.price.toLocaleString('vi-VN')}đ x {selectedPetIds.length}</span>
+                    <span>({totalServicePrice.toLocaleString('vi-VN')}đ/dịch vụ) x {selectedPetIds.length} thú cưng</span>
                   </div>
                 )}
               </div>

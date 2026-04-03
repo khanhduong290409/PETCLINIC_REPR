@@ -14,7 +14,7 @@ export interface ServiceResponse {
 export interface AppointmentRequest {
   userId: number;
   petIds: number[];
-  serviceId: number;
+  serviceIds: number[];
   appointmentDate: string; // "2026-02-20"
   appointmentTime: string; // "09:00"
   notes: string;
