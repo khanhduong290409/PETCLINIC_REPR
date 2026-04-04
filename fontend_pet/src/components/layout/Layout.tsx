@@ -1,4 +1,5 @@
 // frontend/src/components/layout/Layout.tsx
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -11,6 +12,11 @@ import ChatWidget from "../ChatWidget";
  */
 export default function Layout() {
   const location = useLocation();
+
+  // Cuộn lên đầu trang mỗi khi chuyển route
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   // Có thể customize layout dựa trên route
   const isAdminRoute = location.pathname.startsWith('/admin');

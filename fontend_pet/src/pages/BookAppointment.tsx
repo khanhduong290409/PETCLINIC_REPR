@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Stethoscope } from 'lucide-react';
+import { ArrowLeft, Calendar, Stethoscope, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
 import { petApi } from '../api/petApi';
@@ -33,6 +33,7 @@ export default function BookAppointment() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   // Form state
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
@@ -111,7 +112,8 @@ export default function BookAppointment() {
         appointmentTime,
         notes,
       });
-      navigate('/appointments');
+      setSuccess(true);
+    window.scrollTo({top: 0, behavior: 'smooth'});
     } catch (err) {
       console.error('Failed to book:', err);
       setError('Không thể đặt lịch. Vui lòng thử lại.');
@@ -136,6 +138,32 @@ export default function BookAppointment() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center bg-white p-10 rounded-xl shadow-lg max-w-sm w-full">
+          <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Đặt lịch thành công!</h2>
+          <p className="text-gray-500 mb-6">Lịch khám của bạn đã được ghi nhận. Chúng tôi sẽ xác nhận sớm nhất có thể.</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate('/appointments')}
+              className="w-full bg-sky-600 text-white py-2 rounded-lg font-semibold hover:bg-sky-700 transition"
+            >
+              Xem lịch khám của tôi
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="w-full border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-50 transition"
+            >
+              Về trang chủ
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

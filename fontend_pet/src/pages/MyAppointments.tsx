@@ -19,7 +19,7 @@ const SPECIES_EMOJI: Record<string, string> = {
 
 interface BookingGroup {
   bookingCode: string;
-  serviceTitle: string;
+  services: { title: string; price: number }[];
   appointmentDate: string;
   appointmentTime: string;
   doctorName: string | null;
@@ -27,11 +27,9 @@ interface BookingGroup {
   notes: string;
   totalPrice: number;
   pets: {
-    id: number;
     name: string;
     species: string;
     imageUrl: string;
-    servicePrice: number;
   }[];
   firstAppointmentId: number;
 }
@@ -79,31 +77,45 @@ export default function MyAppointments() {
      */
 
     return Array.from(map.entries()).map(([bookingCode, items]) => {
-      /**
-bookingCode = 'BK001'
-items = [
-  { id: 101, petName: 'Milo', serviceTitle: 'Khám TQ', ... },
-  { id: 102, petName: 'Luna', serviceTitle: 'Khám TQ', ... }
-]
-
-       */
       const first = items[0];
+
+      // Deduplicate pets theo tên
+      const petsMap = new Map<string, { name: string; species: string; imageUrl: string }>();
+      for (const item of items) {
+        if (!petsMap.has(item.petName)) {
+          petsMap.set(item.petName, {
+            name: item.petName,
+            species: item.petSpecies,
+            imageUrl: item.petImageUrl,
+          });
+        }
+      }
+
+      // Deduplicate services theo title
+      const servicesMap = new Map<string, { title: string; price: number }>();
+      for (const item of items) {
+        if (!servicesMap.has(item.serviceTitle)) {
+          servicesMap.set(item.serviceTitle, {
+            title: item.serviceTitle,
+            price: item.servicePrice,
+          });
+        }
+      }
+
+      const uniquePets = Array.from(petsMap.values());
+      const uniqueServices = Array.from(servicesMap.values());
+      const totalPrice = uniqueServices.reduce((sum, s) => sum + s.price, 0) * uniquePets.length;
+
       return {
         bookingCode,
-        serviceTitle: first.serviceTitle,
+        services: uniqueServices,
         appointmentDate: first.appointmentDate,
         appointmentTime: first.appointmentTime,
         doctorName: first.doctorName,
         status: first.status,
         notes: first.notes,
-        totalPrice: items.reduce((sum, item) => sum + item.servicePrice, 0),
-        pets: items.map((item) => ({
-          id: item.id,
-          name: item.petName,
-          species: item.petSpecies,
-          imageUrl: item.petImageUrl,
-          servicePrice: item.servicePrice,
-        })),
+        totalPrice,
+        pets: uniquePets,
         firstAppointmentId: first.id,
       };
     });
@@ -171,10 +183,16 @@ items = [
             return (
               <div key={group.bookingCode} className="bg-white p-5 rounded-lg shadow">
                 {/* Header: mã lịch khám + dịch vụ + trạng thái */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-xs text-gray-400 font-mono">{group.bookingCode}</p>
-                    <h3 className="text-lg font-bold text-sky-600">{group.serviceTitle}</h3>
+                    <p className="text-xs text-gray-400 font-mono mb-1">{group.bookingCode}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {group.services.map((s) => (
+                        <span key={s.title} className="text-sm font-semibold text-sky-600 bg-sky-50 px-2 py-0.5 rounded">
+                          {s.title}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <span className={`text-xs font-semibold px-3 py-1 rounded-full ${status.color}`}>
                     {status.label}
@@ -187,7 +205,7 @@ items = [
                   <div className="flex flex-wrap gap-3">
                     {group.pets.map((pet) => (
                       <div
-                        key={pet.id}
+                        key={pet.name}
                         className="flex items-center gap-2 bg-gray-50 border rounded-lg px-3 py-2"
                       >
                         {pet.imageUrl ? (
@@ -231,9 +249,9 @@ items = [
                     <p className="font-bold text-rose-600">
                       {group.totalPrice.toLocaleString('vi-VN')}đ
                     </p>
-                    {group.pets.length > 1 && (
+                    {(group.pets.length > 1 || group.services.length > 1) && (
                       <p className="text-xs text-gray-400">
-                        ({group.pets[0].servicePrice.toLocaleString('vi-VN')}đ x {group.pets.length})
+                        {group.services.length} dịch vụ x {group.pets.length} thú cưng
                       </p>
                     )}
                   </div>

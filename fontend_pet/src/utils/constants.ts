@@ -54,7 +54,7 @@ export const SERVICE_DATA = [
     description: "Huấn luyện thú cưng các động tác và thói quen đơn giản.",
     imageUrl: huanluyenUrl,
     price: 800000,
-    duration: "không giới hạn bao nhiêu " ,
+    duration: 150,
     category: "surgery",
     position: "right",
   },
