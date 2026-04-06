@@ -40,8 +40,8 @@ export default function Checkout() {
     );
   }
 
-  // Giỏ hàng trống
-  if (items.length === 0) {
+  // Giỏ hàng trống — không hiển thị khi đang show QR modal
+  if (items.length === 0 && !qrModal) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
