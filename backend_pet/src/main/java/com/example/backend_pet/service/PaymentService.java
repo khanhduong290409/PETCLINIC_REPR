@@ -40,8 +40,8 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
         int amount = order.getTotalAmount().intValue();
-        // Nội dung chuyển khoản = orderNumber, SePay sẽ dùng field này để match đơn hàng
-        String content = order.getOrderNumber();
+        // Vietinbank yêu cầu nội dung phải bắt đầu bằng SEVQR thì SePay mới detect được
+        String content = "SEVQR " + order.getOrderNumber();
 
         // Tạo URL ảnh QR từ VietQR (free, không cần đăng ký)
         // Format: https://img.vietqr.io/image/{bankCode}-{accountNumber}-{template}.png
