@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,15 +44,10 @@ public class OrderService {
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 5. Tạo mã đơn hàng (ORD-yyyyMMddHHmmss-userId)
-        String orderNumber = "ORD-"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                + "-" + userId;
-
-        // 6. Tạo Order
+        // 5. Tạo Order (orderNumber đặt tạm, sẽ cập nhật sau khi có ID từ DB)
         Order order = Order.builder()
                 .user(user)
-                .orderNumber(orderNumber)
+                .orderNumber("TEMP")
                 .totalAmount(totalAmount)
                 .shippingAddress(shippingAddress)
                 .paymentMethod(paymentMethod)
@@ -71,8 +64,12 @@ public class OrderService {
             order.addItem(orderItem);
         }
 
-        // 8. Lưu order
+        // 8. Lưu order lần 1 để lấy ID từ DB
         Order savedOrder = orderRepository.save(order);
+
+        // Cập nhật orderNumber = ORD{id} — không có dấu gạch ngang, bank không strip được
+        savedOrder.setOrderNumber("ORD" + savedOrder.getId());
+        savedOrder = orderRepository.save(savedOrder);
 
         // 9. Xóa giỏ hàng sau khi đặt hàng
         cartService.clearCart(userId);
