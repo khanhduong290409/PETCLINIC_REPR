@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { orderApi } from '../api/orderApi';
+import { paymentApi } from '../api/paymentApi';
+import PaymentQRModal from '../components/PaymentQRModal';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
@@ -15,6 +17,14 @@ export default function Checkout() {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // State cho QR modal (chỉ dùng khi chọn BANKING)
+  const [qrModal, setQrModal] = useState<{
+    orderId: number;
+    orderCode: number;
+    qrCode: string;
+    checkoutUrl: string;
+  } | null>(null);
 
   // Chưa đăng nhập
   if (!user) {
@@ -63,9 +73,21 @@ export default function Checkout() {
         notes,
       });
 
-      // Đặt hàng thành công → Xóa giỏ hàng rồi chuyển trang
-      clearCart();
-      navigate(`/orders/${order.id}`, { state: { justCreated: true } });
+      if (paymentMethod === 'BANKING') {
+        // Tạo QR PayOS rồi hiển thị modal, chưa xóa giỏ hàng
+        const paymentLink = await paymentApi.createPaymentLink(order.id);
+        clearCart();
+        setQrModal({
+          orderId: order.id,
+          orderCode: paymentLink.orderCode,
+          qrCode: paymentLink.qrCode,
+          checkoutUrl: paymentLink.checkoutUrl,
+        });
+      } else {
+        // COD: xóa giỏ hàng rồi chuyển trang luôn
+        clearCart();
+        navigate(`/orders/${order.id}`, { state: { justCreated: true } });
+      }
     } catch (err) {
       console.error('Failed to create order:', err);
       setError('Không thể tạo đơn hàng. Vui lòng thử lại.');
@@ -213,6 +235,21 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* QR Modal — hiển thị khi user chọn BANKING */}
+      {qrModal && (
+        <PaymentQRModal
+          orderId={qrModal.orderId}
+          orderCode={qrModal.orderCode}
+          qrCode={qrModal.qrCode}
+          checkoutUrl={qrModal.checkoutUrl}
+          amount={totalPrice}
+          onClose={() => {
+            setQrModal(null);
+            navigate(`/orders/${qrModal.orderId}`);
+          }}
+        />
+      )}
     </div>
   );
 }
