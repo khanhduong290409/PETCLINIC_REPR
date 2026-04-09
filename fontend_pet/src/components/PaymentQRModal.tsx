@@ -95,8 +95,8 @@ export default function PaymentQRModal({
   }
 
 return (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border border-gray-100">
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
 
       <div className="flex flex-col md:flex-row">
 
@@ -156,7 +156,7 @@ return (
           <div className="relative group mb-5">
             <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-xl opacity-0 group-hover:opacity-100 transition"></div>
 
-            <div className="relative p-3 bg-white border rounded-2xl shadow-sm">
+            <div className="relative p-3 bg-white rounded-2xl shadow-lg">
               <img
                 src={qrCode}
                 alt="QR thanh toán"
