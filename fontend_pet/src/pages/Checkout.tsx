@@ -23,7 +23,11 @@ export default function Checkout() {
     orderId: number;
     orderCode: number;
     qrCode: string;
-    checkoutUrl: string;
+    orderNumber: string;
+    transferContent: string;
+    accountNumber: string;
+    bankName: string;
+    amount: number;
   } | null>(null);
 
   // Chưa đăng nhập
@@ -81,7 +85,11 @@ export default function Checkout() {
           orderId: order.id,
           orderCode: paymentLink.orderCode,
           qrCode: paymentLink.qrCode,
-          checkoutUrl: paymentLink.checkoutUrl,
+          orderNumber: paymentLink.orderNumber,
+          transferContent: paymentLink.transferContent,
+          accountNumber: paymentLink.accountNumber,
+          bankName: paymentLink.bankName,
+          amount: paymentLink.amount,
         });
       } else {
         // COD: xóa giỏ hàng rồi chuyển trang luôn
@@ -242,8 +250,11 @@ export default function Checkout() {
           orderId={qrModal.orderId}
           orderCode={qrModal.orderCode}
           qrCode={qrModal.qrCode}
-          checkoutUrl={qrModal.checkoutUrl}
-          amount={totalPrice}
+          orderNumber={qrModal.orderNumber}
+          transferContent={qrModal.transferContent}
+          accountNumber={qrModal.accountNumber}
+          bankName={qrModal.bankName}
+          amount={qrModal.amount}
           onClose={() => {
             setQrModal(null);
             navigate(`/orders/${qrModal.orderId}`);

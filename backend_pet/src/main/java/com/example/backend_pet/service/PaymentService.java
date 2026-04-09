@@ -51,13 +51,19 @@ public class PaymentService {
                 "https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=%s",
                 bankCode, accountNumber, amount, encodedContent, encodedName
         );
+        //    // VD: https://img.vietqr.io/image/ICB-1234567890-compact2.png?amount=150000&addInfo=SEVQR+ORD-xxx
 
         return PaymentLinkResponse.builder()
                 .orderCode(order.getId())
                 .qrCode(qrUrl)
-                .checkoutUrl(qrUrl) // SePay không có trang checkout riêng
+                .checkoutUrl(qrUrl)
                 .paymentLinkId(order.getOrderNumber())
                 .paymentStatus("PENDING")
+                .orderNumber(order.getOrderNumber())
+                .transferContent(content)
+                .accountNumber(accountNumber)
+                .bankName(bankCode)
+                .amount(amount)
                 .build();
     }
 
