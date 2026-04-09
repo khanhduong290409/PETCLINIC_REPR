@@ -38,7 +38,7 @@ export default function PaymentQRModal({
         if (prev <= 1) { clearInterval(countdownRef.current!); return 0; }
         return prev - 1;
       });
-    }, 1000);
+    }, 1000); // dùng để từ 1s cho interval 15'
 
     pollRef.current = setInterval(async () => {
       try {
@@ -90,98 +90,151 @@ export default function PaymentQRModal({
     );
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+return (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border border-gray-100">
 
-        {/* Layout 2 cột */}
-        <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col md:flex-row">
 
-          {/* Cột trái — Thông tin đơn hàng */}
-          <div className="bg-gray-50 p-6 md:w-56 shrink-0 flex flex-col gap-4 border-b md:border-b-0 md:border-r">
-            <h2 className="text-base font-bold text-gray-800">Thông tin đơn hàng</h2>
+        {/* LEFT — ORDER INFO */}
+        <div className="md:w-64 bg-gradient-to-b from-gray-50 to-white p-6 border-r flex flex-col gap-5">
 
+          <h2 className="text-lg font-semibold text-gray-800">
+            Thông tin đơn hàng
+          </h2>
+
+          <div className="space-y-3">
             <div>
-              <p className="text-xs text-gray-500 mb-1">Mã đơn hàng</p>
-              <p className="text-sm font-medium text-gray-800 break-all">{orderNumber}</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Mô tả</p>
-              <p className="text-sm text-gray-700">Thanh toán đơn hàng</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Số tiền</p>
-              <p className="text-xl font-bold text-blue-600">
-                {amount.toLocaleString('vi-VN')} VND
+              <p className="text-xs text-gray-400">Mã đơn</p>
+              <p className="text-sm font-medium text-gray-800 break-all">
+                {orderNumber}
               </p>
             </div>
 
-            <div className="mt-auto">
-              <p className="text-xs text-gray-400">Hết hạn sau</p>
-              <p className="text-sm font-mono font-semibold text-orange-500">{formatTime(timeLeft)}</p>
+            <div>
+              <p className="text-xs text-gray-400">Mô tả</p>
+              <p className="text-sm text-gray-700">
+                Thanh toán đơn hàng
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-400">Số tiền</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+                {amount.toLocaleString('vi-VN')} VND
+              </p>
             </div>
           </div>
 
-          {/* Cột phải — QR + thông tin ngân hàng */}
-          <div className="flex-1 p-6 flex flex-col items-center gap-4">
-            <h2 className="text-base font-bold text-gray-800">Quét QR để thanh toán</h2>
-            <p className="text-xs text-gray-500 text-center">
-              Sử dụng ứng dụng ngân hàng hỗ trợ VietQR để quét mã và thanh toán nhanh chóng.
-            </p>
-
-            {/* QR image */}
-            <img
-              src={qrCode}
-              alt="QR thanh toán"
-              className="w-44 h-44 border rounded-xl object-contain"
-            />
-
-            {/* Tên ngân hàng */}
-            <p className="text-sm font-medium text-gray-700">{bankName}</p>
-
-            {/* Số tài khoản */}
-            <div className="w-full">
-              <p className="text-xs text-gray-500 mb-1">Số tài khoản</p>
-              <div className="flex items-center justify-between bg-gray-50 border rounded-lg px-3 py-2">
-                <span className="text-sm font-medium text-gray-800">{accountNumber}</span>
-                <button
-                  onClick={() => copyToClipboard(accountNumber, 'account')}
-                  className="text-gray-400 hover:text-gray-700 ml-2 shrink-0"
-                  title="Sao chép"
-                >
-                  {copiedAccount ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-                </button>
-              </div>
+          {/* Countdown */}
+          <div className="mt-auto">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-center">
+              <p className="text-xs text-orange-400">Hết hạn sau</p>
+              <p className="text-sm font-mono font-semibold text-orange-600">
+                {formatTime(timeLeft)}
+              </p>
             </div>
-
-            {/* Nội dung chuyển khoản */}
-            <div className="w-full">
-              <p className="text-xs text-gray-500 mb-1">Nội dung chuyển khoản</p>
-              <div className="flex items-center justify-between bg-gray-50 border rounded-lg px-3 py-2">
-                <span className="text-sm font-medium text-gray-800 break-all">{transferContent}</span>
-                <button
-                  onClick={() => copyToClipboard(transferContent, 'content')}
-                  className="text-gray-400 hover:text-gray-700 ml-2 shrink-0"
-                  title="Sao chép"
-                >
-                  {copiedContent ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Hủy */}
-            <button
-              onClick={onClose}
-              className="text-sm text-gray-400 hover:text-gray-600 mt-1"
-            >
-              ✕ Hủy giao dịch
-            </button>
           </div>
         </div>
 
+        {/* RIGHT — QR */}
+        <div className="flex-1 p-6 flex flex-col items-center">
+
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">
+            Quét QR để thanh toán
+          </h2>
+
+          <p className="text-xs text-gray-500 text-center mb-4 max-w-xs">
+            Dùng app ngân hàng hỗ trợ VietQR để thanh toán nhanh
+          </p>
+
+          {/* QR BOX */}
+          <div className="relative group mb-5">
+            <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-xl opacity-0 group-hover:opacity-100 transition"></div>
+
+            <div className="relative p-3 bg-white border rounded-2xl shadow-sm">
+              <img
+                src={qrCode}
+                alt="QR thanh toán"
+                className="w-48 h-48 object-contain"
+              />
+
+              {/* Scan corners */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-blue-500 rounded-tl"></div>
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-blue-500 rounded-tr"></div>
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-blue-500 rounded-bl"></div>
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-blue-500 rounded-br"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* ACCOUNT */}
+          <div className="w-full space-y-3">
+
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Số tài khoản</p>
+              <div className="flex items-center justify-between bg-gray-50 border rounded-xl px-3 py-2 hover:border-gray-300 transition">
+                <span className="text-sm font-medium text-gray-800">
+                  {accountNumber}
+                </span>
+
+                <button
+                  onClick={() => copyToClipboard(accountNumber, 'account')}
+                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white border hover:bg-gray-100 transition"
+                >
+                  {copiedAccount ? (
+                    <span className="text-green-500 flex items-center gap-1">
+                      <Check size={14} /> Copied
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Copy size={14} /> Copy
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* TRANSFER CONTENT */}
+            <div>
+              <p className="text-xs text-gray-400 mb-1">
+                Nội dung chuyển khoản
+              </p>
+              <div className="flex items-center justify-between bg-gray-50 border rounded-xl px-3 py-2 hover:border-gray-300 transition">
+                <span className="text-sm font-medium text-gray-800 break-all">
+                  {transferContent}
+                </span>
+
+                <button
+                  onClick={() => copyToClipboard(transferContent, 'content')}
+                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white border hover:bg-gray-100 transition"
+                >
+                  {copiedContent ? (
+                    <span className="text-green-500 flex items-center gap-1">
+                      <Check size={14} /> Copied
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Copy size={14} /> Copy
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ACTION */}
+          <button
+            onClick={onClose}
+            className="mt-6 text-sm text-gray-400 hover:text-red-500 transition"
+          >
+            ✕ Hủy giao dịch
+          </button>
+        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
