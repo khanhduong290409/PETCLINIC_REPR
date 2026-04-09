@@ -19,6 +19,10 @@ interface Props {
 const POLL_INTERVAL_MS = 4000;
 const MAX_WAIT_MS = 15 * 60 * 1000;
 
+const BANK_NAMES: Record<string, string> = {
+  '970415': 'VietinBank',
+};
+
 export default function PaymentQRModal({
   orderId, orderCode, qrCode,
   orderNumber, transferContent, accountNumber, bankName,
@@ -168,6 +172,11 @@ return (
               </div>
             </div>
           </div>
+
+          {/* Tên ngân hàng */}
+          <p className="text-sm font-medium text-gray-600 mb-1">
+            {BANK_NAMES[bankName] ?? bankName}
+          </p>
 
           {/* ACCOUNT */}
           <div className="w-full space-y-3">
