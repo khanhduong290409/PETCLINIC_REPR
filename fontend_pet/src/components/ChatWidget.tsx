@@ -113,13 +113,22 @@ export default function ChatWidget() {
                 </div>
             )}
 
-             {/* Nút mở/đóng */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
-            >
-                {isOpen ? '✕' : <img src="/assets/default-pet.svg" alt="Chat" className="w-7 h-7" />}
-            </button>
+            {/* Nút mở/đóng */}
+            <div className="relative flex items-center justify-center">
+                {/* Vòng tròn pulse — chỉ hiện khi chat đang đóng */}
+                {!isOpen && (
+                    <>
+                        <span className="absolute w-14 h-14 rounded-full bg-sky-400 animate-ping-ring" />
+                        <span className="absolute w-14 h-14 rounded-full bg-sky-400 animate-ping-ring" style={{ animationDelay: '0.8s' }} />
+                    </>
+                )}
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="relative bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
+                >
+                    {isOpen ? '✕' : <img src="/assets/default-pet.svg" alt="Chat" className="w-7 h-7" />}
+                </button>
+            </div>
         </div>
 
     );

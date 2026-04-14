@@ -156,7 +156,7 @@ return (
           <div className="relative group mb-5">
             <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-xl opacity-0 group-hover:opacity-100 transition"></div>
 
-            <div className="relative p-3 bg-white rounded-2xl shadow-lg">
+            <div className="relative p-3 bg-white shadow-lg">
               <img
                 src={qrCode}
                 alt="QR thanh toán"

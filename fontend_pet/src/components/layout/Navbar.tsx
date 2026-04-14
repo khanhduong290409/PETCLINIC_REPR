@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Settings, Stethoscope, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import logoUrl from "../../assets/logo.png";
+import logoUrl from "../../assets/pawcare-logo.png";
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -124,13 +124,12 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   const dropdownItemClass = "flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 bg-sky-900 text-white border-b border-white/10 shadow-md">
+    <header className="fixed inset-x-0 top-0 z-30 bg-cyan-900 text-white border-b border-white/10 shadow-md">
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <img src={logoUrl} className="h-7 w-7" />
-          <span className="font-semibold text-sm tracking-wide">PetClinic</span>
+        <Link to="/" className="flex items-center shrink-0">
+          <img src={logoUrl} className="h-37 w-auto" />
         </Link>
 
         {/* Nav links */}

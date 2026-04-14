@@ -1,0 +1,17 @@
+<svg width="480" height="130" viewBox="0 0 480 130" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>PawCare Logo D - Geometric Faceted</title>
+<polygon points="80,32 58,48 58,78 80,92 102,78 102,48" fill="#0d2d45"/>
+<polygon points="80,32 102,48 102,78 80,55" fill="#1a5a7e" opacity="0.7"/>
+<polygon points="80,32 58,48 80,55" fill="#2a7aaa" opacity="0.5"/>
+<polygon points="50,10 36,18 36,32 50,38 64,32 64,18" fill="#F5A623"/>
+<polygon points="50,10 64,18 64,32 50,22" fill="#ffcc55" opacity="0.6"/>
+<polygon points="80,0 66,8 66,22 80,28 94,22 94,8" fill="#1a4a6b"/>
+<polygon points="80,0 94,8 94,22 80,12" fill="#2a6a9b" opacity="0.6"/>
+<polygon points="110,10 96,18 96,32 110,38 124,32 124,18" fill="#F5A623"/>
+<polygon points="110,10 124,18 124,32 110,22" fill="#ffcc55" opacity="0.6"/>
+<polygon points="58,48 50,38 64,32 64,48" fill="#2a5a80" opacity="0.4"/>
+<polygon points="102,48 110,38 96,32 96,48" fill="#2a5a80" opacity="0.4"/>
+<path d="M80,67 C80,67 73,60 73,57 C73,54.5 75,53 77,53.5 C78.5,54 80,56 80,56 C80,56 81.5,54 83,53.5 C85,53 87,54.5 87,57 C87,60 80,67 80,67Z" fill="#F5A623"/>
+<text x="136" y="60" font-family="'Segoe UI',Arial,sans-serif" font-size="46" font-weight="700" fill="#0d2d45" letter-spacing="-1.5">Paw<tspan fill="#F5A623">Care</tspan></text>
+<text x="136" y="82" font-family="'Segoe UI',Arial,sans-serif" font-size="11" fill="#5a8aaa" letter-spacing="4">VETERINARY CLINIC</text>
+</svg>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef } from 'react';
+import { createContext, useContext, useState, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
@@ -36,15 +36,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         setTimeout(() => removeToast(id), 300);
     };
 
-    const showToast = (message: string, type: ToastType = 'success') => {
+    const showToast = useCallback((message: string, type: ToastType = 'success') => {
         const id = nextId.current++;
         setToasts(prev => [...prev, { id, message, type, exiting: false }]);
 
         // Sau 2700ms: bắt đầu animation thoát (300ms)
-        setTimeout(() => startExiting(id), 2700);
+        setTimeout(() => {
+            setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
+        }, 2700);
         // Sau 3000ms: xóa khỏi DOM
-        setTimeout(() => removeToast(id), 3000);
-    };
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3000);
+    }, []);
+    // GIẢI THÍCH LÍ DO VÌ SAO TOAST ĐẦU TIÊN LUÔN BỊ LAG -> CHẬM
+    /*
+lần đầu gọi showtoast -> showtoast gọi settoast đây là state thuộc sở hữu của provider nên
+sau khi settoast thực thi xong nó sẽ đánh dấu cần provider re-render(sau khi chạy xong code trong hàm showtoast) thì re-render
+sau khi re-render provider tạo lại showtoast mới -> value của provider bị thay đổi (<ToastContext.Provider value={{ showToast }}>)
+khi value của provider bị thay đổi, react sẽ re-render các consumer(là những nơi dùng showtoast của provider)
+React propagate xuống toàn cây → CartContext, Navbar... tất cả re-render
+React flush toàn bộ re-render cascade (ĐỒNG BỘ)
+Browser bị CHẶN vẽ frame cho đến khi toàn bộ cascade xong <- đây là lí do mất khá lâu để hiện ra toast đầu tiên
+Đây là điểm mấu chốt. React không paint ra màn hình cho đến khi toàn bộ cascade này xong:
+những lần sau ( toast thứ 2) nhanh hơn là bởi vì JS engine đã chạy code đó 1 lần rồi nên đã có sẵn
+việc dùng usecallback giúp giữ nguyên reference của function này quan các lần re-render
+(Mỗi lần re-render → showToast VẪN LÀ function cũ (cùng địa chỉ memory))
+*/
+
 
     return (
         <ToastContext.Provider value={{ showToast }}>

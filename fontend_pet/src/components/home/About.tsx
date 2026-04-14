@@ -3,9 +3,9 @@ export default function About() {
     <section id="about" className="py-12 md:py-16">
       <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-8 items-center">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-sky-900 mb-12">Về PetClinic</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-sky-900 mb-12">Về PawCare</h2>
           <p className="mt-3 text-gray-600">
-            PetClinic là phòng khám thú y chuyên nghiệp, chăm sóc toàn diện cho thú cưng: khám chữa bệnh,
+            PawCare là phòng khám thú y chuyên nghiệp, chăm sóc toàn diện cho thú cưng: khám chữa bệnh,
             tiêm phòng – xét nghiệm, tư vấn dinh dưỡng, grooming & spa. Đội ngũ bác sĩ nhiệt tình, quy trình
             đặt lịch tiện lợi.
           </p>
