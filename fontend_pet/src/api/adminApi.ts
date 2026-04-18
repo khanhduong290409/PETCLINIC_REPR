@@ -6,13 +6,18 @@ const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admi
 //Lúc đó vào Vercel → Settings → Environment Variables → thêm:
 //VITE_API_URL = https://petclinic-backend.up.railway.app
 //→ Redeploy → frontend gọi đúng backend trên cloud.
+export interface ServiceInfo {
+  id: number;
+  title: string;
+  price: number;
+}
+
 export interface AdminAppointment {
   id: number;
   bookingCode: string;
   petName: string;
   petSpecies: string;
-  serviceTitle: string;
-  servicePrice: number;
+  services: ServiceInfo[];
   appointmentDate: string;
   appointmentTime: string;
   status: string;

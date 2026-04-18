@@ -3,9 +3,12 @@ package com.example.backend_pet.service;
 import com.example.backend_pet.dto.AppointmentRequest;
 import com.example.backend_pet.dto.AppointmentResponse;
 import com.example.backend_pet.entity.Appointment;
+import com.example.backend_pet.entity.MedicalRecord;
 import com.example.backend_pet.entity.Pet;
+import com.example.backend_pet.entity.PetService;
 import com.example.backend_pet.entity.User;
 import com.example.backend_pet.repository.AppointmentRepository;
+import com.example.backend_pet.repository.MedicalRecordRepository;
 import com.example.backend_pet.repository.PetRepository;
 import com.example.backend_pet.repository.PetServiceRepository;
 import com.example.backend_pet.repository.UserRepository;
@@ -30,6 +33,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final PetRepository petRepository;
     private final PetServiceRepository petServiceRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
 
     // Đặt lịch khám cho nhiều pet cùng lúc
     @Transactional
@@ -44,33 +48,49 @@ public class AppointmentService {
         String bookingCode = "BK-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
                 + "-" + UUID.randomUUID().toString().substring(0, 4);
 
+        // Lấy danh sách service một lần, dùng chung cho tất cả pets
+        List<PetService> services = new ArrayList<>();
+        for (Long serviceId : request.getServiceIds()) {
+            PetService service = petServiceRepository.findById(serviceId)
+                    .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
+            services.add(service);
+        }
+
         List<Appointment> appointments = new ArrayList<>();
 
+        // Mỗi pet tạo 1 appointment (không loop theo service nữa)
         for (Long petId : request.getPetIds()) {
             Pet pet = petRepository.findById(petId)
                     .orElseThrow(() -> new RuntimeException("Pet not found: " + petId));
 
-            // Kiểm tra pet có thuộc user không
             if (!pet.getOwner().getId().equals(user.getId())) {
                 throw new RuntimeException("Pet " + petId + " không thuộc user này");
             }
 
-            for (Long serviceId : request.getServiceIds()) {
-                com.example.backend_pet.entity.PetService service = petServiceRepository.findById(serviceId)
-                        .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
+            Appointment appointment = Appointment.builder()
+                    .user(user)
+                    .pet(pet)
+                    .services(new ArrayList<>(services))
+                    .appointmentDate(date)
+                    .appointmentTime(time)
+                    .bookingCode(bookingCode)
+                    .notes(request.getNotes())
+                    .build();
 
-                Appointment appointment = Appointment.builder()
-                        .user(user)
-                        .pet(pet)
-                        .service(service)
-                        .appointmentDate(date)
-                        .appointmentTime(time)
-                        .bookingCode(bookingCode)
-                        .notes(request.getNotes())
-                        .build();
+            appointments.add(appointmentRepository.save(appointment));
+        }
 
-                appointments.add(appointmentRepository.save(appointment));
-            }
+        // 1 appointment per pet → 1 MedicalRecord per pet
+        for (Appointment apt : appointments) {
+            MedicalRecord medicalRecord = MedicalRecord.builder()
+                    .appointment(apt)
+                    .diagnosis("")
+                    .treatment("")
+                    .prescription("")
+                    .notes("")
+                    .followUpDate(null)
+                    .build();
+            medicalRecordRepository.save(medicalRecord);
         }
 
         return appointments.stream()
@@ -127,17 +147,14 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-        // Kiểm tra doctor có được assign vào lịch này không
         if (appointment.getDoctor() == null || !appointment.getDoctor().getId().equals(doctorId)) {
             throw new RuntimeException("Bạn không được phân công lịch khám này");
         }
 
-        // Chỉ complete được khi đang ở trạng thái CONFIRMED
         if (appointment.getStatus() != Appointment.AppointmentStatus.CONFIRMED) {
             throw new RuntimeException("Chỉ có thể hoàn thành lịch đã được xác nhận");
         }
 
-        // Complete toàn bộ nhóm cùng bookingCode
         List<Appointment> group = appointmentRepository.findByBookingCode(appointment.getBookingCode());
         List<AppointmentResponse> result = new ArrayList<>();
         for (Appointment apt : group) {
@@ -202,14 +219,21 @@ public class AppointmentService {
 
     // Map entity sang DTO
     private AppointmentResponse mapToResponse(Appointment appointment) {
+        List<AppointmentResponse.ServiceInfo> serviceInfos = appointment.getServices().stream()
+                .map(s -> AppointmentResponse.ServiceInfo.builder()
+                        .id(s.getId())
+                        .title(s.getTitle())
+                        .price(s.getPrice())
+                        .build())
+                .collect(Collectors.toList());
+
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .bookingCode(appointment.getBookingCode())
                 .petName(appointment.getPet().getName())
                 .petSpecies(appointment.getPet().getSpecies().name())
                 .petImageUrl(appointment.getPet().getImageUrl())
-                .serviceTitle(appointment.getService().getTitle())
-                .servicePrice(appointment.getService().getPrice())
+                .services(serviceInfos)
                 .doctorId(appointment.getDoctor() != null ? appointment.getDoctor().getId() : null)
                 .doctorName(appointment.getDoctor() != null ? appointment.getDoctor().getFullName() : null)
                 .ownerName(appointment.getUser().getFullName())

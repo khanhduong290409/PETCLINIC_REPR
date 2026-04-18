@@ -21,6 +21,7 @@ public class MedicalService {
 
     public List<MedicalResponse> getRecord(String bookingCode) {
         List<Appointment> appointments = appointmentRepository.findByBookingCode(bookingCode);
+        System.out.println("length cua appointments duoc tim boi booking code " + bookingCode + " la " + appointments.size());
         List<MedicalResponse> result = new ArrayList<>();
         for(Appointment apt : appointments) {
             MedicalRecord record = medicalRecordRepository.findByAppointmentId(apt.getId()).orElse(null);
@@ -29,7 +30,7 @@ public class MedicalService {
                 System.out.println("Record trong for: " + record.toString());
             }
         }
-        System.out.println("record: " + result.get(0).toString());
+//        System.out.println("record: " + result.get(0).toString());
 
         return result;
     }

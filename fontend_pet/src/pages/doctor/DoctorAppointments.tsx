@@ -26,7 +26,7 @@ const SPECIES_EMOJI: Record<string, string> = {
 // Kiểu dữ liệu sau khi group
 interface BookingGroup {
   bookingCode: string;
-  serviceTitle: string;
+  services: { title: string; price: number }[];
   appointmentDate: string;
   appointmentTime: string;
   ownerName: string;
@@ -85,15 +85,19 @@ export default function DoctorAppointments() {
     }
     return Array.from(map.entries()).map(([bookingCode, items]) => {
       const first = items[0];
+
+      const services = first.services.map((s) => ({ title: s.title, price: s.price }));
+      const totalPrice = services.reduce((sum, s) => sum + s.price, 0) * items.length;
+
       return {
         bookingCode,
-        serviceTitle: first.serviceTitle,
+        services,
         appointmentDate: first.appointmentDate,
         appointmentTime: first.appointmentTime,
         ownerName: first.ownerName,
         status: first.status,
         notes: first.notes,
-        totalPrice: items.reduce((sum, item) => sum + item.servicePrice, 0),
+        totalPrice,
         pets: items.map((item) => ({
           id: item.id,
           name: item.petName,
@@ -168,7 +172,13 @@ export default function DoctorAppointments() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-xs text-gray-400 font-mono">{group.bookingCode}</p>
-                  <h3 className="text-lg font-bold text-sky-600">{group.serviceTitle}</h3>
+                  <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                    {group.services.map((s) => (
+                      <span key={s.title} className="text-sm font-semibold text-sky-600 bg-sky-50 px-2 py-0.5 rounded">
+                        {s.title}
+                      </span>
+                    ))}
+                  </div>
                   <p className="text-sm text-gray-500">Chủ: <span className="font-semibold text-gray-700">{group.ownerName}</span></p>
                 </div>
                 <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLOR[group.status]}`}>

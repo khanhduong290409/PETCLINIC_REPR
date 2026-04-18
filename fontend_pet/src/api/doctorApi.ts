@@ -1,13 +1,18 @@
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/doctor`;
 
+export interface ServiceInfo {
+  id: number;
+  title: string;
+  price: number;
+}
+
 export interface DoctorAppointment {
   id: number;
   bookingCode: string;
   petName: string;
   petSpecies: string;
   petImageUrl: string;
-  serviceTitle: string;
-  servicePrice: number;
+  services: ServiceInfo[];
   ownerName: string;
   appointmentDate: string;
   appointmentTime: string;

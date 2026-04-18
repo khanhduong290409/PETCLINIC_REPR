@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,14 +15,21 @@ public class AppointmentResponse {
     private String petName;
     private String petSpecies;
     private String petImageUrl;
-    private String serviceTitle;
-    private BigDecimal servicePrice;
-    private Long doctorId;            // thêm để frontend pre-select dropdown
-    private String doctorName;        // null nếu chưa assign
-    private String ownerName;         // thêm để admin biết ai đặt
+    private List<ServiceInfo> services;  // thay cho serviceTitle + servicePrice
+    private Long doctorId;
+    private String doctorName;
+    private String ownerName;
     private String appointmentDate;
     private String appointmentTime;
     private String status;
     private String notes;
     private LocalDateTime createdAt;
+
+    @Data
+    @Builder
+    public static class ServiceInfo {
+        private Long id;
+        private String title;
+        private BigDecimal price;
+    }
 }

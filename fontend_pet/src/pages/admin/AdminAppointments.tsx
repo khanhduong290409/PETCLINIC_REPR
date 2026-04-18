@@ -22,7 +22,7 @@ const STATUS_COLOR: Record<string, string> = {
 interface AdminBookingGroup {
   bookingCode: string;
   representativeId: number; // id của appointment đầu tiên — dùng cho API call
-  serviceTitle: string;
+  services: { title: string; price: number }[];
   appointmentDate: string;
   appointmentTime: string;
   ownerName: string;
@@ -71,16 +71,23 @@ export default function AdminAppointments() {
     }
     return Array.from(map.entries()).map(([bookingCode, items]) => {
       const first = items[0];
+
+      // Services lấy từ appointment đầu tiên (tất cả pets cùng booking có cùng services)
+      const services = first.services.map((s) => ({ title: s.title, price: s.price }));
+
+      // Tổng = giá các dịch vụ × số pet
+      const totalPrice = services.reduce((sum, s) => sum + s.price, 0) * items.length;
+
       return {
         bookingCode,
         representativeId: first.id,
-        serviceTitle: first.serviceTitle,
+        services,
         appointmentDate: first.appointmentDate,
         appointmentTime: first.appointmentTime,
         ownerName: first.ownerName,
         status: first.status,
         notes: first.notes,
-        totalPrice: items.reduce((sum, item) => sum + item.servicePrice, 0),
+        totalPrice,
         doctorId: first.doctorId,
         doctorName: first.doctorName,
         pets: items.map((item) => ({
@@ -211,7 +218,13 @@ export default function AdminAppointments() {
 
                   {/* Dịch vụ */}
                   <td className="px-4 py-3">
-                    <p className="font-medium">{group.serviceTitle}</p>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {group.services.map((s) => (
+                        <span key={s.title} className="text-xs bg-sky-50 border border-sky-100 rounded px-2 py-0.5 text-sky-700">
+                          {s.title}
+                        </span>
+                      ))}
+                    </div>
                     <p className="text-gray-400">{group.totalPrice.toLocaleString('vi-VN')}đ</p>
                     {group.pets.length > 1 && (
                       <p className="text-xs text-gray-400">{group.pets.length} thú cưng</p>

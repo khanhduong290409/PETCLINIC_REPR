@@ -20,14 +20,19 @@ export interface AppointmentRequest {
   notes: string;
 }
 
+export interface ServiceInfo {
+  id: number;
+  title: string;
+  price: number;
+}
+
 export interface AppointmentResponse {
   id: number;
   bookingCode: string;
   petName: string;
   petSpecies: string;
   petImageUrl: string;
-  serviceTitle: string;
-  servicePrice: number;
+  services: ServiceInfo[];
   doctorName: string | null;
   appointmentDate: string;
   appointmentTime: string;

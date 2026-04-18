@@ -26,11 +26,7 @@ interface BookingGroup {
   status: string;
   notes: string;
   totalPrice: number;
-  pets: {
-    name: string;
-    species: string;
-    imageUrl: string;
-  }[];
+  pets: { name: string; species: string; imageUrl: string }[];
   firstAppointmentId: number;
 }
 
@@ -57,65 +53,40 @@ export default function MyAppointments() {
   };
 
   // Group appointments theo bookingCode
+  // Schema mới: 1 appointment per pet → mỗi item trong group là 1 con khác nhau
   const bookingGroups: BookingGroup[] = useMemo(() => {
     const map = new Map<string, AppointmentResponse[]>();
     for (const apt of appointments) {
-      const key = apt.bookingCode;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(apt);
+      if (!map.has(apt.bookingCode)) map.set(apt.bookingCode, []);
+      map.get(apt.bookingCode)!.push(apt);
     }
-    /**
-     * map = Map {
-  'BK001' => [
-    { id: 101, petName: 'Milo', serviceTitle: 'Khám TQ', date: '2024-03-15', ... },
-    { id: 102, petName: 'Luna', serviceTitle: 'Khám TQ', date: '2024-03-15', ... }
-  ],
-  'BK002' => [
-    { id: 103, petName: 'Max', serviceTitle: 'Tiêm phòng', date: '2024-03-16', ... }
-  ]
-}
-     */
 
     return Array.from(map.entries()).map(([bookingCode, items]) => {
       const first = items[0];
 
-      // Deduplicate pets theo tên
-      const petsMap = new Map<string, { name: string; species: string; imageUrl: string }>();
-      for (const item of items) {
-        if (!petsMap.has(item.petName)) {
-          petsMap.set(item.petName, {
-            name: item.petName,
-            species: item.petSpecies,
-            imageUrl: item.petImageUrl,
-          });
-        }
-      }
+      // Mỗi item là 1 pet khác nhau (không cần deduplicate)
+      const pets = items.map((item) => ({
+        name: item.petName,
+        species: item.petSpecies,
+        imageUrl: item.petImageUrl,
+      }));
 
-      // Deduplicate services theo title
-      const servicesMap = new Map<string, { title: string; price: number }>();
-      for (const item of items) {
-        if (!servicesMap.has(item.serviceTitle)) {
-          servicesMap.set(item.serviceTitle, {
-            title: item.serviceTitle,
-            price: item.servicePrice,
-          });
-        }
-      }
+      // Services lấy từ appointment đầu tiên (tất cả pets cùng booking có cùng services)
+      const services = first.services.map((s) => ({ title: s.title, price: s.price }));
 
-      const uniquePets = Array.from(petsMap.values());
-      const uniqueServices = Array.from(servicesMap.values());
-      const totalPrice = uniqueServices.reduce((sum, s) => sum + s.price, 0) * uniquePets.length;
+      // Tổng = giá các dịch vụ × số pet
+      const totalPrice = services.reduce((sum, s) => sum + s.price, 0) * pets.length;
 
       return {
         bookingCode,
-        services: uniqueServices,
+        services,
         appointmentDate: first.appointmentDate,
         appointmentTime: first.appointmentTime,
         doctorName: first.doctorName,
         status: first.status,
         notes: first.notes,
         totalPrice,
-        pets: uniquePets,
+        pets,
         firstAppointmentId: first.id,
       };
     });
