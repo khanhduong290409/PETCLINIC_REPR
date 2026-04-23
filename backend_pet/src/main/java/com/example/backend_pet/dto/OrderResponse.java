@@ -25,6 +25,7 @@ public class OrderResponse {
     @Builder
     public static class OrderItemResponse {
         private Long id;
+        private Long productId;
         private String productName;
         private String productImageUrl;
         private Integer quantity;

@@ -3,16 +3,16 @@ const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}
 export interface MedicalResponse {
     id: number;
     appointmentId: number;
+    bookingCode: string;
+    appointmentDate: string;
     petName: string;
-    imageUrl: string;
+    petImageUrl: string;
     petSpecies: string;
     diagnosis: string;
     treatment: string;
     prescription: string;
     notes: string;
     followUpDate: string;
-
-
 }
 export interface MedicalRequest {
     diagnosis: string;
@@ -37,6 +37,12 @@ export const medicalRecordApi = {
             body: JSON.stringify(data),
         });
         if(!response.ok) throw new Error('Failed to save medical record');
+        return response.json();
+    },
+
+    async getRecordsByPet(petId: number): Promise<MedicalResponse[]> {
+        const response = await fetch(`${API_BASE_URL}/medical/pet/${petId}`);
+        if(!response.ok) throw new Error('Failed to fetch pet medical records');
         return response.json();
     }
 }

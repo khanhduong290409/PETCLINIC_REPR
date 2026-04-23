@@ -7,6 +7,8 @@ import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
 import MyPets from "./pages/MyPets";
+import PetMedicalRecords from "./pages/PetMedicalRecords";
+import AppointmentMedicalRecords from "./pages/AppointmentMedicalRecords";
 import BookAppointment from "./pages/BookAppointment";
 import MyAppointments from "./pages/MyAppointments";
 import AdminAppointments from "./pages/admin/AdminAppointments";
@@ -33,8 +35,10 @@ const router = createBrowserRouter([
       { path: "orders", element: <Orders /> },//lich su don hang
       { path: "orders/:id", element: <OrderDetail /> },
       { path: "my-pets", element: <MyPets /> },
+      { path: "my-pets/:petId/records", element: <PetMedicalRecords /> },
       { path: "book-appointment", element: <BookAppointment /> },
       { path: "appointments", element: <MyAppointments /> },
+      { path: "appointments/:bookingCode/records", element: <AppointmentMedicalRecords /> },
       { path: "admin/appointments", element: (
         <ProtectedRoute allowedRoles={['ADMIN']}>
           <AdminAppointments />

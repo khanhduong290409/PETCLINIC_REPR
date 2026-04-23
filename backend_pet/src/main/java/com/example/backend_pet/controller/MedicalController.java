@@ -19,6 +19,11 @@ public class MedicalController  {
     public ResponseEntity<List<MedicalResponse>> getRecord(@PathVariable String bookingCode) {
         return ResponseEntity.ok(medicalService.getRecord(bookingCode));
     }
+
+    @GetMapping("/pet/{petId}")
+    public ResponseEntity<List<MedicalResponse>> getRecordsByPet(@PathVariable Long petId) {
+        return ResponseEntity.ok(medicalService.getRecordsByPet(petId));
+    }
     @PostMapping("/{appointmentId}")
     public ResponseEntity<MedicalResponse> saveRecord(@PathVariable Long appointmentId, @RequestBody MedicalRequest medicalRequest) {
         return ResponseEntity.ok(medicalService.saveRecord(appointmentId, medicalRequest));

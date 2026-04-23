@@ -34,18 +34,30 @@ public class MedicalService {
 
         return result;
     }
+    public List<MedicalResponse> getRecordsByPet(Long petId) {
+        List<MedicalRecord> records = medicalRecordRepository
+                .findByAppointment_PetIdOrderByAppointment_AppointmentDateDesc(petId);
+        List<MedicalResponse> result = new ArrayList<>();
+        for (MedicalRecord record : records) {
+            result.add(mapToMedicalResponse(record.getAppointment(), record));
+        }
+        return result;
+    }
+
     private MedicalResponse mapToMedicalResponse(Appointment apt, MedicalRecord record) {
         return MedicalResponse.builder()
                 .id(record.getId())
                 .appointmentId(apt.getId())
+                .bookingCode(apt.getBookingCode())
+                .appointmentDate(apt.getAppointmentDate())
                 .petName(apt.getPet().getName())
                 .petImageUrl(apt.getPet().getImageUrl())
                 .petSpecies(apt.getPet().getSpecies().name())
-                .diagnosis(record != null ? record.getDiagnosis() : null)
-                .treatment(record != null ? record.getTreatment() : null)
-                .prescription(record != null ? record.getPrescription() : null)
-                .notes(record != null ? record.getNotes() : null)
-                .followUpDate(record != null ? record.getFollowUpDate() : null)
+                .diagnosis(record.getDiagnosis())
+                .treatment(record.getTreatment())
+                .prescription(record.getPrescription())
+                .notes(record.getNotes())
+                .followUpDate(record.getFollowUpDate())
                 .build();
     }
 

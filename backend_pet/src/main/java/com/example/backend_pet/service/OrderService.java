@@ -104,6 +104,7 @@ public class OrderService {
         List<OrderResponse.OrderItemResponse> items = order.getItems().stream()
                 .map(item -> OrderResponse.OrderItemResponse.builder()
                         .id(item.getId())
+                        .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
                         .productImageUrl(item.getProduct().getImageUrl())
                         .quantity(item.getQuantity())

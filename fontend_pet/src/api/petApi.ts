@@ -30,6 +30,13 @@ export interface PetRequest {
 }
 
 export const petApi = {
+  // Lấy 1 pet theo id
+  async getById(petId: number, userId: number): Promise<PetResponse> {
+    const response = await fetch(`${API_BASE_URL}/pets/${petId}?userId=${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch pet');
+    return response.json();
+  },
+
   // Lấy danh sách pet của user
   async getPets(userId: number): Promise<PetResponse[]> {
     const response = await fetch(`${API_BASE_URL}/pets?userId=${userId}`);
@@ -74,7 +81,7 @@ export const petApi = {
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); // cloudinary có 2 cách upload: signed: cần secret key ở backend để ký request ( bảo mật hơn) 
     // và cách 2 là dùng upload_preset, ko cần secret key, fontend gọi thẳng được
     formData.append('folder', 'PetsClinic'); // dòng này để nói với cloudinary: lưu ảnh vào folder tên PetsClinic trong account
-    //nếu ko có dòng này thì ảnh vẫn được lưu nhưng nằm ở thư mục gốc, lộn xộn.
+    //nếu ko có dòng này thì ảnh vẫn được lưu nhưng nằm ở thư mục gốc, lộn xộn.1
 
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,

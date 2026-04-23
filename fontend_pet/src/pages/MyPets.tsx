@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, X, Camera } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Camera, FileText } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { petApi } from '../api/petApi';
 import type { PetResponse, PetRequest } from '../api/petApi';
@@ -331,8 +331,15 @@ Browser: "À, đây là ảnh jpeg, data nằm ngay trong chuỗi, để tao ren
                       {SPECIES_MAP[pet.species] || pet.species}
                     </span>
                   </div>
-                  {/* Nút sửa/xóa */}
+                  {/* Nút bệnh án / sửa / xóa */}
                   <div className="flex gap-2">
+                    <Link
+                      to={`/my-pets/${pet.id}/records`}
+                      className="p-2 text-sky-500 hover:bg-sky-50 rounded transition"
+                      title="Xem bệnh án"
+                    >
+                      <FileText size={16} />
+                    </Link>
                     <button
                       onClick={() => openEditForm(pet)}
                       className="p-2 text-gray-500 hover:bg-gray-100 rounded transition"
