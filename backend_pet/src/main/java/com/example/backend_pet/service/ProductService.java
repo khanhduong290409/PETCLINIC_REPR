@@ -64,4 +64,15 @@ public class ProductService {
         Product product = getProductById(id);
         productRepository.delete(product);
     }
+
+    // Cập nhật tồn kho (Admin)
+    @Transactional
+    public Product updateStock(Long id, Integer stock) {
+        if (stock == null || stock < 0) {
+            throw new RuntimeException("Số lượng tồn kho không hợp lệ");
+        }
+        Product product = getProductById(id);
+        product.setStock(stock);
+        return productRepository.save(product);
+    }
 }

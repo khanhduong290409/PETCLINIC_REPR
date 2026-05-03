@@ -8,4 +8,7 @@ export interface Product {
   stock: number;
   description?: string;
   brand?: string;
+  weight?: string;
+  volume?: string;
+  material?: string;
 }

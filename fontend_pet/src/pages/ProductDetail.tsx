@@ -208,6 +208,21 @@ function getAvatarColor(name: string) {
   .join('')         // → 'VA'
   .toUpperCase()    // → 'VA'
 
+
+  // Đếm số review từng mức sao
+const starCounts = [5, 4, 3, 2, 1].map((star) => ({
+  star,
+  count: reviews.filter((r) => r.rating === star).length,
+}));
+// Kết quả:
+// [
+//   { star: 5, count: 2 },
+//   { star: 4, count: 1 },
+//   { star: 3, count: 1 },
+//   { star: 2, count: 0 },
+//   { star: 1, count: 0 },
+// ]
+
  */
 function getInitials(name: string) { // lấy tên viết tắt của user 
   return name.split(' ').map((w) => w[0]).slice(-2).join('').toUpperCase();

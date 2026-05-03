@@ -28,7 +28,7 @@ export default function Layout() {
       <div className="min-h-screen flex flex-col bg-gray-100">
         {/* Admin Navbar sẽ khác với Navbar thường */}
         <Navbar />
-        <main className="flex-grow">
+        <main className="flex-grow pt-14">
           <Outlet />
         </main>
         <CartDrawer />

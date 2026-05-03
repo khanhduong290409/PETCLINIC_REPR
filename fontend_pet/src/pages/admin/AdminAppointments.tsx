@@ -5,6 +5,8 @@ import type { AdminAppointment, DoctorInfo } from '../../api/adminApi';
 
 const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
+const PAGE_SIZE = 10;
+
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Chờ xác nhận',
   CONFIRMED: 'Đã xác nhận',
@@ -41,6 +43,7 @@ export default function AdminAppointments() {
   const [doctors, setDoctors] = useState<DoctorInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadData();
@@ -137,6 +140,11 @@ export default function AdminAppointments() {
       ? bookingGroups
       : bookingGroups.filter((g) => g.status === filterStatus);
 
+  useEffect(() => { setCurrentPage(1); }, [filterStatus]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -194,7 +202,7 @@ export default function AdminAppointments() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((group) => (
+              {paginated.map((group) => (
                 <tr key={group.bookingCode} className="hover:bg-gray-50">
                   {/* Mã đặt */}
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">
@@ -276,6 +284,41 @@ export default function AdminAppointments() {
               ))}
             </tbody>
           </table>
+
+          {/* Phân trang */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 py-4 border-t border-gray-100">
+              <button
+                onClick={() => setCurrentPage((p) => p - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+              >
+                Trước
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-9 h-9 rounded-lg border text-sm font-medium transition ${
+                    currentPage === page
+                      ? 'bg-sky-600 text-white border-sky-600'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+              >
+                Sau
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

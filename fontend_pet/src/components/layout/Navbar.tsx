@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Settings, Stethoscope, LogOut } from "lucide-react";
+import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Stethoscope, LogOut, LayoutDashboard, PackageOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../../assets/pawcare-logo.png";
 import { useCart } from "../../contexts/CartContext";
@@ -186,10 +186,16 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                     <>
                       <div className="border-t border-gray-100" />
                       <div className="py-1">
+                        <p className="px-4 pt-1.5 pb-0.5 text-xs text-gray-400 font-semibold uppercase tracking-wide">Admin</p>
                         <Link to="/admin/appointments" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors font-medium"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
                         >
-                          <Settings size={15} /> Admin
+                          <LayoutDashboard size={15} /> Quản lý lịch khám
+                        </Link>
+                        <Link to="/admin/products" onClick={handleCloseDropdown}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                        >
+                          <PackageOpen size={15} /> Quản lý sản phẩm
                         </Link>
                       </div>
                     </>

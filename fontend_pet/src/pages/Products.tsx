@@ -49,8 +49,12 @@ export default function Products() {
   // Lấy danh sách category + brand duy nhất từ data
   const categories = Array.from(new Set(products.map((p) => p.category)));
   const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean))) as string[];
+  //filter(Boolean) -> loại ra các phần tử  null hoặc undefined, rỗng khỏi mãng 
+  //set : loại bỏ trùng lặp, set chỉ giữ các giá trị duy nhất
+  //array.from -> chuyển set về thành mãng 
 
-  // Filter tổng hợp
+  // Filter tổng hợp: giu lai cac phan tu thoa dieu kien 
+  // dấu || ở đây có nghĩa : nếu điều kiện 1 khỏi cần set đk 2
   const filteredProducts = products.filter((p) => {
     const range = PRICE_RANGES[selectedPriceRange];
     const matchSearch = p.name.toLowerCase().includes(searchText.toLowerCase());
