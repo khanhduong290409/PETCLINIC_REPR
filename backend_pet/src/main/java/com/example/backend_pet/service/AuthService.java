@@ -64,6 +64,13 @@ public class AuthService {
                     .build();
         }
 
+        // Kiểm tra tài khoản có bị khóa không
+        if (user.getStatus() == User.Status.INACTIVE) {
+            return AuthResponse.builder()
+                    .message("Tài khoản đã bị khóa. Vui lòng liên hệ admin.")
+                    .build();
+        }
+
         // Đăng nhập thành công
         return AuthResponse.builder()
                 .id(user.getId())

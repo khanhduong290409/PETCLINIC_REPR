@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Stethoscope, CheckCircle } from 'lucide-react';
+
+const isAbsoluteUrl = (url: string) => url.startsWith('http://') || url.startsWith('https://');
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
 import { petApi } from '../api/petApi';
@@ -189,29 +191,58 @@ export default function BookAppointment() {
                 <Stethoscope size={20} /> Chọn dịch vụ
               </h2>
               <div className="space-y-3">
-                {services.map((service) => (
-                  <label
-                    key={service.id}
-                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition ${
-                      selectedServiceIds.includes(service.id) ? 'border-sky-500 bg-sky-50' : ''
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedServiceIds.includes(service.id)}
-                      onChange={() => toggleService(service.id)}
-                      className="text-sky-600 rounded"
-                    />
-                    <div className="flex-1">
-                      <p className="font-semibold">{service.title}</p>
-                      <p className="text-sm text-gray-500">{service.description}</p>
-                      <p className="text-sm text-gray-400">{service.duration} phút</p>
-                    </div>
-                    <span className="font-bold text-rose-600">
-                      {service.price.toLocaleString('vi-VN')}đ
-                    </span>
-                  </label>
-                ))}
+                {services.map((service) => {
+                  const isSelected = selectedServiceIds.includes(service.id);
+                  return (
+                    <label
+                      key={service.id}
+                      className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-sky-500 bg-sky-50 shadow-sm'
+                          : 'border-gray-200 hover:border-sky-300 hover:shadow-sm'
+                      }`}
+                    >
+                      {/* Checkbox ẩn — cả card là vùng click */}
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleService(service.id)}
+                        className="sr-only"
+                      />
+
+                      {/* Ảnh lớn hơn, bo góc vuông */}
+                      {service.imageUrl && isAbsoluteUrl(service.imageUrl) ? (
+                        <img
+                          src={service.imageUrl}
+                          alt={service.title}
+                          className="w-16 h-16 rounded-xl object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
+                          <Stethoscope size={24} className="text-sky-400" />
+                        </div>
+                      )}
+
+                      {/* Nội dung */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-800">{service.title}</p>
+                        <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{service.description}</p>
+                        <p className="text-xs text-gray-400 mt-1">{service.duration} phút</p>
+                      </div>
+
+                      {/* Giá + dấu tick khi chọn */}
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className="font-bold text-rose-600 text-base">
+                          {service.price.toLocaleString('vi-VN')}đ
+                        </span>
+                        <CheckCircle
+                          size={20}
+                          className={`transition-all ${isSelected ? 'text-sky-500 opacity-100' : 'text-gray-300 opacity-60'}`}
+                        />
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 

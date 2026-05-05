@@ -2,6 +2,7 @@ package com.example.backend_pet.controller;
 
 import com.example.backend_pet.dto.AppointmentResponse;
 import com.example.backend_pet.dto.DoctorResponse;
+import com.example.backend_pet.dto.UserResponse;
 import com.example.backend_pet.entity.User;
 import com.example.backend_pet.repository.UserRepository;
 import com.example.backend_pet.service.AppointmentService;
@@ -56,5 +57,60 @@ public class AdminController {
                 .map(d -> new DoctorResponse(d.getId(), d.getFullName(), d.getEmail()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(doctors);
+    }
+
+    // GET /api/admin/users - Lấy tất cả người dùng
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userRepository.findAll()
+                .stream()
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getFullName(),
+                        u.getEmail(),
+                        u.getPhone(),
+                        u.getRole().name(),
+                        u.getStatus().name()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    // PUT /api/admin/users/{id}/status?status=INACTIVE
+    @PutMapping("/users/{id}/status")
+    public ResponseEntity<UserResponse> updateUserStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+        user.setStatus(User.Status.valueOf(status));
+        userRepository.save(user);
+        return ResponseEntity.ok(new UserResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().name(),
+                user.getStatus().name()
+        ));
+    }
+
+    // PUT /api/admin/users/{id}/role?role=DOCTOR
+    @PutMapping("/users/{id}/role")
+    public ResponseEntity<UserResponse> updateUserRole(
+            @PathVariable Long id,
+            @RequestParam String role) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+        user.setRole(User.Role.valueOf(role));
+        userRepository.save(user);
+        return ResponseEntity.ok(new UserResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().name(),
+                user.getStatus().name()
+        ));
     }
 }

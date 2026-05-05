@@ -6,6 +6,7 @@ export interface ServiceResponse {
   id: number;
   title: string;
   description: string;
+  imageUrl?: string;
   price: number;
   duration: number; // phút
   category: string;

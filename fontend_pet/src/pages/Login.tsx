@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [searchParams] = useSearchParams(); // đọc phần sau đuôi ? của url, nó không cần biết mình đang ở trang /login mà chỉ là đọc url hiện tại của browser
+  const isBlocked = searchParams.get('error') === 'blocked';
+  const [error, setError] = useState(isBlocked ? 'Tài khoản đã bị khóa. Vui lòng liên hệ admin.' : '');
 
   const { login } = useAuth();
   const navigate = useNavigate();
