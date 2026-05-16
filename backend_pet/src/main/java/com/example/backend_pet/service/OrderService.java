@@ -99,6 +99,24 @@ public class OrderService {
         return mapToOrderResponse(order);
     }
 
+    // Lấy tất cả đơn hàng (dành cho admin)
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Cập nhật trạng thái đơn hàng (dành cho admin)
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        order.setStatus(Order.OrderStatus.valueOf(status));
+        Order saved = orderRepository.save(order);
+        return mapToOrderResponse(saved);
+    }
+
     // Map Order entity sang DTO
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderResponse.OrderItemResponse> items = order.getItems().stream()
@@ -115,6 +133,7 @@ public class OrderService {
         return OrderResponse.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
+                .userName(order.getUser().getFullName())
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus().name())
                 .shippingAddress(order.getShippingAddress())

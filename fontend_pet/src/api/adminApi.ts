@@ -56,6 +56,62 @@ export interface DoctorInfo {
   email: string;
 }
 
+export interface DailyRevenue { date: string; revenue: number; }
+export interface StatusCount { status: string; count: number; }
+export interface ProductSale { productName: string; totalQuantity: number; }
+export interface RecentOrder {
+  orderNumber: string;
+  userName: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+}
+export interface UpcomingAppointment {
+  bookingCode: string;
+  petName: string;
+  ownerName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  status: string;
+}
+export interface DashboardData {
+  totalOrders: number;
+  todayOrders: number;
+  totalAppointments: number;
+  todayAppointments: number;
+  totalCustomers: number;
+  revenueThisMonth: number;//card doanh thu thang nay
+  revenueByDay: DailyRevenue[];//linechart doanh thu 30 ngay
+  orderStatusCounts: StatusCount[];//piechart trạng thái đơn hàng
+  appointmentStatusCounts: StatusCount[];//barchart lịch khám theo trạng thái
+  topProducts: ProductSale[];//barchart nằm ngang top 5 sản phẩm
+  recentOrders: RecentOrder[];//bảng 5 đơn hàng mới nhất
+  upcomingAppointments: UpcomingAppointment[];//bảng 5 lịch khám sắp tới
+}
+
+export interface AdminOrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  productImageUrl: string;
+  quantity: number;
+  price: number;
+}
+
+export interface AdminOrder {
+  id: number;
+  orderNumber: string;
+  userName: string;
+  totalAmount: number;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  shippingAddress: string;
+  notes: string;
+  createdAt: string;
+  items: AdminOrderItem[];
+}
+
 export const adminApi = {
   // Lấy tất cả lịch khám
   async getAppointments(): Promise<AdminAppointment[]> {
@@ -152,6 +208,36 @@ export const adminApi = {
       method: 'PUT',
     });
     if (!res.ok) throw new Error('Failed to update status');
+    return res.json();
+  },
+
+  // ---- Dashboard ----
+
+  async getDashboard(): Promise<DashboardData> {
+    const res = await fetch(`${API}/dashboard`);
+    if (!res.ok) throw new Error('Failed to fetch dashboard');
+    return res.json();
+  },
+
+  async getRevenue(period: 'day' | 'month' | 'quarter' | 'year'): Promise<DailyRevenue[]> {
+    const res = await fetch(`${API}/revenue?period=${period}`);
+    if (!res.ok) throw new Error('Failed to fetch revenue');
+    return res.json();
+  },
+
+  // ---- Quản lý đơn hàng ----
+
+  async getAllOrders(): Promise<AdminOrder[]> {
+    const res = await fetch(`${API}/orders`);
+    if (!res.ok) throw new Error('Failed to fetch orders');
+    return res.json();
+  },
+
+  async updateOrderStatus(orderId: number, status: string): Promise<AdminOrder> {
+    const res = await fetch(`${API}/orders/${orderId}/status?status=${status}`, {
+      method: 'PUT',
+    });
+    if (!res.ok) throw new Error('Failed to update order status');
     return res.json();
   },
 

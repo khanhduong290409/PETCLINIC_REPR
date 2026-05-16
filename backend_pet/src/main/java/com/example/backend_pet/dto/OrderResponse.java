@@ -12,6 +12,7 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private String orderNumber;
+    private String userName;
     private BigDecimal totalAmount;
     private String status;
     private String shippingAddress;

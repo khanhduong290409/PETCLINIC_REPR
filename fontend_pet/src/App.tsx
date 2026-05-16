@@ -15,6 +15,8 @@ import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
 import MedicalRecord from "./pages/doctor/MedicalRecord";
 import Login from "./pages/Login";
@@ -60,6 +62,16 @@ const router = createBrowserRouter([
       { path: "admin/users", element: (
         <ProtectedRoute allowedRoles={['ADMIN']}>
           <AdminUsers />
+        </ProtectedRoute>
+      ) },
+      { path: "admin/orders", element: (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+          <AdminOrders />
+        </ProtectedRoute>
+      ) },
+      { path: "admin/dashboard", element: (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+          <AdminDashboard />
         </ProtectedRoute>
       ) },
       { path: "doctor/appointments", element: (

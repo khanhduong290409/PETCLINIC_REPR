@@ -187,10 +187,15 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                       <div className="border-t border-gray-100" />
                       <div className="py-1">
                         <p className="px-4 pt-1.5 pb-0.5 text-xs text-gray-400 font-semibold uppercase tracking-wide">Admin</p>
+                        <Link to="/admin/dashboard" onClick={handleCloseDropdown}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                        >
+                          <LayoutDashboard size={15} /> Tổng quan
+                        </Link>
                         <Link to="/admin/appointments" onClick={handleCloseDropdown}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
                         >
-                          <LayoutDashboard size={15} /> Quản lý lịch khám
+                          <CalendarDays size={15} /> Quản lý lịch khám
                         </Link>
                         <Link to="/admin/products" onClick={handleCloseDropdown}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
@@ -206,6 +211,11 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
                         >
                           <Users size={15} /> Quản lý người dùng
+                        </Link>
+                        <Link to="/admin/orders" onClick={handleCloseDropdown}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                        >
+                          <ClipboardList size={15} /> Quản lý đơn hàng
                         </Link>
                       </div>
                     </>

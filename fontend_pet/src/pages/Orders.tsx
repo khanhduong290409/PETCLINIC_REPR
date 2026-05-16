@@ -57,7 +57,7 @@ export default function Orders() {
 
   const fetchReviewedProductIds = async () => {
     if (!user) return;
-    try {
+    try {// lấy tất cả các id product mà user đã đánh giá
       const ids = await productReviewApi.getReviewedProductIds(user.id);
       setReviewedProductIds(new Set(ids));
     } catch (err) {

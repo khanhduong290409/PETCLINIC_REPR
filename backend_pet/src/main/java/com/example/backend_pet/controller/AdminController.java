@@ -1,11 +1,15 @@
 package com.example.backend_pet.controller;
 
 import com.example.backend_pet.dto.AppointmentResponse;
+import com.example.backend_pet.dto.DashboardResponse;
 import com.example.backend_pet.dto.DoctorResponse;
+import com.example.backend_pet.dto.OrderResponse;
 import com.example.backend_pet.dto.UserResponse;
 import com.example.backend_pet.entity.User;
 import com.example.backend_pet.repository.UserRepository;
 import com.example.backend_pet.service.AppointmentService;
+import com.example.backend_pet.service.DashboardService;
+import com.example.backend_pet.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +24,35 @@ public class AdminController {
 
     private final AppointmentService appointmentService;
     private final UserRepository userRepository;
+    private final OrderService orderService;
+    private final DashboardService dashboardService;
+
+    // GET /api/admin/dashboard - Số liệu tổng quan
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardResponse> getDashboard() {
+        return ResponseEntity.ok(dashboardService.getDashboard());
+    }
+
+    // GET /api/admin/revenue?period=day|month|quarter|year
+    @GetMapping("/revenue")
+    public ResponseEntity<List<DashboardResponse.DailyRevenue>> getRevenue(
+            @RequestParam(defaultValue = "day") String period) {
+        return ResponseEntity.ok(dashboardService.getRevenue(period));
+    }
+
+    // GET /api/admin/orders - Lấy tất cả đơn hàng
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    // PUT /api/admin/orders/{id}/status?status=SHIPPED
+    @PutMapping("/orders/{id}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+    }
 
     // GET /api/admin/appointments - Lấy tất cả lịch khám
     @GetMapping("/appointments")
