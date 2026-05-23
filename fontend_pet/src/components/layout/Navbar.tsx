@@ -167,74 +167,80 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                     <p className="text-sm font-semibold text-gray-800 truncate">{user.fullName}</p>
                   </div>
 
-                  <div className="py-1">
-                    <Link to="/profile" onClick={handleCloseDropdown} className={dropdownItemClass}>
-                      <Settings size={15} className="text-gray-400" /> Thông tin cá nhân
-                    </Link>
-                    <Link to="/my-pets" onClick={handleCloseDropdown} className={dropdownItemClass}>
-                      <PawPrint size={15} className="text-gray-400" /> Thú cưng
-                    </Link>
-                    <Link to="/book-appointment" onClick={handleCloseDropdown} className={dropdownItemClass}>
-                      <CalendarDays size={15} className="text-gray-400" /> Đặt lịch
-                    </Link>
-                    <Link to="/appointments" onClick={handleCloseDropdown} className={dropdownItemClass}>
-                      <ClipboardList size={15} className="text-gray-400" /> Lịch khám
-                    </Link>
-                    <Link to="/orders" onClick={handleCloseDropdown} className={dropdownItemClass}>
-                      <Package size={15} className="text-gray-400" /> Đơn hàng
-                    </Link>
-                  </div>
-
-                  {user.role === 'ADMIN' && (
-                    <>
-                      <div className="border-t border-gray-100" />
-                      <div className="py-1">
-                        <p className="px-4 pt-1.5 pb-0.5 text-xs text-gray-400 font-semibold uppercase tracking-wide">Admin</p>
-                        <Link to="/admin/dashboard" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <LayoutDashboard size={15} /> Tổng quan
-                        </Link>
-                        <Link to="/admin/appointments" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <CalendarDays size={15} /> Quản lý lịch khám
-                        </Link>
-                        <Link to="/admin/products" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <PackageOpen size={15} /> Quản lý sản phẩm
-                        </Link>
-                        <Link to="/admin/services" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <Stethoscope size={15} /> Quản lý dịch vụ
-                        </Link>
-                        <Link to="/admin/users" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <Users size={15} /> Quản lý người dùng
-                        </Link>
-                        <Link to="/admin/orders" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                        >
-                          <ClipboardList size={15} /> Quản lý đơn hàng
-                        </Link>
-                      </div>
-                    </>
+                  {/* USER */}
+                  {user.role === 'USER' && (
+                    <div className="py-1">
+                      <Link to="/profile" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <Settings size={15} className="text-gray-400" /> Thông tin cá nhân
+                      </Link>
+                      <Link to="/my-pets" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <PawPrint size={15} className="text-gray-400" /> Thú cưng
+                      </Link>
+                      <Link to="/book-appointment" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <CalendarDays size={15} className="text-gray-400" /> Đặt lịch
+                      </Link>
+                      <Link to="/appointments" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <ClipboardList size={15} className="text-gray-400" /> Lịch khám
+                      </Link>
+                      <Link to="/orders" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <Package size={15} className="text-gray-400" /> Đơn hàng
+                      </Link>
+                    </div>
                   )}
 
+                  {/* ADMIN */}
+                  {user.role === 'ADMIN' && (
+                    <div className="py-1">
+                      <Link to="/profile" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <Settings size={15} className="text-gray-400" /> Thông tin cá nhân
+                      </Link>
+                      <div className="border-t border-gray-100 my-1" />
+                      <p className="px-4 pt-1 pb-0.5 text-xs text-gray-400 font-semibold uppercase tracking-wide">Admin</p>
+                      <Link to="/admin/dashboard" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <LayoutDashboard size={15} /> Tổng quan
+                      </Link>
+                      <Link to="/admin/appointments" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <CalendarDays size={15} /> Quản lý lịch khám
+                      </Link>
+                      <Link to="/admin/products" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <PackageOpen size={15} /> Quản lý sản phẩm
+                      </Link>
+                      <Link to="/admin/services" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <Stethoscope size={15} /> Quản lý dịch vụ
+                      </Link>
+                      <Link to="/admin/users" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <Users size={15} /> Quản lý người dùng
+                      </Link>
+                      <Link to="/admin/orders" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <ClipboardList size={15} /> Quản lý đơn hàng
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* DOCTOR */}
                   {user.role === 'DOCTOR' && (
-                    <>
-                      <div className="border-t border-gray-100" />
-                      <div className="py-1">
-                        <Link to="/doctor/appointments" onClick={handleCloseDropdown}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
-                        >
-                          <Stethoscope size={15} /> Lịch của tôi
-                        </Link>
-                      </div>
-                    </>
+                    <div className="py-1">
+                      <Link to="/profile" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <Settings size={15} className="text-gray-400" /> Thông tin cá nhân
+                      </Link>
+                      <Link to="/doctor/appointments" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+                      >
+                        <Stethoscope size={15} /> Lịch của tôi
+                      </Link>
+                    </div>
                   )}
 
                   <div className="border-t border-gray-100" />
