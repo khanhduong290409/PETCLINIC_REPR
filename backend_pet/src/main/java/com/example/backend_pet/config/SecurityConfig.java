@@ -40,6 +40,11 @@ public class SecurityConfig {
             .csrf(c -> c.disable())
             .cors(c -> c.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(new JwtAuthFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class)
+            //UsernamePasswordAuthenticationFilter fitler này xử lí với form truyền thông bằng submit form còn project mình dùng api 
+            //nhưng đây là filter mặc định của spring nên ta chỉ viết chứ thực chất filter này không có tác dụng gì
+
+            //.authorizeHttpRequests nó sẽ tự động SecurityContextHolder.getContext().getAuthentication() để lấy authentication để lọc request thoả yêu cầu
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -53,17 +58,12 @@ public class SecurityConfig {
                 .anyRequest().authenticated()//từ chối request và trả về lỗi với các request còn lại
             )
             //o là 1 object duy nhất — OAuth2LoginConfigurer
-            // .oauth2Login(o -> o
-            //     .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
-            //     .successHandler(oAuth2SuccessHandler)
-            // )
             .oauth2Login(o -> o.userInfoEndpoint
                 (u -> u.userService(customOAuth2UserService))
-                .successHandler(oAuth2SuccessHandler))
+                .successHandler(oAuth2SuccessHandler));
         //.userService(customOAuth2UserService) → Sau khi Google xác thực xong, gọi CustomOAuth2UserService để lấy/lưu thông tin user
         //.successHandler(oAuth2SuccessHandler) → Đăng nhập thành công thì làm gì (thường là tạo JWT rồi redirect về React)
-            .addFilterBefore(new JwtAuthFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
-
+            
         return http.build();
     }
 

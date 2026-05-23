@@ -24,7 +24,7 @@ public class OrderService {
 
     // Tạo đơn hàng từ giỏ hàng
     @Transactional
-    public OrderResponse createOrderFromCart(Long userId, String shippingAddress, String paymentMethod, String notes) {
+    public OrderResponse createOrderFromCart(Long userId, String shippingAddress, String paymentMethod, String notes, String contactPhone) {
         // 1. Lấy user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -52,6 +52,7 @@ public class OrderService {
                 .shippingAddress(shippingAddress)
                 .paymentMethod(paymentMethod)
                 .notes(notes)
+                .contactPhone(contactPhone)
                 .build();
 
         // 7. Chuyển CartItem → OrderItem

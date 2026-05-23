@@ -13,6 +13,7 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [shippingAddress, setShippingAddress] = useState('');
+  const [contactPhone, setContactPhone] = useState(user?.phone || '');
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,10 @@ export default function Checkout() {
     e.preventDefault();
     setError('');
 
+    if (!contactPhone.trim()) {
+      setError('Vui lòng nhập số điện thoại liên hệ');
+      return;
+    }
     if (!shippingAddress.trim()) {
       setError('Vui lòng nhập địa chỉ giao hàng');
       return;
@@ -75,6 +80,7 @@ export default function Checkout() {
         shippingAddress,
         paymentMethod,
         notes,
+        contactPhone: contactPhone.trim(),
       });
 
       if (paymentMethod === 'BANKING') {
@@ -136,6 +142,27 @@ export default function Checkout() {
                   disabled
                   className="w-full px-4 py-2 border rounded-lg bg-gray-50"
                 />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Số điện thoại liên hệ *</label>
+                <input
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Số điện thoại để shipper liên hệ"
+                  required
+                />
+                {!user.phone && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Bạn chưa lưu số điện thoại.{' '}
+                    <a href="/profile" className="underline hover:text-amber-800">
+                      Cập nhật hồ sơ
+                    </a>{' '}
+                    để tự động điền lần sau.
+                  </p>
+                )}
               </div>
 
               <div className="mb-4">

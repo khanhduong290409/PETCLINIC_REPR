@@ -19,6 +19,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<string | null>;
   logout: () => void;
   loginWithToken: (token: string) => void; // dùng cho đăng nhập Google
+  updateUser: (fullName: string, phone: string) => void; // cập nhật profile
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,6 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('token');
   };
 
+  const updateUser = (fullName: string, phone: string) => {
+    if (!user) return;
+    const updated = { ...user, fullName, phone };
+    setUser(updated);
+    localStorage.setItem('user', JSON.stringify(updated));
+  };
+
   // Đăng nhập bằng Google — nhận JWT token, decode để lấy user info
   const loginWithToken = (token: string) => {
     const payload = parseJwt(token);
@@ -101,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithToken }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithToken, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

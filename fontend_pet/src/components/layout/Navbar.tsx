@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Stethoscope, LogOut, LayoutDashboard, PackageOpen, Users } from "lucide-react";
+import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Stethoscope, LogOut, LayoutDashboard, PackageOpen, Users, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../../assets/pawcare-logo.png";
 import { useCart } from "../../contexts/CartContext";
@@ -168,6 +168,9 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                   </div>
 
                   <div className="py-1">
+                    <Link to="/profile" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                      <Settings size={15} className="text-gray-400" /> Thông tin cá nhân
+                    </Link>
                     <Link to="/my-pets" onClick={handleCloseDropdown} className={dropdownItemClass}>
                       <PawPrint size={15} className="text-gray-400" /> Thú cưng
                     </Link>

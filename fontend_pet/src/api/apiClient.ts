@@ -14,6 +14,9 @@ export function getAuthHeaders(): Record<string, string> {
 // Decode JWT payload (không verify, chỉ đọc data)
 export function parseJwt(token: string): Record<string, unknown> {
   const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  //ở backend JJWT mặc định dùng Base64URL, không phải base64 chuẩn
+  //lấy payload, thay thế các kí tự - và _ ( 2 kí tự này không nằm trong chuẩn base64) 
+  //chuyển 2 kí tự này tương đương sang + và / trong base64 ( và vì 2 kí tự này không chứa dữ liệu nên hay thay thế vẫn không làm thay đổi dữ liệu)
   return JSON.parse(window.atob(base64));
 }
 
@@ -22,7 +25,7 @@ export function isTokenExpired(token: string): boolean {
   try {
     const payload = parseJwt(token);
     const exp = payload.exp as number;
-    return exp * 1000 < Date.now();
+    return exp * 1000 < Date.now();//date.now trả về milliseconds còn exp trong token là seconds nên * 1000
   } catch {
     return true;
   }

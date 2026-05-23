@@ -27,6 +27,7 @@ export interface OrderRequest {
   shippingAddress: string;
   paymentMethod: string;
   notes: string;
+  contactPhone: string;
 }
 
 export const orderApi = {

@@ -27,7 +27,7 @@ public class AuthService {
 
         User user = User.builder()
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(request.getPassword()))//hashpassword cùng salt
                 .fullName(request.getFullName())
                 .phone(request.getPhone())
                 .build();
@@ -55,6 +55,7 @@ public class AuthService {
                     .build();
         }
 
+        //matches thực hiện việc tách salt từ encode password và sau đó mã hoá password request rồi đem đi so sánh với password db
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return AuthResponse.builder()
                     .message("Sai mật khẩu")

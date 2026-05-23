@@ -8,4 +8,5 @@ public class OrderRequest {
     private String shippingAddress;
     private String paymentMethod; // "COD" hoặc "BANKING"
     private String notes;
+    private String contactPhone;
 }

@@ -23,7 +23,8 @@ public class OrderController {
                 request.getUserId(),
                 request.getShippingAddress(),
                 request.getPaymentMethod(),
-                request.getNotes()
+                request.getNotes(),
+                request.getContactPhone()
         );
         return ResponseEntity.ok(order);
     }

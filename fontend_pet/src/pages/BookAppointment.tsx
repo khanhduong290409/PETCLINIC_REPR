@@ -97,11 +97,22 @@ export default function BookAppointment() {
     if (!user) return;
 
     // Validate
-    if (selectedServiceIds.length === 0) { setError('Vui lòng chọn ít nhất 1 dịch vụ'); return; }
-    if (selectedPetIds.length === 0) { setError('Vui lòng chọn ít nhất 1 thú cưng'); return; }
-    if (!appointmentDate) { setError('Vui lòng chọn ngày khám'); return; }
-    if (!appointmentTime) { setError('Vui lòng chọn giờ khám'); return; }
-
+    if (!user.phone) {    
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError('Vui lòng cập nhật số điện thoại trước khi đặt lịch'); return; }
+    if (selectedServiceIds.length === 0) { 
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError('Vui lòng chọn ít nhất 1 dịch vụ'); return; }
+    if (selectedPetIds.length === 0) {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError('Vui lòng chọn ít nhất 1 thú cưng'); return; }
+    if (!appointmentDate) { 
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError('Vui lòng chọn ngày khám'); return; }
+    if (!appointmentTime) { 
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      setError('Vui lòng chọn giờ khám'); return; }
+    
     setSubmitting(true);
     setError('');
 
@@ -177,6 +188,21 @@ export default function BookAppointment() {
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Đặt lịch khám</h1>
+
+      {!user.phone && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg mb-6 flex items-start gap-3">
+          <span className="text-lg shrink-0">⚠️</span>
+          <div>
+            <p className="font-semibold">Bạn chưa có số điện thoại</p>
+            <p className="text-sm mt-0.5">
+              Phòng khám cần số điện thoại để liên hệ xác nhận lịch.{' '}
+              <a href="/profile" className="underline font-semibold hover:text-amber-900">
+                Cập nhật ngay
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
 
       {error && <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-6">{error}</div>}
 

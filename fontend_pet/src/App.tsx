@@ -22,6 +22,7 @@ import MedicalRecord from "./pages/doctor/MedicalRecord";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OAuth2Callback from "./pages/OAuth2Callback";
+import Profile from "./pages/Profile";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
       { path: "book-appointment", element: <BookAppointment /> },
       { path: "appointments", element: <MyAppointments /> },
       { path: "appointments/:bookingCode/records", element: <AppointmentMedicalRecords /> },
+      { path: "profile", element: <Profile /> },
       { path: "admin/appointments", element: (
         <ProtectedRoute allowedRoles={['ADMIN']}>
           <AdminAppointments />
