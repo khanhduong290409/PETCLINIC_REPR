@@ -93,16 +93,21 @@ public class PaymentService {
 
         int transferAmount = Integer.parseInt(amountObj.toString());
 
-        // Tìm đơn hàng có orderNumber khớp với nội dung chuyển khoản
-        // orderNumber có dạng ORD-20260208143025-1
-        orderRepository.findAll().stream()
-                .filter(order -> content.contains(order.getOrderNumber()))
-                .filter(order -> order.getPaymentStatus() == Order.PaymentStatus.PENDING)
-                .filter(order -> order.getTotalAmount().intValue() == transferAmount)
+        // Tách orderNumber từ content "SEVQR ORD123" → "ORD123"
+        String orderNumber = java.util.Arrays.stream(content.split("\\s+"))
+                .filter(part -> part.startsWith("ORD"))
                 .findFirst()
+                .orElse(null);
+
+        if (orderNumber == null) return;
+
+        // Query thẳng vào DB thay vì load toàn bộ rồi filter
+        orderRepository.findByOrderNumberAndPaymentStatus(orderNumber, Order.PaymentStatus.PENDING)
                 .ifPresent(order -> {
-                    order.setPaymentStatus(Order.PaymentStatus.PAID);
-                    orderRepository.save(order);
+                    if (order.getTotalAmount().intValue() == transferAmount) {
+                        order.setPaymentStatus(Order.PaymentStatus.PAID);
+                        orderRepository.save(order);
+                    }
                 });
     }
 

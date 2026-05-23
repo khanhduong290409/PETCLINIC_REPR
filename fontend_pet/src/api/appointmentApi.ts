@@ -57,16 +57,16 @@ export const appointmentApi = {
     return response.json();
   },
 
-  async getAppointments(userId: number): Promise<AppointmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/appointments?userId=${userId}`, {
+  async getAppointments(): Promise<AppointmentResponse[]> {
+    const response = await fetch(`${API_BASE_URL}/appointments`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch appointments');
     return response.json();
   },
 
-  async cancelAppointment(appointmentId: number, userId: number): Promise<AppointmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel?userId=${userId}`, {
+  async cancelAppointment(appointmentId: number): Promise<AppointmentResponse[]> {
+    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {
       method: 'PUT',
       headers: getAuthHeaders(),
     });

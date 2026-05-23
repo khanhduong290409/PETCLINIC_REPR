@@ -4,6 +4,7 @@ import com.example.backend_pet.dto.AuthResponse;
 import com.example.backend_pet.dto.LoginRequest;
 import com.example.backend_pet.dto.RegisterRequest;
 import com.example.backend_pet.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class AuthController {
 
     // POST /api/auth/register - Đăng ký
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
 
         // Nếu có id = đăng ký thành công
@@ -32,7 +33,7 @@ public class AuthController {
 
     // POST /api/auth/login - Đăng nhập
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
 
         // Nếu có id = đăng nhập thành công

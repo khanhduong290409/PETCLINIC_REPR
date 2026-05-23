@@ -1,5 +1,6 @@
 package com.example.backend_pet.controller;
 
+import com.example.backend_pet.config.JwtUtils;
 import com.example.backend_pet.dto.AppointmentRequest;
 import com.example.backend_pet.dto.AppointmentResponse;
 import com.example.backend_pet.service.AppointmentService;
@@ -15,6 +16,12 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final JwtUtils jwtUtils;
+
+    private Long extractUserId(String authHeader) {
+        String token = authHeader.substring(7);
+        return jwtUtils.extractClaims(token).get("userId", Long.class);
+    }
 
     // POST /api/appointments - Đặt lịch khám (có thể nhiều pet)
     @PostMapping
@@ -22,17 +29,18 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.createAppointments(request));
     }
 
-    // GET /api/appointments?userId=1 - Lấy danh sách lịch khám của user
+    // GET /api/appointments - Lấy danh sách lịch khám của user (userId lấy từ JWT)
     @GetMapping
-    public ResponseEntity<List<AppointmentResponse>> getAppointments(@RequestParam Long userId) {
-        return ResponseEntity.ok(appointmentService.getAppointmentsByUser(userId));
+    public ResponseEntity<List<AppointmentResponse>> getAppointments(
+            @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByUser(extractUserId(authHeader)));
     }
 
-    // PUT /api/appointments/1/cancel?userId=1 - Hủy lịch khám (hủy cả nhóm cùng bookingCode)
+    // PUT /api/appointments/1/cancel - Hủy lịch khám (userId lấy từ JWT)
     @PutMapping("/{appointmentId}/cancel")
     public ResponseEntity<List<AppointmentResponse>> cancelAppointment(
             @PathVariable Long appointmentId,
-            @RequestParam Long userId) {
-        return ResponseEntity.ok(appointmentService.cancelAppointment(appointmentId, userId));
+            @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(appointmentService.cancelAppointment(appointmentId, extractUserId(authHeader)));
     }
 }

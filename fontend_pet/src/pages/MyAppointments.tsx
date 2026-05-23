@@ -101,7 +101,7 @@ export default function MyAppointments() {
     if (!user) return;
     try {
       setLoading(true);
-      const data = await appointmentApi.getAppointments(user.id);
+      const data = await appointmentApi.getAppointments();
       setAppointments(data);
     } catch (err) {
       console.error('Failed to fetch appointments:', err);
@@ -148,7 +148,7 @@ export default function MyAppointments() {
     if (!confirm(`Bạn có chắc muốn hủy lịch khám cho ${petNames}?`)) return;
 
     try {
-      await appointmentApi.cancelAppointment(group.firstAppointmentId, user.id);
+      await appointmentApi.cancelAppointment(group.firstAppointmentId);
       fetchAppointments();
     } catch (err) {
       console.error('Failed to cancel:', err);

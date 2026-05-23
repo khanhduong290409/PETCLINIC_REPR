@@ -41,8 +41,8 @@ public class JwtUtils {
         return Jwts.parser()//tạo parser để đọc token
                 .verifyWith(getKey())//set cái key này khi mã hoá
                 .build()//tạo parser hoàn chỉnh
-                .parseSignedClaims(token)//thực hiện tính lại signature và so sánh 2 signature cũ và mới sau đó mã hoá
-                .getPayload();
+                .parseSignedClaims(token)//thực hiện tính lại signature(sau khi đã decode về dạng json của payload thì tính lại signature) và so sánh 2 signature cũ và mới sau đó mã hoá
+                .getPayload();//đoạn này trả về payload object
     }
 
     /*

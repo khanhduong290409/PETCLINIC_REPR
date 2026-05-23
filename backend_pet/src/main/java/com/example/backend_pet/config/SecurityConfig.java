@@ -54,8 +54,9 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/services/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/product-reviews/**").permitAll()
-                // Tất cả còn lại phải đăng nhập
-                .anyRequest().authenticated()//từ chối request và trả về lỗi với các request còn lại
+                .anyRequest().authenticated()
+                //từ chối request và trả về lỗi với các request còn lại
+                // Tất cả còn lại phải đăng nhập(check trong SecurityContextHolder.getContext() có lưu auth không nếu có thì cho qua, không thì ném lỗi )
             )
             //o là 1 object duy nhất — OAuth2LoginConfigurer
             .oauth2Login(o -> o.userInfoEndpoint
