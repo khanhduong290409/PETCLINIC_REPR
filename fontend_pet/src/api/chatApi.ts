@@ -1,10 +1,12 @@
+import { getAuthHeaders } from './apiClient';
+
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/chat`;
 
 export const chatApi = {
     async sendMessage(message: string): Promise<string> {
         const res = await fetch(API, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify({ message }),
         });
         if (!res.ok) throw new Error('Failed to send message');

@@ -1,6 +1,4 @@
-// Order API calls
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
+import { API_BASE_URL, getAuthHeaders } from './apiClient';
 
 export interface OrderItemResponse {
   id: number;
@@ -32,27 +30,28 @@ export interface OrderRequest {
 }
 
 export const orderApi = {
-  // Tạo đơn hàng từ giỏ hàng
   async createOrder(data: OrderRequest): Promise<OrderResponse> {
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create order');
     return response.json();
   },
 
-  // Lấy danh sách đơn hàng theo user
   async getOrders(userId: number): Promise<OrderResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/orders?userId=${userId}`);
+    const response = await fetch(`${API_BASE_URL}/orders?userId=${userId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch orders');
     return response.json();
   },
 
-  // Lấy chi tiết 1 đơn hàng
   async getOrderDetail(orderId: number, userId: number): Promise<OrderResponse> {
-    const response = await fetch(`${API_BASE_URL}/orders/${orderId}?userId=${userId}`);
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}?userId=${userId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch order');
     return response.json();
   },

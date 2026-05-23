@@ -1,6 +1,4 @@
-// Appointment & Service API calls
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
+import { API_BASE_URL, getAuthHeaders } from './apiClient';
 
 export interface ServiceResponse {
   id: number;
@@ -8,7 +6,7 @@ export interface ServiceResponse {
   description: string;
   imageUrl?: string;
   price: number;
-  duration: number; // phút
+  duration: number;
   category: string;
 }
 
@@ -16,8 +14,8 @@ export interface AppointmentRequest {
   userId: number;
   petIds: number[];
   serviceIds: number[];
-  appointmentDate: string; // "2026-02-20"
-  appointmentTime: string; // "09:00"
+  appointmentDate: string;
+  appointmentTime: string;
   notes: string;
 }
 
@@ -43,35 +41,34 @@ export interface AppointmentResponse {
 }
 
 export const appointmentApi = {
-  // Lấy danh sách dịch vụ
   async getServices(): Promise<ServiceResponse[]> {
     const response = await fetch(`${API_BASE_URL}/services`);
     if (!response.ok) throw new Error('Failed to fetch services');
     return response.json();
   },
 
-  // Đặt lịch khám
   async createAppointments(data: AppointmentRequest): Promise<AppointmentResponse[]> {
     const response = await fetch(`${API_BASE_URL}/appointments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create appointments');
     return response.json();
   },
 
-  // Lấy danh sách lịch khám của user
   async getAppointments(userId: number): Promise<AppointmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/appointments?userId=${userId}`);
+    const response = await fetch(`${API_BASE_URL}/appointments?userId=${userId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch appointments');
     return response.json();
   },
 
-  // Hủy lịch khám
   async cancelAppointment(appointmentId: number, userId: number): Promise<AppointmentResponse[]> {
     const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel?userId=${userId}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to cancel appointment');
     return response.json();

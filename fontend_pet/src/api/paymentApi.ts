@@ -1,6 +1,4 @@
-// Payment API calls (SePay bank monitoring + VietQR)
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
+import { API_BASE_URL, getAuthHeaders } from './apiClient';
 
 export interface PaymentLinkResponse {
   orderCode: number;
@@ -16,20 +14,20 @@ export interface PaymentLinkResponse {
 }
 
 export const paymentApi = {
-  // Tạo QR thanh toán VietQR, nhận về URL ảnh QR
   async createPaymentLink(orderId: number): Promise<PaymentLinkResponse> {
     const response = await fetch(`${API_BASE_URL}/payment/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ orderId }),
     });
     if (!response.ok) throw new Error('Không thể tạo link thanh toán');
     return response.json();
   },
 
-  // Kiểm tra trạng thái thanh toán (dùng cho polling)
   async checkStatus(orderCode: number): Promise<{ status: string }> {
-    const response = await fetch(`${API_BASE_URL}/payment/status/${orderCode}`);
+    const response = await fetch(`${API_BASE_URL}/payment/status/${orderCode}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Không thể kiểm tra trạng thái');
     return response.json();
   },

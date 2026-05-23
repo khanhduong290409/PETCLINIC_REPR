@@ -1,4 +1,4 @@
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
+import { API_BASE_URL, getAuthHeaders } from './apiClient';
 
 export interface ProductReviewResponse {
     id: number;
@@ -17,6 +17,7 @@ export interface ProductReviewRequest {
 }
 
 export const productReviewApi = {
+    // Public — ai cũng xem được review
     async getReviewsByProduct(productId: number): Promise<ProductReviewResponse[]> {
         const response = await fetch(`${API_BASE_URL}/product-reviews/product/${productId}`);
         if (!response.ok) throw new Error('Failed to fetch product reviews');
@@ -26,7 +27,7 @@ export const productReviewApi = {
     async createReview(data: ProductReviewRequest): Promise<ProductReviewResponse> {
         const response = await fetch(`${API_BASE_URL}/product-reviews`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify(data),
         });
         if (!response.ok) throw new Error('Failed to create product review');
@@ -34,7 +35,9 @@ export const productReviewApi = {
     },
 
     async getReviewedProductIds(userId: number): Promise<number[]> {
-        const response = await fetch(`${API_BASE_URL}/product-reviews/user/${userId}/product-ids`);
+        const response = await fetch(`${API_BASE_URL}/product-reviews/user/${userId}/product-ids`, {
+            headers: getAuthHeaders(),
+        });
         if (!response.ok) throw new Error('Failed to fetch reviewed product ids');
         return response.json();
     },

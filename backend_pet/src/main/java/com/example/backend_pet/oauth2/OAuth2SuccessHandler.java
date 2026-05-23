@@ -1,5 +1,6 @@
 package com.example.backend_pet.oauth2;
 
+import com.example.backend_pet.config.JwtUtils;
 import com.example.backend_pet.entity.User;
 import com.example.backend_pet.repository.UserRepository;
 
@@ -13,37 +14,31 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-        // authenticationsuccesshandler là interface quyết định việc làm gì sau khi đăng nhập thành công 
-        private final UserRepository userRepository;
 
+    private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
 
-        @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                        Authentication authentication) throws IOException, ServletException {
-        //authentication: object spring security lưu thông tin user vừa đăng nhập
-        //getprincipal lấy ra chủ thể vừa đăng nhập ( trả về object nên cần phải ép kiểu)
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                    Authentication authentication) throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("user not found"));
-        String frontendUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:5173";
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("user not found"));
+
+        String frontendUrl = System.getenv("FRONTEND_URL") != null
+                ? System.getenv("FRONTEND_URL") : "http://localhost:5173";
 
         if (user.getStatus() == User.Status.INACTIVE) {
             response.sendRedirect(frontendUrl + "/login?error=blocked");
             return;
         }
 
-        String redirectUrl = frontendUrl + "/oauth2/callback"
-        + "?id=" + user.getId()
-        + "&email=" + URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8)
-        + "&fullName=" + URLEncoder.encode(user.getFullName(), StandardCharsets.UTF_8)
-        + "&role=" + user.getRole().name();
-        response.sendRedirect(redirectUrl);
-        }
-
+        String token = jwtUtils.generateToken(user);
+        response.sendRedirect(frontendUrl + "/oauth2/callback?token=" + token);
+    }
 }

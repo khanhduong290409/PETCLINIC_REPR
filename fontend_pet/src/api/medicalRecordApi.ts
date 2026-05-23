@@ -1,4 +1,4 @@
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
+import { API_BASE_URL, getAuthHeaders } from './apiClient';
 
 export interface MedicalResponse {
     id: number;
@@ -14,6 +14,7 @@ export interface MedicalResponse {
     notes: string;
     followUpDate: string;
 }
+
 export interface MedicalRequest {
     diagnosis: string;
     treatment: string;
@@ -23,26 +24,29 @@ export interface MedicalRequest {
 }
 
 export const medicalRecordApi = {
-    async getRecord(bookingCode: string): Promise<MedicalResponse[]>{
-        const response = await fetch(`${API_BASE_URL}/medical/${bookingCode}`)
-        console.log(response);
-        if(!response.ok) throw new Error('Failed to fetch medical record');
+    async getRecord(bookingCode: string): Promise<MedicalResponse[]> {
+        const response = await fetch(`${API_BASE_URL}/medical/${bookingCode}`, {
+            headers: getAuthHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch medical record');
         return response.json();
     },
 
     async saveRecord(appointmentId: number, data: MedicalRequest): Promise<MedicalResponse> {
         const response = await fetch(`${API_BASE_URL}/medical/${appointmentId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify(data),
         });
-        if(!response.ok) throw new Error('Failed to save medical record');
+        if (!response.ok) throw new Error('Failed to save medical record');
         return response.json();
     },
 
     async getRecordsByPet(petId: number): Promise<MedicalResponse[]> {
-        const response = await fetch(`${API_BASE_URL}/medical/pet/${petId}`);
-        if(!response.ok) throw new Error('Failed to fetch pet medical records');
+        const response = await fetch(`${API_BASE_URL}/medical/pet/${petId}`, {
+            headers: getAuthHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch pet medical records');
         return response.json();
-    }
-}
+    },
+};

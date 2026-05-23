@@ -1,14 +1,13 @@
 // Auth API calls
+import { API_BASE_URL } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api`;
-
-// Response type từ backend
 export interface AuthResponse {
   id: number | null;
   email: string;
   fullName: string;
   phone: string;
   role: string;
+  token: string;
   message: string;
 }
 
@@ -25,7 +24,6 @@ export interface RegisterRequest {
 }
 
 export const authApi = {
-  // Đăng nhập
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -35,7 +33,6 @@ export const authApi = {
     return response.json();
   },
 
-  // Đăng ký
   async register(data: RegisterRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',

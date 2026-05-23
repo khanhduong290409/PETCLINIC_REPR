@@ -1,3 +1,5 @@
+import { getAuthHeaders } from './apiClient';
+
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/doctor`;
 
 export interface ServiceInfo {
@@ -21,17 +23,18 @@ export interface DoctorAppointment {
 }
 
 export const doctorApi = {
-  // Lấy lịch khám được phân công cho bác sĩ
   async getMyAppointments(doctorId: number): Promise<DoctorAppointment[]> {
-    const res = await fetch(`${API}/appointments?doctorId=${doctorId}`);
+    const res = await fetch(`${API}/appointments?doctorId=${doctorId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch appointments');
     return res.json();
   },
 
-  // Xác nhận đã khám xong (complete cả nhóm bookingCode)
   async completeAppointment(appointmentId: number, doctorId: number): Promise<DoctorAppointment[]> {
     const res = await fetch(`${API}/appointments/${appointmentId}/complete?doctorId=${doctorId}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to complete appointment');
     return res.json();

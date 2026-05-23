@@ -2,8 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authApi } from '../api/authApi';
 import type { LoginRequest, RegisterRequest } from '../api/authApi';
+import { parseJwt, isTokenExpired } from '../api/apiClient';
 
-// User type
 interface User {
   id: number;
   email: string;
@@ -12,14 +12,13 @@ interface User {
   role: string;
 }
 
-// Context type
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (data: LoginRequest) => Promise<string | null>;
   register: (data: RegisterRequest) => Promise<string | null>;
   logout: () => void;
-  loginWithData: (userData: User) => void; // dùng cho đăng nhập Google
+  loginWithToken: (token: string) => void; // dùng cho đăng nhập Google
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,89 +27,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Khi mount, kiểm tra localStorage xem đã login chưa
+  // Khi mount, kiểm tra token còn hạn không rồi mới restore session
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const token = localStorage.getItem('token');
+    if (token && !isTokenExpired(token)) {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } else if (token) {
+      // Token hết hạn → xóa session
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
     setLoading(false);
   }, []);
 
-  // Đăng nhập
+  const saveSession = (userData: User, token: string) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
+  };
+
   const login = async (data: LoginRequest): Promise<string | null> => {
     try {
       const response = await authApi.login(data);
-
-      // Nếu có id = thành công
       if (response.id) {
-        const loggedInUser: User = {
-          id: response.id,
-          email: response.email,
-          fullName: response.fullName,
-          phone: response.phone,
-          role: response.role,
-        };
-        setUser(loggedInUser);
-        localStorage.setItem('user', JSON.stringify(loggedInUser));
-        return null; // Không có lỗi
+        saveSession(
+          { id: response.id, email: response.email, fullName: response.fullName, phone: response.phone, role: response.role },
+          response.token
+        );
+        return null;
       }
-
-      // Có lỗi
       return response.message;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch {
       return 'Lỗi kết nối server';
     }
   };
 
-  // Đăng ký
   const register = async (data: RegisterRequest): Promise<string | null> => {
     try {
       const response = await authApi.register(data);
-
-      // Nếu có id = thành công
       if (response.id) {
-        const registeredUser: User = {
-          id: response.id,
-          email: response.email,
-          fullName: response.fullName,
-          phone: response.phone,
-          role: response.role,
-        };
-        setUser(registeredUser);
-        localStorage.setItem('user', JSON.stringify(registeredUser));
-        return null; // Không có lỗi
+        saveSession(
+          { id: response.id, email: response.email, fullName: response.fullName, phone: response.phone, role: response.role },
+          response.token
+        );
+        return null;
       }
-
-      // Có lỗi
       return response.message;
-    } catch (error) {
-      console.error('Register error:', error);
+    } catch {
       return 'Lỗi kết nối server';
     }
   };
 
-  // Đăng xuất
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
-  // Đăng nhập bằng Google — nhận thẳng object user từ OAuth2Callback
-  const loginWithData = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  // Đăng nhập bằng Google — nhận JWT token, decode để lấy user info
+  const loginWithToken = (token: string) => {
+    const payload = parseJwt(token);
+    const userData: User = {
+      id: payload.userId as number,
+      email: payload.sub as string,
+      fullName: payload.fullName as string,
+      phone: '',
+      role: payload.role as string,
+    };
+    saveSession(userData, token);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithData }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithToken }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Hook để sử dụng AuthContext
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

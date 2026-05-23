@@ -1,15 +1,11 @@
+import { getAuthHeaders } from './apiClient';
+
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin`;
 const SERVICES_API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/services`;
 
 const CLOUDINARY_CLOUD_NAME = 'dm1xwivqn';
 const CLOUDINARY_UPLOAD_PRESET = 'v5nd8djy';
-// import.meta.env.VITE_API_URL → đọc biến môi trường tên VITE_API_URL
-//Khi nào thêm VITE_API_URL?
-//Sau khi deploy backend lên Railway xong, Railway sẽ cho bạn 1 URL dạng:
-//https://petclinic-backend.up.railway.app
-//Lúc đó vào Vercel → Settings → Environment Variables → thêm:
-//VITE_API_URL = https://petclinic-backend.up.railway.app
-//→ Redeploy → frontend gọi đúng backend trên cloud.
+
 export interface ServiceInfo {
   id: number;
   title: string;
@@ -80,13 +76,13 @@ export interface DashboardData {
   totalAppointments: number;
   todayAppointments: number;
   totalCustomers: number;
-  revenueThisMonth: number;//card doanh thu thang nay
-  revenueByDay: DailyRevenue[];//linechart doanh thu 30 ngay
-  orderStatusCounts: StatusCount[];//piechart trạng thái đơn hàng
-  appointmentStatusCounts: StatusCount[];//barchart lịch khám theo trạng thái
-  topProducts: ProductSale[];//barchart nằm ngang top 5 sản phẩm
-  recentOrders: RecentOrder[];//bảng 5 đơn hàng mới nhất
-  upcomingAppointments: UpcomingAppointment[];//bảng 5 lịch khám sắp tới
+  revenueThisMonth: number;
+  revenueByDay: DailyRevenue[];
+  orderStatusCounts: StatusCount[];
+  appointmentStatusCounts: StatusCount[];
+  topProducts: ProductSale[];
+  recentOrders: RecentOrder[];
+  upcomingAppointments: UpcomingAppointment[];
 }
 
 export interface AdminOrderItem {
@@ -113,51 +109,47 @@ export interface AdminOrder {
 }
 
 export const adminApi = {
-  // Lấy tất cả lịch khám
   async getAppointments(): Promise<AdminAppointment[]> {
-    const res = await fetch(`${API}/appointments`);
+    const res = await fetch(`${API}/appointments`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch appointments');
     return res.json();
   },
 
-  // Phân công bác sĩ (trả về toàn bộ nhóm cùng bookingCode)
   async assignDoctor(appointmentId: number, doctorId: number): Promise<AdminAppointment[]> {
     const res = await fetch(`${API}/appointments/${appointmentId}/assign-doctor?doctorId=${doctorId}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to assign doctor');
     return res.json();
   },
 
-  // Bỏ phân công bác sĩ (trả về toàn bộ nhóm cùng bookingCode)
   async unassignDoctor(appointmentId: number): Promise<AdminAppointment[]> {
     const res = await fetch(`${API}/appointments/${appointmentId}/unassign-doctor`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to unassign doctor');
     return res.json();
   },
 
-  // Đổi trạng thái lịch khám (trả về toàn bộ nhóm cùng bookingCode)
   async updateStatus(appointmentId: number, status: string): Promise<AdminAppointment[]> {
     const res = await fetch(`${API}/appointments/${appointmentId}/status?status=${status}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to update status');
     return res.json();
   },
 
-  // Lấy danh sách bác sĩ
   async getDoctors(): Promise<DoctorInfo[]> {
-    const res = await fetch(`${API}/doctors`);
+    const res = await fetch(`${API}/doctors`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch doctors');
     return res.json();
   },
 
-  // ---- Quản lý dịch vụ ----
-
   async getServices(): Promise<PetServiceData[]> {
-    const res = await fetch(SERVICES_API);
+    const res = await fetch(SERVICES_API, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch services');
     return res.json();
   },
@@ -165,7 +157,7 @@ export const adminApi = {
   async createService(payload: Omit<PetServiceData, 'id'>): Promise<PetServiceData> {
     const res = await fetch(SERVICES_API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to create service');
@@ -175,7 +167,7 @@ export const adminApi = {
   async updateService(id: number, payload: Omit<PetServiceData, 'id'>): Promise<PetServiceData> {
     const res = await fetch(`${SERVICES_API}/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to update service');
@@ -183,14 +175,15 @@ export const adminApi = {
   },
 
   async deleteService(id: number): Promise<void> {
-    const res = await fetch(`${SERVICES_API}/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${SERVICES_API}/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to delete service');
   },
 
-  // ---- Quản lý user ----
-
   async getAllUsers(): Promise<UserInfo[]> {
-    const res = await fetch(`${API}/users`);
+    const res = await fetch(`${API}/users`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch users');
     return res.json();
   },
@@ -198,6 +191,7 @@ export const adminApi = {
   async updateUserRole(userId: number, role: string): Promise<UserInfo> {
     const res = await fetch(`${API}/users/${userId}/role?role=${role}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to update role');
     return res.json();
@@ -206,29 +200,26 @@ export const adminApi = {
   async updateUserStatus(userId: number, status: 'ACTIVE' | 'INACTIVE'): Promise<UserInfo> {
     const res = await fetch(`${API}/users/${userId}/status?status=${status}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to update status');
     return res.json();
   },
 
-  // ---- Dashboard ----
-
   async getDashboard(): Promise<DashboardData> {
-    const res = await fetch(`${API}/dashboard`);
+    const res = await fetch(`${API}/dashboard`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch dashboard');
     return res.json();
   },
 
   async getRevenue(period: 'day' | 'month' | 'quarter' | 'year'): Promise<DailyRevenue[]> {
-    const res = await fetch(`${API}/revenue?period=${period}`);
+    const res = await fetch(`${API}/revenue?period=${period}`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch revenue');
     return res.json();
   },
 
-  // ---- Quản lý đơn hàng ----
-
   async getAllOrders(): Promise<AdminOrder[]> {
-    const res = await fetch(`${API}/orders`);
+    const res = await fetch(`${API}/orders`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Failed to fetch orders');
     return res.json();
   },
@@ -236,12 +227,12 @@ export const adminApi = {
   async updateOrderStatus(orderId: number, status: string): Promise<AdminOrder> {
     const res = await fetch(`${API}/orders/${orderId}/status?status=${status}`, {
       method: 'PUT',
+      headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to update order status');
     return res.json();
   },
 
-  // Upload ảnh dịch vụ lên Cloudinary
   async uploadServiceImage(file: File): Promise<string> {
     const formData = new FormData();
     formData.append('file', file);

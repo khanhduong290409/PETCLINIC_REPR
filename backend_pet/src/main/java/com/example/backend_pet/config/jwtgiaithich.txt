@@ -1,0 +1,110 @@
+1. JWT là gì?
+Hãy tưởng tượng bạn vào một công viên giải trí:
+
+Bạn mua vé ở cổng → nhân viên kiểm tra thông tin và đưa cho bạn vòng tay
+Mỗi lần vào khu vui chơi trong công viên, bạn chỉ cần đưa vòng tay ra → nhân viên không cần hỏi lại thông tin nữa
+JWT chính là cái vòng tay đó — một chuỗi ký tự chứa thông tin của bạn, được server cấp sau khi đăng nhập thành công.
+Người dùng login → Server xác thực → Server tạo JWT → Trả về cho client
+Client gửi JWT theo mỗi request → Server đọc JWT → Biết bạn là ai → Cho phép/từ chối
+
+2. Cấu trúc của JWT
+JWT trông như thế này:
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGdtYWlsLmNvbSJ9.SflKxwRJSMeKKF2QT4fwpMeJf36P
+
+Gồm 3 phần ngăn cách bởi dấu .:
+HEADER  .   PAYLOAD                   . SIGNATURE
+Header	    Thuật toán dùng để ký	  {"alg": "HS256"}
+Payload	    Dữ liệu bên trong token	  {"sub": "user@gmail.com", "userId": 1, "role": "USER"}
+Signature	Chữ ký — chống giả mạo	  Được tính từ header + payload + secret key
+
+Quan trọng: Header và Payload chỉ được encode base64 (không mã hoá), ai cũng đọc được. Signature mới là thứ bảo vệ — nếu ai sửa payload, signature sẽ sai và server từ chối.
+3. JJWT Library là gì? Tại sao dùng Jwts?
+JJWT (Java JWT) là thư viện giúp bạn tạo và xác minh JWT trong Java mà không cần tự viết thuật toán phức tạp.
+
+Jwts là class chính của thư viện JJWT — nó đóng vai trò như một "cửa vào" để:
+
+Tạo JWT → Jwts.builder()
+Đọc/xác minh JWT → Jwts.parser()
+Nếu không có JJWT, bạn phải tự:
+
+Encode base64 header và payload
+Tính HMAC-SHA256 của chúng
+Ghép lại thành chuỗi
+Tự viết code xác minh...
+JJWT làm hết tất cả việc đó cho bạn.
+
+
+
+5. Giải thích chi tiết từng method
+.subject(user.getEmail())
+Subject ("sub") là claim tiêu chuẩn trong JWT — định danh chủ thể của token, tức là "token này thuộc về ai".
+
+
+.subject("user@gmail.com")
+// Payload sẽ có: {"sub": "user@gmail.com"}
+Thường dùng email hoặc username vì đây là thứ duy nhất xác định người dùng.
+
+
+.claim("key", value)
+Claim là các thuộc tính bổ sung bạn muốn nhét vào payload. JWT có sẵn một số claim tiêu chuẩn (sub, iat, exp...), còn lại bạn tự đặt tên tùy ý.
+
+
+.claim("userId", 42)
+.claim("role", "ADMIN")
+.claim("fullName", "Nguyen Van A")
+
+// Payload: {
+//   "sub": "user@gmail.com",
+//   "userId": 42,
+//   "role": "ADMIN",
+//   "fullName": "Nguyen Van A"
+// }
+Tại sao cần nhét thêm?
+
+Khi server nhận được JWT, nó cần biết user là ai và có quyền gì
+Thay vì truy vấn database mỗi request, server đọc thẳng từ JWT → nhanh hơn
+userId dùng để query thêm dữ liệu nếu cần
+role dùng để kiểm tra quyền (admin/user/doctor...)
+
+.issuedAt(new Date())
+Issued At ("iat") — thời điểm token được tạo ra (bây giờ).
+
+
+.issuedAt(new Date())
+// Payload: {"iat": 1716134400}  ← Unix timestamp (giây)
+Dùng để biết token được tạo lúc nào — có thể dùng để từ chối các token cũ (trước khi user đổi mật khẩu chẳng hạn).
+
+
+.expiration(new Date(System.currentTimeMillis() + expiration))
+Expiration ("exp") — thời điểm token hết hạn.
+
+
+// expiration = 86400000 (24 giờ tính bằng millisecond)
+.expiration(new Date(System.currentTimeMillis() + 86400000))
+// Payload: {"exp": 1716220800}  ← 24 giờ sau thời điểm tạo
+Tại sao cần hết hạn?
+
+Nếu token bị đánh cắp, kẻ tấn công chỉ dùng được trong thời gian giới hạn
+Sau khi hết hạn, JJWT tự động throw exception khi parse → server từ chối
+.signWith(getKey())
+Ký token bằng secret key. Đây là bước quan trọng nhất — tạo ra chữ ký bảo vệ token.
+
+
+// JJWT tính: signature = HMAC_SHA256(base64(header) + "." + base64(payload), secretKey)
+.signWith(getKey())
+Cơ chế hoạt động:
+
+Header + Payload được encode base64
+Thuật toán HMAC-SHA256 tính toán ra một chuỗi hash từ chúng + secret key
+Hash đó là Signature — được ghép vào cuối JWT
+Nếu ai đó sửa payload (VD: đổi role từ USER thành ADMIN):
+
+Signature cũ không còn khớp với payload mới
+Server tính lại signature → không trùng → từ chối token ngay lập tức
+.compact()
+Bước cuối — build và trả về chuỗi JWT hoàn chỉnh:
+
+
+base64(header) + "." + base64(payload) + "." + signature
+
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGdtYWlsLmNvbSIsInVzZXJJZCI6NDIsInJvbGUiOiJBRE1JTiJ9.xyz123
