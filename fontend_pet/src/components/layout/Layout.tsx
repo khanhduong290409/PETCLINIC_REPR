@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import AdminLayout from "./AdminLayout";
 import CartDrawer from "../cart/CartDrawer";
 import ChatWidget from "../ChatWidget";
 
@@ -20,20 +21,19 @@ export default function Layout() {
 
   // Có thể customize layout dựa trên route
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDoctorRoute = location.pathname.startsWith('/doctor');
   const isAuthRoute = ['/login', '/register'].includes(location.pathname);
 
-  // Admin routes có thể có layout khác
+  // Ẩn ChatWidget với admin và doctor (chỉ hiện cho khách/user thường)
+  const showChatWidget = !isAdminRoute && !isDoctorRoute;
+
+  // Admin routes — dùng AdminLayout riêng (sidebar dọc + topbar)
   if (isAdminRoute) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-100">
-        {/* Admin Navbar sẽ khác với Navbar thường */}
-        <Navbar />
-        <main className="flex-grow pt-14">
-          <Outlet />
-        </main>
+      <>
+        <AdminLayout />
         <CartDrawer />
-        <ChatWidget />
-      </div>
+      </>
     );
   }
 
@@ -65,8 +65,8 @@ export default function Layout() {
       {/* Cart Drawer */}
       <CartDrawer />
 
-      {/* Chat Widget */}
-      <ChatWidget />
+      {/* Chat Widget - chỉ hiện cho khách/user thường, ẩn với admin & doctor */}
+      {showChatWidget && <ChatWidget />}
     </div>
   );
 }

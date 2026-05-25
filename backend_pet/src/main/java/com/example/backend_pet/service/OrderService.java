@@ -4,6 +4,7 @@ import com.example.backend_pet.dto.OrderResponse;
 import com.example.backend_pet.entity.*;
 import com.example.backend_pet.repository.CartRepository;
 import com.example.backend_pet.repository.OrderRepository;
+import com.example.backend_pet.repository.ProductRepository;
 import com.example.backend_pet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
     private final CartService cartService;
 
     // Tạo đơn hàng từ giỏ hàng
@@ -36,6 +38,17 @@ public class OrderService {
         // 3. Kiểm tra giỏ hàng có trống không
         if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Giỏ hàng trống");
+        }
+
+        // 3.1. Kiểm tra tồn kho đủ cho từng sản phẩm
+        for (CartItem cartItem : cart.getItems()) {
+            Product product = cartItem.getProduct();
+            if (product.getStock() < cartItem.getQuantity()) {
+                throw new RuntimeException(
+                        "Sản phẩm \"" + product.getName() + "\" chỉ còn "
+                                + product.getStock() + " trong kho"
+                );
+            }
         }
 
         // 4. Tính tổng tiền
@@ -55,12 +68,18 @@ public class OrderService {
                 .contactPhone(contactPhone)
                 .build();
 
-        // 7. Chuyển CartItem → OrderItem
+        // 7. Chuyển CartItem → OrderItem, đồng thời trừ tồn kho
         for (CartItem cartItem : cart.getItems()) {
+            Product product = cartItem.getProduct();
+
+            // Trừ stock
+            product.setStock(product.getStock() - cartItem.getQuantity());
+            productRepository.save(product);
+
             OrderItem orderItem = OrderItem.builder()
-                    .product(cartItem.getProduct())
+                    .product(product)
                     .quantity(cartItem.getQuantity())
-                    .price(cartItem.getProduct().getPrice()) // Lưu giá tại thời điểm mua
+                    .price(product.getPrice()) // Lưu giá tại thời điểm mua
                     .build();
             order.addItem(orderItem);
         }
@@ -113,7 +132,21 @@ public class OrderService {
     public OrderResponse updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-        order.setStatus(Order.OrderStatus.valueOf(status));
+
+        Order.OrderStatus oldStatus = order.getStatus();
+        Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status);
+
+        // Nếu chuyển sang CANCELLED và trước đó chưa CANCELLED → hoàn lại tồn kho
+        if (newStatus == Order.OrderStatus.CANCELLED
+                && oldStatus != Order.OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        order.setStatus(newStatus);
         Order saved = orderRepository.save(order);
         return mapToOrderResponse(saved);
     }

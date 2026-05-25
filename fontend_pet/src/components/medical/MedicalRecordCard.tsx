@@ -116,16 +116,41 @@ export function MedicalRecordCard({
           </div>
         )}
 
-        {/* Placeholder tài liệu đính kèm */}
+        {/* Ảnh bệnh án — grid khi có nhiều ảnh, placeholder khi rỗng */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Paperclip size={15} className="text-gray-400" />
-            <p className="text-sm font-semibold text-gray-500">Tài liệu đính kèm</p>
+            <p className="text-sm font-semibold text-gray-500">
+              Ảnh bệnh án (X-quang, xét nghiệm,...)
+              {record.imageUrls && record.imageUrls.length > 0 && (
+                <span className="ml-1 text-gray-400 font-normal">({record.imageUrls.length})</span>
+              )}
+            </p>
           </div>
-          <div className="border-2 border-dashed border-gray-200 rounded-lg px-4 py-5 text-center">
-            <p className="text-gray-400 text-sm">Chưa có tài liệu (X-quang, ảnh bệnh án,...)</p>
-            <p className="text-gray-300 text-xs mt-0.5">Tính năng đang được phát triển</p>
-          </div>
+          {record.imageUrls && record.imageUrls.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {record.imageUrls.map((url, idx) => (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block aspect-square border border-gray-200 rounded-lg overflow-hidden bg-gray-50 hover:opacity-90 hover:shadow-md transition"
+                  title="Bấm để mở ảnh full size"
+                >
+                  <img
+                    src={url}
+                    alt={`Ảnh bệnh án ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-200 rounded-lg px-4 py-5 text-center">
+              <p className="text-gray-400 text-sm">Chưa có ảnh đính kèm</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

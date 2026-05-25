@@ -13,6 +13,7 @@ export interface MedicalResponse {
     prescription: string;
     notes: string;
     followUpDate: string;
+    imageUrls: string[];
 }
 
 export interface MedicalRequest {
@@ -21,6 +22,7 @@ export interface MedicalRequest {
     prescription: string;
     notes: string;
     followUpDate: string;
+    imageUrls: string[];
 }
 
 export const medicalRecordApi = {

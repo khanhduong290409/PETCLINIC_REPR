@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,4 +23,5 @@ public class MedicalResponse {
     private String prescription;
     private String notes;
     private LocalDate followUpDate;
+    private List<String> imageUrls;
 }

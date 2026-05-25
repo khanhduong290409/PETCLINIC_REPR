@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Users, Lock, LockOpen } from 'lucide-react';
+import {
+  Users,
+  Lock,
+  LockOpen,
+  Search,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Stethoscope,
+  User as UserIcon,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { adminApi, type UserInfo } from '../../api/adminApi';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -9,10 +23,24 @@ const ROLE_LABEL: Record<string, string> = {
   ADMIN: 'Admin',
 };
 
-const ROLE_COLOR: Record<string, string> = {
-  USER: 'bg-gray-100 text-gray-700',
-  DOCTOR: 'bg-green-100 text-green-700',
-  ADMIN: 'bg-sky-100 text-sky-700',
+// Style cho role select — class dùng cho dropdown
+const ROLE_SELECT_CLASS: Record<string, string> = {
+  USER: 'bg-gray-50 text-gray-700 border-gray-200',
+  DOCTOR: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  ADMIN: 'bg-sky-50 text-sky-700 border-sky-200',
+};
+
+const ROLE_ICONS: Record<string, React.ReactNode> = {
+  USER: <UserIcon size={12} />,
+  DOCTOR: <Stethoscope size={12} />,
+  ADMIN: <ShieldCheck size={12} />,
+};
+
+// Màu nền avatar theo role (xét nét nhỏ)
+const ROLE_AVATAR_BG: Record<string, string> = {
+  USER: 'from-gray-400 to-gray-500',
+  DOCTOR: 'from-emerald-500 to-teal-600',
+  ADMIN: 'from-sky-500 to-cyan-500',
 };
 
 const PAGE_SIZE = 15;
@@ -93,6 +121,11 @@ export default function AdminUsers() {
     ADMIN: users.filter((u) => u.role === 'ADMIN').length,
   };
 
+  const statusCounts = {
+    active: users.filter((u) => u.status === 'ACTIVE').length,
+    inactive: users.filter((u) => u.status === 'INACTIVE').length,
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,156 +135,249 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý người dùng</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Tổng {users.length} tài khoản — {roleCounts.DOCTOR} bác sĩ, {roleCounts.ADMIN} admin
-        </p>
+    <div className="space-y-6 pb-8">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center text-white shadow-sm">
+            <Users size={20} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Quản lý người dùng</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Tổng <span className="font-semibold text-gray-700">{users.length}</span> tài khoản · {' '}
+              <span className="text-emerald-600 font-semibold">{statusCounts.active} hoạt động</span> · {' '}
+              <span className="text-rose-600 font-semibold">{statusCounts.inactive} vô hiệu</span>
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Search + Filter */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4 space-y-3">
-        <input
-          type="text"
-          placeholder="Tìm theo tên hoặc email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+      {/* Mini stats: 3 ô role */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <MiniStatCard
+          icon={<UserIcon size={18} />}
+          label="Người dùng"
+          value={roleCounts.USER}
+          iconBg="bg-gradient-to-br from-gray-400 to-gray-500"
         />
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-gray-500 font-medium">Role:</span>
-          {[
-            { key: '', label: `Tất cả (${users.length})` },
-            { key: 'USER',   label: `Người dùng (${roleCounts.USER})` },
-            { key: 'DOCTOR', label: `Bác sĩ (${roleCounts.DOCTOR})` },
-            { key: 'ADMIN',  label: `Admin (${roleCounts.ADMIN})` },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setFilterRole(key)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                filterRole === key
-                  ? 'bg-sky-600 text-white border-sky-600'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-sky-400'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <MiniStatCard
+          icon={<Stethoscope size={18} />}
+          label="Bác sĩ"
+          value={roleCounts.DOCTOR}
+          iconBg="bg-gradient-to-br from-emerald-500 to-teal-600"
+        />
+        <MiniStatCard
+          icon={<ShieldCheck size={18} />}
+          label="Admin"
+          value={roleCounts.ADMIN}
+          iconBg="bg-gradient-to-br from-sky-500 to-cyan-500"
+        />
+      </div>
+
+      {/* Toolbar: search + filter role */}
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-4 space-y-4">
+        {/* Search */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            Tìm kiếm
+          </label>
+          <div className="relative max-w-md">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tên hoặc email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+            />
+          </div>
+        </div>
+
+        {/* Filter role */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            Role
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <FilterPill
+              active={filterRole === ''}
+              label="Tất cả"
+              count={users.length}
+              onClick={() => setFilterRole('')}
+            />
+            <FilterPill
+              active={filterRole === 'USER'}
+              label="Người dùng"
+              count={roleCounts.USER}
+              onClick={() => setFilterRole('USER')}
+            />
+            <FilterPill
+              active={filterRole === 'DOCTOR'}
+              label="Bác sĩ"
+              count={roleCounts.DOCTOR}
+              onClick={() => setFilterRole('DOCTOR')}
+            />
+            <FilterPill
+              active={filterRole === 'ADMIN'}
+              label="Admin"
+              count={roleCounts.ADMIN}
+              onClick={() => setFilterRole('ADMIN')}
+            />
+          </div>
         </div>
       </div>
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow text-gray-400 gap-3">
-          <Users size={40} />
-          <p>Không tìm thấy người dùng</p>
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 py-16 text-center">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-sky-50 flex items-center justify-center">
+            <Users size={36} className="text-sky-500" />
+          </div>
+          <p className="text-gray-700 text-lg font-semibold mb-1">Không tìm thấy người dùng</p>
+          <p className="text-gray-500 text-sm">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600 text-left">
-              <tr>
-                <th className="px-4 py-3 font-semibold w-12">#</th>
-                <th className="px-4 py-3 font-semibold">Họ tên</th>
-                <th className="px-4 py-3 font-semibold">Email</th>
-                <th className="px-4 py-3 font-semibold">SĐT</th>
-                <th className="px-4 py-3 font-semibold text-center">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold text-center w-44">Role</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {paginated.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-400">{u.id}</td>
-
-                  <td className="px-4 py-3 font-medium text-gray-800">{u.fullName}</td>
-
-                  <td className="px-4 py-3 text-gray-600">{u.email}</td>
-
-                  <td className="px-4 py-3 text-gray-600">{u.phone || '—'}</td>
-
-                  {/* Trạng thái + nút khóa */}
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        u.status === 'ACTIVE'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}>
-                        {u.status === 'ACTIVE' ? 'Hoạt động' : 'Vô hiệu'}
-                      </span>
-                      {changingStatusId === u.id ? (
-                        <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
-                      ) : (
-                        <button
-                          onClick={() => handleStatusToggle(u)}
-                          title={u.status === 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa'}
-                          className={`p-1 rounded transition-colors ${
-                            u.status === 'ACTIVE'
-                              ? 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                              : 'text-red-400 hover:text-green-600 hover:bg-green-50'
-                          }`}
-                        >
-                          {u.status === 'ACTIVE' ? <Lock size={14} /> : <LockOpen size={14} />}
-                        </button>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Role dropdown */}
-                  <td className="px-4 py-3 text-center">
-                    {changingRoleId === u.id ? (
-                      <span className="inline-block w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className={`px-2 py-1 rounded-lg text-xs font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 ${ROLE_COLOR[u.role] ?? 'bg-gray-100 text-gray-700'}`}
-                      >
-                        <option value="USER">Người dùng</option>
-                        <option value="DOCTOR">Bác sĩ</option>
-                        <option value="ADMIN">Admin</option>
-                      </select>
-                    )}
-                  </td>
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50/80 text-gray-600 text-left text-xs uppercase tracking-wide">
+                <tr>
+                  <th className="px-4 py-3 font-bold w-12">#</th>
+                  <th className="px-4 py-3 font-bold">Họ tên</th>
+                  <th className="px-4 py-3 font-bold">Liên hệ</th>
+                  <th className="px-4 py-3 font-bold text-center">Trạng thái</th>
+                  <th className="px-4 py-3 font-bold text-center w-44">Role</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {paginated.map((u) => {
+                  const isActive = u.status === 'ACTIVE';
+                  const avatarBg = ROLE_AVATAR_BG[u.role] || ROLE_AVATAR_BG.USER;
+                  return (
+                    <tr key={u.id} className="hover:bg-sky-50/30 transition">
+                      <td className="px-4 py-3 text-gray-400 font-mono text-xs">{u.id}</td>
+
+                      {/* Avatar + Họ tên */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarBg} text-white flex items-center justify-center text-sm font-bold ring-2 ring-white shadow-sm shrink-0`}>
+                            {u.fullName?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <p className="font-semibold text-gray-800">{u.fullName}</p>
+                        </div>
+                      </td>
+
+                      {/* Email + SĐT gộp 1 cột */}
+                      <td className="px-4 py-3 text-gray-600">
+                        <p className="inline-flex items-center gap-1.5 text-sm">
+                          <Mail size={12} className="text-gray-400" />
+                          {u.email}
+                        </p>
+                        {u.phone ? (
+                          <p className="inline-flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                            <Phone size={11} className="text-gray-400" />
+                            {u.phone}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic mt-0.5">— chưa có SĐT</p>
+                        )}
+                      </td>
+
+                      {/* Trạng thái + nút khóa */}
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ring-1 ${
+                            isActive
+                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                              : 'bg-rose-50 text-rose-700 ring-rose-200'
+                          }`}>
+                            {isActive ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
+                            {isActive ? 'Hoạt động' : 'Vô hiệu'}
+                          </span>
+                          {changingStatusId === u.id ? (
+                            <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+                          ) : (
+                            <button
+                              onClick={() => handleStatusToggle(u)}
+                              title={isActive ? 'Khóa tài khoản' : 'Mở khóa'}
+                              className={`p-1.5 rounded-lg transition ${
+                                isActive
+                                  ? 'text-gray-400 hover:text-rose-600 hover:bg-rose-50'
+                                  : 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {isActive ? <Lock size={13} /> : <LockOpen size={13} />}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Role dropdown */}
+                      <td className="px-4 py-3 text-center">
+                        {changingRoleId === u.id ? (
+                          <span className="inline-block w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <div className="relative inline-flex items-center">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                              {ROLE_ICONS[u.role]}
+                            </span>
+                            <select
+                              value={u.role}
+                              onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                              className={`border rounded-lg pl-7 pr-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer ${
+                                ROLE_SELECT_CLASS[u.role] || 'bg-gray-50 text-gray-700 border-gray-200'
+                              }`}
+                            >
+                              <option value="USER">Người dùng</option>
+                              <option value="DOCTOR">Bác sĩ</option>
+                              <option value="ADMIN">Admin</option>
+                            </select>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
           {/* Phân trang */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 py-4 border-t border-gray-100">
-              <button
-                onClick={() => setCurrentPage((p) => p - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-              >
-                Trước
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/40">
+              <p className="text-xs text-gray-500">
+                Hiển thị <span className="font-semibold text-gray-700">{(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> trong <span className="font-semibold text-gray-700">{filtered.length}</span>
+              </p>
+              <div className="flex items-center gap-1">
                 <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-lg border text-sm font-medium transition ${
-                    currentPage === page
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-gray-700 transition"
                 >
-                  {page}
+                  <ChevronLeft size={14} /> Trước
                 </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage((p) => p + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-              >
-                Sau
-              </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 rounded-lg border text-sm font-semibold transition ${
+                      currentPage === page
+                        ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                        : 'bg-white text-gray-700 border-gray-200 hover:bg-sky-50 hover:border-sky-300'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-gray-700 transition"
+                >
+                  Sau <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -259,3 +385,62 @@ export default function AdminUsers() {
     </div>
   );
 }
+
+// Mini stat card cho 3 ô role ở trên
+function MiniStatCard({
+  icon,
+  label,
+  value,
+  iconBg,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  iconBg: string;
+}) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 p-4 flex items-center gap-3 hover:shadow-md transition">
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm ${iconBg}`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{label}</p>
+        <p className="text-xl font-bold text-gray-800 mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// Filter pill — đồng bộ với các trang khác
+function FilterPill({
+  active,
+  label,
+  count,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  count: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+        active
+          ? 'bg-sky-600 text-white shadow-md'
+          : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-sky-50 hover:text-sky-700'
+      }`}
+    >
+      {label}
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full ${
+          active ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+

@@ -32,7 +32,7 @@ export default function ProductCard({
   return (
     <Link 
       to={`/products/${product.id}`}
-      className="group block rounded-xl overflow-hidden shadow-xl bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+      className="group block rounded-2xl overflow-hidden border border-slate-100 shadow-md bg-white hover:shadow-xl hover:shadow-sky-900/10 hover:border-sky-100 transition-all duration-300 hover:-translate-y-1.5"
     >
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">

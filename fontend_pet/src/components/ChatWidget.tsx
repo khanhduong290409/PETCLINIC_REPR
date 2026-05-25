@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { PawPrint, Send, X, Sparkles } from "lucide-react";
 import { chatApi } from "../api/chatApi";
 
 interface Message {
@@ -11,12 +12,12 @@ export default function ChatWidget() {
     const [isOpen, setIsOpen]  = useState(false);
     const [messages, setMessages] = useState<Message[]>(
         [{
-        role: 'bot', text: 'Xin chào! Tôi là trợ lý PetClinic 🐾\nTôi có thể giúp bạn về dịch vụ, đặt lịch khám, hoặc bất kỳ thắc mắc nào khác!'
+        role: 'bot', text: 'Xin chào! Tôi là trợ lý của phòng khám Pawcare \nTôi có thể giúp bạn về dịch vụ, đặt lịch khám, hoặc bất kỳ thắc mắc nào khác!'
         }]
     );
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const bottomRef = useRef<HTMLDivElement>(null); // 1 thẻ div ẩn để làm chức năng tự động cuộn xuống tin nhắn mới nhất, khi có tin nhắn mới 
+    const bottomRef = useRef<HTMLDivElement>(null); // 1 thẻ div ẩn để làm chức năng tự động cuộn xuống tin nhắn mới nhất, khi có tin nhắn mới
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth'});
@@ -30,11 +31,12 @@ export default function ChatWidget() {
         const userMessage = input.trim();
         setInput('');
         setMessages(prev => [...prev, {role: 'user', text: userMessage}]);
+        setLoading(true); // bật loading để hiện 3 dots khi bot đang trả lời
 
         try{
             const reply = await chatApi.sendMessage(userMessage);
             setMessages(prev => [...prev, { role: 'bot', text: reply}]);
-        
+
         } catch {
             setMessages(prev => [...prev, {role: 'bot', text: 'Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại sau.'}]);
         } finally {
@@ -50,40 +52,74 @@ export default function ChatWidget() {
 
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-                    {isOpen && (
-                <div className="mb-4 w-80 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+            {isOpen && (
+                <div className="mb-4 w-[22rem] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-gray-200">
 
-                    {/* Header */}
-                    <div className="bg-sky-600 px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <img src="/assets/default-pet.svg" alt="PetClinic" className="w-8 h-8" />
+                    {/* Header gradient */}
+                    <div className="relative bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 px-4 py-3 flex items-center justify-between overflow-hidden">
+                        <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-2xl" />
+                        <div className="relative flex items-center gap-3">
+                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-sky-600 to-cyan-800 ring-2 ring-white/40 flex items-center justify-center shadow-md">
+                                <PawPrint size={20} className="text-white" fill="white" />
+                                {/* Status dot online */}
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-sky-600" />
+                            </div>
                             <div>
-                                <p className="text-white font-semibold text-sm">PetClinic AI</p>
-                                <p className="text-sky-200 text-xs">Luôn sẵn sàng hỗ trợ bạn</p>
+                                <p className="text-white font-bold text-sm">Trợ lí Pawcare</p>
+                                <p className="text-sky-100 text-[11px] flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" />
+                                    Đang hoạt động
+                                </p>
                             </div>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="text-white hover:text-sky-200 font-bold text-lg">✕</button>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="relative p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition"
+                            aria-label="Đóng chat"
+                        >
+                            <X size={18} />
+                        </button>
                     </div>
 
                     {/* Danh sách tin nhắn */}
-                    <div className="overflow-y-auto p-4 space-y-3 h-80 bg-gray-50">
-                        {messages.map((msg, index) => (
-                            <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
-                                    msg.role === 'user'
-                                        ? 'bg-sky-600 text-white rounded-br-sm'
-                                        : 'bg-white text-gray-700 border border-gray-200 rounded-bl-sm'
-                                }`}>
-                                    {msg.text}
+                    <div className="overflow-y-auto p-4 space-y-3 h-80 bg-gradient-to-b from-sky-50/40 via-white to-white">
+                        {messages.map((msg, index) => {
+                            const isUser = msg.role === 'user';
+                            return (
+                                <div
+                                    key={index}
+                                    className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    {!isUser && (
+                                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-600 to-cyan-800 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                            <PawPrint size={13} fill="white" />
+                                        </div>
+                                    )}
+                                    <div
+                                        className={`max-w-[75%] px-3.5 py-2 text-sm whitespace-pre-wrap shadow-sm ${
+                                            isUser
+                                                ? 'bg-gradient-to-br from-sky-600 to-sky-500 text-white rounded-2xl rounded-br-sm'
+                                                : 'bg-white text-gray-700 ring-1 ring-gray-200 rounded-2xl rounded-bl-sm'
+                                        }`}
+                                    >
+                                        {msg.text}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
-                        {/* Dấu ... khi bot đang trả lời */}
+                        {/* 3 dots animation khi bot đang trả lời */}
                         {loading && (
-                            <div className="flex justify-start">
-                                <div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-bl-sm text-gray-400 text-sm">
-                                    ...
+                            <div className="flex items-end gap-2 justify-start">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-600 to-cyan-800 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                    <PawPrint size={13} fill="white" />
+                                </div>
+                                <div className="bg-white ring-1 ring-gray-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm">
+                                    <div className="flex gap-1">
+                                        <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                        <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                        <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -92,7 +128,7 @@ export default function ChatWidget() {
                     </div>
 
                     {/* Input */}
-                    <div className="p-3 border-t bg-white flex gap-2">
+                    <div className="p-3 border-t border-gray-100 bg-white flex gap-2 items-center">
                         <input
                             type="text"
                             value={input}
@@ -100,14 +136,15 @@ export default function ChatWidget() {
                             onKeyDown={handleKeyDown}
                             placeholder="Nhập câu hỏi..."
                             disabled={loading}
-                            className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 disabled:opacity-50"
+                            className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 focus:bg-white transition disabled:opacity-50"
                         />
                         <button
                             onClick={handleSend}
                             disabled={loading || !input.trim()}
-                            className="bg-sky-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
+                            className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-sky-600 to-cyan-500 text-white rounded-xl hover:shadow-md hover:scale-105 active:scale-95 transition disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed shrink-0"
+                            aria-label="Gửi tin nhắn"
                         >
-                            Gửi
+                            <Send size={16} />
                         </button>
                     </div>
                 </div>
@@ -124,13 +161,22 @@ export default function ChatWidget() {
                 )}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative bg-sky-600 hover:bg-sky-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
+                    className="relative bg-gradient-to-br from-sky-500 via-sky-600 to-cyan-800 hover:shadow-xl text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition hover:scale-105 active:scale-95"
+                    aria-label={isOpen ? 'Đóng chat' : 'Mở chat'}
                 >
-                    {isOpen ? '✕' : <img src="/assets/default-pet.svg" alt="Chat" className="w-7 h-7" />}
+                    {isOpen ? (
+                        <X size={24} />
+                    ) : (
+                        <>
+                            <PawPrint size={26} fill="white" />
+                            {/* Sparkle nhỏ ở góc → tăng cảm giác "AI" */}
+                            <Sparkles size={11} className="absolute top-2 right-2 text-amber-100" />
+                        </>
+                    )}
                 </button>
             </div>
         </div>
 
     );
 
-}        
+}

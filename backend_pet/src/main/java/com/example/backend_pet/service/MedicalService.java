@@ -16,6 +16,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MedicalService {
+    private static final int MAX_IMAGES_PER_RECORD = 10;
+
     private final AppointmentRepository appointmentRepository;
     private final MedicalRecordRepository medicalRecordRepository;
 
@@ -58,6 +60,7 @@ public class MedicalService {
                 .prescription(record.getPrescription())
                 .notes(record.getNotes())
                 .followUpDate(record.getFollowUpDate())
+                .imageUrls(record.getImageUrls() != null ? new ArrayList<>(record.getImageUrls()) : new ArrayList<>())
                 .build();
     }
 
@@ -71,6 +74,15 @@ public class MedicalService {
         record.setPrescription(medicalRequest.getPrescription());
         record.setTreatment(medicalRequest.getTreatment());
         record.setFollowUpDate(medicalRequest.getFollowUpDate());
+
+        // Validate + replace toàn bộ list ảnh — @ElementCollection sẽ tự xóa row cũ và insert mới
+        List<String> incoming = medicalRequest.getImageUrls() != null ? medicalRequest.getImageUrls() : new ArrayList<>();
+        if (incoming.size() > MAX_IMAGES_PER_RECORD) {
+            throw new IllegalArgumentException("Mỗi bệnh án tối đa " + MAX_IMAGES_PER_RECORD + " ảnh");
+        }
+        record.getImageUrls().clear();
+        record.getImageUrls().addAll(incoming);
+
         MedicalRecord savedRecord = medicalRecordRepository.save(record);
         System.out.println("record sau khi set value" + record.toString());
 

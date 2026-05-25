@@ -1,4 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import {
+  CalendarDays,
+  AlertCircle,
+  CalendarCheck,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  PawPrint,
+  User,
+  Stethoscope,
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApi } from '../../api/adminApi';
 import type { AdminAppointment, DoctorInfo } from '../../api/adminApi';
@@ -14,11 +27,19 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELLED: 'Đã hủy',
 };
 
-const STATUS_COLOR: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700',
-  CONFIRMED: 'bg-blue-100 text-blue-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-red-100 text-red-700',
+// Style cho select status — class dùng cho dropdown
+const STATUS_SELECT_CLASS: Record<string, string> = {
+  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+  CONFIRMED: 'bg-sky-50 text-sky-700 border-sky-200',
+  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  CANCELLED: 'bg-rose-50 text-rose-700 border-rose-200',
+};
+
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  PENDING: <AlertCircle size={12} />,
+  CONFIRMED: <CalendarCheck size={12} />,
+  COMPLETED: <CheckCircle2 size={12} />,
+  CANCELLED: <XCircle size={12} />,
 };
 
 interface AdminBookingGroup {
@@ -102,6 +123,19 @@ export default function AdminAppointments() {
     });
   }, [appointments]);
 
+  // Đếm theo trạng thái — cho stats + filter
+  const counts = useMemo(() => {
+    const c = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+    for (const g of bookingGroups) {
+      c.total++;
+      if (g.status === 'PENDING') c.pending++;
+      else if (g.status === 'CONFIRMED') c.confirmed++;
+      else if (g.status === 'COMPLETED') c.completed++;
+      else if (g.status === 'CANCELLED') c.cancelled++;
+    }
+    return c;
+  }, [bookingGroups]);
+
   const handleAssignDoctor = async (
     representativeId: number,
     value: string
@@ -153,174 +187,251 @@ export default function AdminAppointments() {
     );
   }
 
+  const FILTER_TABS = [
+    { key: 'ALL', label: 'Tất cả', count: counts.total },
+    { key: 'PENDING', label: 'Chờ xác nhận', count: counts.pending },
+    { key: 'CONFIRMED', label: 'Đã xác nhận', count: counts.confirmed },
+    { key: 'COMPLETED', label: 'Hoàn thành', count: counts.completed },
+    { key: 'CANCELLED', label: 'Đã hủy', count: counts.cancelled },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý lịch khám</h1>
-        <p className="text-gray-500 text-sm mt-1">Tổng: {bookingGroups.length} lượt đặt khám</p>
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Quản lý lịch khám</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Tổng <span className="font-semibold text-gray-700">{bookingGroups.length}</span> lượt đặt khám · Phân công bác sĩ và cập nhật trạng thái
+          </p>
+        </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {['ALL', ...STATUS_OPTIONS].map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
-              filterStatus === s
-                ? 'bg-sky-600 text-white border-sky-600'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-sky-400'
-            }`}
-          >
-            {s === 'ALL' ? 'Tất cả' : STATUS_LABEL[s]}
-            {s !== 'ALL' && (
-              <span className="ml-1 text-xs">
-                ({bookingGroups.filter((g) => g.status === s).length})
-              </span>
-            )}
-          </button>
+      {/* Filter pills */}
+      <div className="flex gap-2 flex-wrap">
+        {FILTER_TABS.map((tab) => (
+          <FilterPill
+            key={tab.key}
+            active={filterStatus === tab.key}
+            label={tab.label}
+            count={tab.count}
+            onClick={() => setFilterStatus(tab.key)}
+          />
         ))}
       </div>
 
-      {/* Table */}
+      {/* Table card */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow text-gray-400">
-          Không có lịch khám nào
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 py-16 px-6 text-center">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-sky-50 flex items-center justify-center">
+            <CalendarDays size={36} className="text-sky-500" />
+          </div>
+          <p className="text-gray-700 text-lg font-semibold mb-1">Không có lịch khám nào</p>
+          <p className="text-gray-500 text-sm">
+            {filterStatus === 'ALL' ? 'Chưa có lượt đặt khám nào trong hệ thống' : 'Thử chọn trạng thái khác'}
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600 text-left">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Mã đặt</th>
-                <th className="px-4 py-3 font-semibold">Chủ / Thú cưng</th>
-                <th className="px-4 py-3 font-semibold">Dịch vụ</th>
-                <th className="px-4 py-3 font-semibold">Ngày - Giờ</th>
-                <th className="px-4 py-3 font-semibold">Bác sĩ</th>
-                <th className="px-4 py-3 font-semibold">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {paginated.map((group) => (
-                <tr key={group.bookingCode} className="hover:bg-gray-50">
-                  {/* Mã đặt */}
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">
-                    {group.bookingCode}
-                  </td>
-
-                  {/* Chủ / Thú cưng */}
-                  <td className="px-4 py-3">
-                    <p className="font-semibold text-gray-800">{group.ownerName}</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {group.pets.map((pet) => (
-                        <span
-                          key={pet.id}
-                          className="text-xs bg-sky-50 border border-sky-100 rounded px-2 py-0.5 text-gray-600"
-                        >
-                          {pet.name}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-
-                  {/* Dịch vụ */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1 mb-1">
-                      {group.services.map((s) => (
-                        <span key={s.title} className="text-xs bg-sky-50 border border-sky-100 rounded px-2 py-0.5 text-sky-700">
-                          {s.title}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-400">{group.totalPrice.toLocaleString('vi-VN')}đ</p>
-                    {group.pets.length > 1 && (
-                      <p className="text-xs text-gray-400">{group.pets.length} thú cưng</p>
-                    )}
-                  </td>
-
-                  {/* Ngày - Giờ */}
-                  <td className="px-4 py-3">
-                    <p>{new Date(group.appointmentDate).toLocaleDateString('vi-VN')}</p>
-                    <p className="text-gray-500">{group.appointmentTime}</p>
-                  </td>
-
-                  {/* Bác sĩ — 1 dropdown cho cả nhóm */}
-                  <td className="px-4 py-3">
-                    <select
-                      value={group.doctorId ?? ''}
-                      onChange={(e) =>
-                        handleAssignDoctor(group.representativeId, e.target.value)
-                      }
-                      className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-sky-400"
-                      disabled={group.status === 'CANCELLED' || group.status === 'COMPLETED'}
-                    >
-                      <option value="">-- Chưa phân công --</option>
-                      {doctors.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.fullName}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  {/* Trạng thái — 1 dropdown cho cả nhóm */}
-                  <td className="px-4 py-3">
-                    <select
-                      value={group.status}
-                      onChange={(e) =>
-                        handleUpdateStatus(group.representativeId, e.target.value)
-                      }
-                      className={`border rounded px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-sky-400 ${STATUS_COLOR[group.status]}`}
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>
-                          {STATUS_LABEL[s]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50/80 text-gray-600 text-left text-xs uppercase tracking-wide">
+                <tr>
+                  <th className="px-4 py-3 font-bold">Mã đặt</th>
+                  <th className="px-4 py-3 font-bold">Chủ / Thú cưng</th>
+                  <th className="px-4 py-3 font-bold">Dịch vụ</th>
+                  <th className="px-4 py-3 font-bold">Ngày - Giờ</th>
+                  <th className="px-4 py-3 font-bold">Bác sĩ</th>
+                  <th className="px-4 py-3 font-bold">Trạng thái</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {paginated.map((group) => {
+                  const lockDoctorAssign = group.status === 'CANCELLED' || group.status === 'COMPLETED';
+                  return (
+                    <tr key={group.bookingCode} className="hover:bg-sky-50/30 transition">
+                      {/* Mã đặt */}
+                      <td className="px-4 py-3 font-mono text-xs text-gray-500 whitespace-nowrap">
+                        #{group.bookingCode}
+                      </td>
+
+                      {/* Chủ / Thú cưng */}
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-gray-800 inline-flex items-center gap-1.5">
+                          <User size={13} className="text-gray-400" />
+                          {group.ownerName}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {group.pets.map((pet) => (
+                            <span
+                              key={pet.id}
+                              className="inline-flex items-center gap-1 text-xs bg-gray-50 ring-1 ring-gray-200 rounded-md px-2 py-0.5 text-gray-700"
+                            >
+                              <PawPrint size={10} className="text-gray-400" />
+                              {pet.name}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Dịch vụ */}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          {group.services.map((s) => (
+                            <span
+                              key={s.title}
+                              className="inline-flex items-center gap-1 text-xs bg-sky-50 ring-1 ring-sky-100 rounded-md px-2 py-0.5 text-sky-700 font-semibold"
+                            >
+                              <Sparkles size={10} />
+                              {s.title}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="font-semibold text-rose-600 text-sm">
+                          {group.totalPrice.toLocaleString('vi-VN')}đ
+                        </p>
+                        {group.pets.length > 1 && (
+                          <p className="text-[11px] text-gray-400">{group.pets.length} thú cưng</p>
+                        )}
+                      </td>
+
+                      {/* Ngày - Giờ */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <p className="text-gray-800 font-medium">
+                          {new Date(group.appointmentDate).toLocaleDateString('vi-VN')}
+                        </p>
+                        <p className="text-xs text-gray-500">{group.appointmentTime}</p>
+                      </td>
+
+                      {/* Bác sĩ — 1 dropdown cho cả nhóm */}
+                      <td className="px-4 py-3">
+                        <div className="relative">
+                          <Stethoscope
+                            size={13}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                          />
+                          <select
+                            value={group.doctorId ?? ''}
+                            onChange={(e) =>
+                              handleAssignDoctor(group.representativeId, e.target.value)
+                            }
+                            className="border border-gray-200 rounded-lg pl-7 pr-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 disabled:bg-gray-50"
+                            disabled={lockDoctorAssign}
+                          >
+                            <option value="">-- Chưa phân công --</option>
+                            {doctors.map((d) => (
+                              <option key={d.id} value={d.id}>
+                                {d.fullName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </td>
+
+                      {/* Trạng thái — 1 dropdown cho cả nhóm */}
+                      <td className="px-4 py-3">
+                        <div className="relative inline-flex items-center">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                            {STATUS_ICONS[group.status]}
+                          </span>
+                          <select
+                            value={group.status}
+                            onChange={(e) =>
+                              handleUpdateStatus(group.representativeId, e.target.value)
+                            }
+                            className={`border rounded-lg pl-7 pr-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/20 ${
+                              STATUS_SELECT_CLASS[group.status] || 'bg-gray-50 text-gray-700 border-gray-200'
+                            }`}
+                          >
+                            {STATUS_OPTIONS.map((s) => (
+                              <option key={s} value={s}>
+                                {STATUS_LABEL[s]}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
           {/* Phân trang */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 py-4 border-t border-gray-100">
-              <button
-                onClick={() => setCurrentPage((p) => p - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-              >
-                Trước
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/40">
+              <p className="text-xs text-gray-500">
+                Hiển thị <span className="font-semibold text-gray-700">{(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> trong <span className="font-semibold text-gray-700">{filtered.length}</span>
+              </p>
+              <div className="flex items-center gap-1">
                 <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-lg border text-sm font-medium transition ${
-                    currentPage === page
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-gray-700 transition"
                 >
-                  {page}
+                  <ChevronLeft size={14} /> Trước
                 </button>
-              ))}
 
-              <button
-                onClick={() => setCurrentPage((p) => p + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-              >
-                Sau
-              </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 rounded-lg border text-sm font-semibold transition ${
+                      currentPage === page
+                        ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                        : 'bg-white text-gray-700 border-gray-200 hover:bg-sky-50 hover:border-sky-300'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-gray-700 transition"
+                >
+                  Sau <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+// Filter pill — đồng bộ với các trang khác
+function FilterPill({
+  active,
+  label,
+  count,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  count: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+        active
+          ? 'bg-sky-600 text-white shadow-md'
+          : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-sky-50 hover:text-sky-700'
+      }`}
+    >
+      {label}
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full ${
+          active ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {count}
+      </span>
+    </button>
   );
 }

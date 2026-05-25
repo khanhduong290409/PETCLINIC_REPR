@@ -2,27 +2,50 @@
 
 A full-stack web application for managing a veterinary clinic — covering appointment booking, medical records, e-commerce, and online payment.
 
+🌐 **Live Demo:** [https://petclinic-repr.vercel.app](https://petclinic-repr.vercel.app)
+
 ---
 
 ## 📸 Screenshots
 
-> *(Add screenshots here)*
-
-| Login & Register | Home |
+### Authentication
+| Login | Register |
 |---|---|
-| ![Login](docs/screenshots/login.png) | ![Home](docs/screenshots/home.png) |
+| ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
 
-| Book Appointment | My Appointments |
-|---|---|
-| ![Book](docs/screenshots/book-appointment.png) | ![Appointments](docs/screenshots/my-appointments.png) |
+### User — General
+| Home | Products | Product Detail |
+|---|---|---|
+| ![Home](docs/screenshots/home.png) | ![Products](docs/screenshots/products.png) | ![Product Detail](docs/screenshots/product-detail.png) |
 
-| Admin Dashboard | Admin Appointments |
-|---|---|
-| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Admin](docs/screenshots/admin-appointments.png) |
+### User — Pet & Appointment
+| My Pets | Book Appointment | My Appointments |
+|---|---|---|
+| ![My Pets](docs/screenshots/my-pets.png) | ![Book](docs/screenshots/book-appointment.png) | ![Appointments](docs/screenshots/my-appointments.png) |
 
-| Doctor Dashboard | QR Payment |
+### User — Medical Records
+| Pet Medical Records | Appointment Medical Records |
 |---|---|
-| ![Doctor](docs/screenshots/doctor.png) | ![Payment](docs/screenshots/payment-qr.png) |
+| ![Pet Records](docs/screenshots/pet-medical-records.png) | ![Apt Records](docs/screenshots/appointment-medical-records.png) |
+
+### User — Orders & Payment
+| Cart | Checkout | Orders | QR Payment |
+|---|---|---|---|
+| ![Cart](docs/screenshots/cart.png) | ![Checkout](docs/screenshots/checkout.png) | ![Orders](docs/screenshots/orders.png) | ![QR Payment](docs/screenshots/payment-qr.png) |
+
+### Doctor
+| Doctor Appointments | Write Medical Record |
+|---|---|
+| ![Doctor Appointments](docs/screenshots/doctor-appointments.png) | ![Medical Record](docs/screenshots/doctor-medical-record.png) |
+
+### Admin
+| Dashboard | Manage Appointments | Manage Orders |
+|---|---|---|
+| ![Dashboard](docs/screenshots/admin-dashboard.png) | ![Appointments](docs/screenshots/admin-appointments.png) | ![Orders](docs/screenshots/admin-orders.png) |
+
+| Manage Products | Manage Services | Manage Users |
+|---|---|---|
+| ![Products](docs/screenshots/admin-products.png) | ![Services](docs/screenshots/admin-services.png) | ![Users](docs/screenshots/admin-users.png) |
 
 ---
 

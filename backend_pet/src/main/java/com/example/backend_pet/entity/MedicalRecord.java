@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "medical_records")
@@ -33,4 +35,14 @@ public class MedicalRecord extends BaseEntity {
 
     @Column(name = "follow_up_date")
     private LocalDate followUpDate; // Ngày tái khám
+
+    // Ảnh bệnh án (X-quang, xét nghiệm,...) — bảng phụ tự tạo: medical_record_images
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+        name = "medical_record_images",
+        joinColumns = @JoinColumn(name = "medical_record_id")
+    )
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Builder.Default
+    private List<String> imageUrls = new ArrayList<>();
 }

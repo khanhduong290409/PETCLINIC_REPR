@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.List;
 @ToString
 @Data
 @Builder
@@ -18,4 +19,5 @@ public class MedicalRequest {
     private String prescription;
     private String notes;
     private LocalDate followUpDate;
+    private List<String> imageUrls;
 }

@@ -124,7 +124,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   const dropdownItemClass = "flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 bg-cyan-900 text-white border-b border-white/10 shadow-md">
+    <header className="fixed inset-x-0 top-0 z-30 bg-cyan-800 text-white border-b border-white/10 shadow-md">
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
 
         {/* Logo */}
