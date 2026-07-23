@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                // Webhook SePay — không có JWT, tự bảo vệ bằng API key riêng trong PaymentService
+                .requestMatchers("/api/payment/webhook").permitAll()
                 // Public GET — khách chưa đăng nhập vẫn xem được
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/services/**").permitAll()
