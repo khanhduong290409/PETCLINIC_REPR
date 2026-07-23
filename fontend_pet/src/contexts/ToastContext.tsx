@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { Check, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -101,8 +102,8 @@ việc dùng usecallback giúp giữ nguyên reference của function này quan 
                             ${toast.type === 'error'   ? 'bg-red-100 text-red-600' : ''}
                             ${toast.type === 'info'    ? 'bg-amber-100 text-amber-600' : ''}
                         `}>
-                            {toast.type === 'success' && '✓'}
-                            {toast.type === 'error'   && '✕'}
+                            {toast.type === 'success' && <Check size={14} />}
+                            {toast.type === 'error'   && <X size={14} />}
                             {toast.type === 'info'    && 'i'}
                         </div>
 
@@ -119,7 +120,7 @@ việc dùng usecallback giúp giữ nguyên reference của function này quan 
                                 ${toast.type === 'info'    ? 'hover:bg-amber-200' : ''}
                             `}
                         >
-                            ✕
+                            <X size={12} />
                         </button>
                     </div>
                 ))}

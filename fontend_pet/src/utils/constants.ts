@@ -102,34 +102,6 @@ export const TESTIMONIAL_DATA = [
   },
 ];
 
-// ==================== FEATURE DATA ====================
-export const FEATURES = [
-  {
-    id: 1,
-    icon: "🩺",
-    title: "Khám tổng quát & điều trị",
-    description: "Khám sức khỏe định kỳ và điều trị các bệnh lý thường gặp",
-  },
-  {
-    id: 2,
-    icon: "💉",
-    title: "Tiêm phòng – xét nghiệm",
-    description: "Tiêm phòng đầy đủ và xét nghiệm chính xác",
-  },
-  {
-    id: 3,
-    icon: "🍖",
-    title: "Tư vấn dinh dưỡng",
-    description: "Tư vấn chế độ ăn phù hợp cho từng giai đoạn",
-  },
-  {
-    id: 4,
-    icon: "✂️",
-    title: "Grooming & Spa",
-    description: "Dịch vụ làm đẹp chuyên nghiệp cho thú cưng",
-  },
-];
-
 // ==================== APP CONFIG ====================
 export const APP_CONFIG = {
   name: "PetClinic",

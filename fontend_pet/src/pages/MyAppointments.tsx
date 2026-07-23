@@ -14,6 +14,7 @@ import {
   CalendarCheck,
   PawPrint,
   Sparkles,
+  Star,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
@@ -482,7 +483,7 @@ export default function MyAppointments() {
                             onClick={() => openReviewModal(group.bookingCode)}
                             className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition"
                           >
-                            ⭐ Đánh giá
+                            <Star size={14} /> Đánh giá
                           </button>
                         ))}
                       {canCancel && (
@@ -524,11 +525,11 @@ export default function MyAppointments() {
                         <button
                           key={star}
                           onClick={() => setReviewRating(star)}
-                          className={`text-3xl transition ${
+                          className={`transition ${
                             star <= reviewRating ? 'text-amber-400' : 'text-gray-300'
                           }`}
                         >
-                          ★
+                          <Star size={28} fill="currentColor" />
                         </button>
                       ))}
                     </div>

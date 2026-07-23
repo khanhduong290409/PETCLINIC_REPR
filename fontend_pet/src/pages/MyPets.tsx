@@ -471,8 +471,12 @@ export default function MyPets() {
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {editingPetId ? '✏️ Cập nhật thông tin bé' : '🐾 Thêm thú cưng mới'}
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  {editingPetId ? (
+                    <><Pencil size={20} className="text-sky-600" /> Cập nhật thông tin bé</>
+                  ) : (
+                    <><PawPrint size={20} className="text-sky-600" /> Thêm thú cưng mới</>
+                  )}
                 </h2>
                 <button onClick={closeForm} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition">
                   <X size={20} />

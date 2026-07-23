@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, Quote, MessageCircleHeart } from "lucide-react";
+import { Star, Quote, MessageCircleHeart, Check } from "lucide-react";
 import { reviewApi } from "../../api/reviewApi";
 import type { ReviewResponse } from "../../api/reviewApi";
 
@@ -107,7 +107,7 @@ export default function Testimonials() {
               </div>
 
               <div className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-2 text-emerald-600 text-sm">
-                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold">✓</div>
+                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center font-bold"><Check size={12} /></div>
                 <span className="font-semibold">100% đánh giá đã xác thực</span>
               </div>
             </div>
@@ -188,7 +188,7 @@ function ReviewListItem({ review }: { review: ReviewResponse }) {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <span className="font-bold text-slate-800 text-base">{review.customerName}</span>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Đã xác thực ✓</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Đã xác thực <Check size={10} /></span>
               <span className="text-xs font-medium text-slate-400">
                 {new Date(review.createdAt).toLocaleDateString('vi-VN')}
               </span>

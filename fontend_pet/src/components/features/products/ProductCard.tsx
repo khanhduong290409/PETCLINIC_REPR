@@ -1,6 +1,6 @@
 // frontend/src/components/features/products/ProductCard.tsx
 import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, AlertTriangle } from "lucide-react";
 import type { Product } from "../../../types";
 import { getCategoryName } from "../../../utils/category";
 import { useCart } from "../../../contexts/CartContext";
@@ -105,7 +105,7 @@ export default function ProductCard({
         {/* Stock Warning */}
         {isLowStock && (
           <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-            <span>⚠️</span>
+            <AlertTriangle size={12} />
             Sắp hết hàng
           </p>
         )}

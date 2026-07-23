@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
+  Check,
   Truck,
   Wallet,
   CreditCard,
@@ -191,7 +192,15 @@ export default function Checkout() {
                 num={1}
                 icon={<Truck size={18} />}
                 title="Thông tin giao hàng"
-                hint={stepDone.shipping ? '✓ Đã điền' : 'Bắt buộc'}
+                hint={
+                  stepDone.shipping ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Check size={12} /> Đã điền
+                    </span>
+                  ) : (
+                    'Bắt buộc'
+                  )
+                }
                 active={stepDone.shipping}
               >
                 {/* Họ tên */}
@@ -448,7 +457,7 @@ function StepChip({ num, label, done }: { num: number; label: string; done: bool
           done ? 'bg-white text-sky-700' : 'bg-white/30 text-white'
         }`}
       >
-        {done ? '✓' : num}
+        {done ? <Check size={14} /> : num}
       </span>
       <span className="text-sm font-semibold truncate">{label}</span>
     </div>
@@ -467,7 +476,7 @@ function SectionCard({
   num: number;
   icon: React.ReactNode;
   title: string;
-  hint?: string;
+  hint?: React.ReactNode;
   active: boolean;
   children: React.ReactNode;
 }) {

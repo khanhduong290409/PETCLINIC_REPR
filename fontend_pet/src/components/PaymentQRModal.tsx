@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Copy, Check, QrCode } from 'lucide-react';
+import { CheckCircle, Copy, Check, QrCode, X } from 'lucide-react';
 import { paymentApi } from '../api/paymentApi';
 
 interface Props {
@@ -190,7 +190,7 @@ export default function PaymentQRModal({
                 onClick={onClose}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 w-8 h-8 flex items-center justify-center rounded-full transition-colors z-10"
               >
-                ✕
+                <X size={16} />
               </button>
 
               <div className="text-center mb-5 mt-1">

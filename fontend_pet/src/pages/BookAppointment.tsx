@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Calendar,
   Stethoscope,
+  Check,
   CheckCircle,
   Clock,
   PawPrint,
@@ -23,11 +24,6 @@ const SPECIES_MAP: Record<string, string> = {
   DOG: 'Chó', CAT: 'Mèo', BIRD: 'Chim',
   RABBIT: 'Thỏ', HAMSTER: 'Hamster', OTHER: 'Khác',
 };
-
-// const SPECIES_EMOJI: Record<string, string> = {
-//   DOG: '🐕', CAT: '🐱', BIRD: '🐦',
-//   RABBIT: '🐰', HAMSTER: '🐹', OTHER: '🐾',
-// };
 
 const DEFAULT_PET_IMAGES: Record<string, string> = {
   DOG: '/assets/default-dog.svg',
@@ -402,9 +398,6 @@ export default function BookAppointment() {
                               }}
                             />
                           ) : (
-                            // <span className="text-3xl w-11 h-11 flex items-center justify-center bg-gray-50 rounded-xl">
-                            //   {SPECIES_EMOJI[pet.species] || '🐾'}
-                            // </span>
                             <img
                               src={DEFAULT_PET_IMAGES[pet.species]}
                               alt={pet.name}
@@ -437,7 +430,15 @@ export default function BookAppointment() {
                 num={3}
                 icon={<Calendar size={18} />}
                 title="Chọn ngày giờ"
-                hint={appointmentDate && appointmentTime ? '✓ Đã chọn' : 'Chưa chọn'}
+                hint={
+                  appointmentDate && appointmentTime ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Check size={12} /> Đã chọn
+                    </span>
+                  ) : (
+                    'Chưa chọn'
+                  )
+                }
                 active={stepDone.date}
               >
                 {/* Quick-pick chips ngày */}
@@ -659,7 +660,7 @@ function StepChip({ num, label, done }: { num: number; label: string; done: bool
           done ? 'bg-white text-sky-700' : 'bg-white/30 text-white'
         }`}
       >
-        {done ? '✓' : num}
+        {done ? <Check size={14} /> : num}
       </span>
       <span className="text-sm font-semibold truncate">{label}</span>
     </div>
@@ -678,7 +679,7 @@ function SectionCard({
   num: number;
   icon: React.ReactNode;
   title: string;
-  hint?: string;
+  hint?: React.ReactNode;
   active: boolean;
   children: React.ReactNode;
 }) {

@@ -34,9 +34,6 @@ export function MedicalRecordCard({
               className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
             />
           ) : (
-            // <div className="w-14 h-14 rounded-full bg-white border-2 border-sky-200 flex items-center justify-center text-3xl shadow-sm">
-            //   {SPECIES_EMOJI[record.petSpecies] || '🐾'}
-            // </div>
             <img
             src={DEFAULT_PET_IMAGES[record.petSpecies]}
             className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
