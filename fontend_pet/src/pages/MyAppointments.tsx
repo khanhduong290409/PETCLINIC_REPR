@@ -15,6 +15,8 @@ import {
   PawPrint,
   Sparkles,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
@@ -63,6 +65,8 @@ const DEFAULT_PET_IMAGES: Record<string, string> = {
 
 type FilterKey = 'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED';
 
+const PAGE_SIZE = 5;
+
 interface BookingGroup {
   bookingCode: string;
   services: { title: string; price: number }[];
@@ -81,6 +85,7 @@ export default function MyAppointments() {
   const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // State cho modal đánh giá
   const [reviewModal, setReviewModal] = useState<{ bookingCode: string } | null>(null);
@@ -159,7 +164,7 @@ export default function MyAppointments() {
       map.get(apt.bookingCode)!.push(apt);
     }
 
-    return Array.from(map.entries()).map(([bookingCode, items]) => {
+    const groups = Array.from(map.entries()).map(([bookingCode, items]) => {
       const first = items[0];
       const pets = items.map((item) => ({
         name: item.petName,
@@ -182,6 +187,14 @@ export default function MyAppointments() {
         firstAppointmentId: first.id,
       };
     });
+
+    // Sort lịch khám mới nhất lên đầu
+    groups.sort((a, b) =>
+      `${b.appointmentDate} ${b.appointmentTime}`.localeCompare(
+        `${a.appointmentDate} ${a.appointmentTime}`
+      )
+    );
+    return groups;
   }, [appointments]);
 
   // Đếm theo từng trạng thái để hiển thị ô thống kê + filter tabs
@@ -205,6 +218,11 @@ export default function MyAppointments() {
     if (filter === 'CANCELLED') return bookingGroups.filter((g) => g.status === 'CANCELLED');
     return bookingGroups;
   }, [bookingGroups, filter]);
+
+  // Phân trang (giống trang sản phẩm)
+  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const paginatedGroups = filteredGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleCancel = async (group: BookingGroup) => {
     if (!user) return;
@@ -312,7 +330,10 @@ export default function MyAppointments() {
             return (
               <button
                 key={tab.key}
-                onClick={() => setFilter(tab.key)}
+                onClick={() => {
+                  setFilter(tab.key);
+                  setCurrentPage(1);
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap ${
                   active
                     ? 'bg-sky-600 text-white shadow-md'
@@ -355,7 +376,7 @@ export default function MyAppointments() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredGroups.map((group) => {
+            {paginatedGroups.map((group) => {
               const status =
                 STATUS_MAP[group.status] || {
                   label: group.status,
@@ -499,6 +520,47 @@ export default function MyAppointments() {
                 </div>
               );
             })}
+
+            {/* Phân trang (giống trang sản phẩm) */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white rounded-2xl ring-1 ring-gray-100 px-4 py-3">
+                <p className="text-xs text-gray-500">
+                  Trang <span className="font-semibold text-gray-700">{page}</span> /{' '}
+                  <span className="font-semibold text-gray-700">{totalPages}</span>
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(page - 1)}
+                    disabled={page === 1}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white text-sm font-medium text-gray-700 transition"
+                  >
+                    <ChevronLeft size={14} /> Trước
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`w-9 h-9 rounded-lg border text-sm font-semibold transition ${
+                        page === p
+                          ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-sky-50 hover:border-sky-300'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage(page + 1)}
+                    disabled={page === totalPages}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white text-sm font-medium text-gray-700 transition"
+                  >
+                    Sau <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
