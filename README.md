@@ -4,6 +4,8 @@ A full-stack web application for managing a veterinary clinic — covering appoi
 
 🌐 **Live Demo:** [https://petclinic-repr.vercel.app](https://petclinic-repr.vercel.app)
 
+🎬 **Video Demo:** [https://youtu.be/FUWncQzzPsE](https://youtu.be/FUWncQzzPsE)
+
 ---
 
 ## 📸 Screenshots
