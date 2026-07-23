@@ -16,7 +16,7 @@ import { productApi } from '../api/productApi';
 import ProductCard from '../components/features/products/ProductCard';
 import type { Product } from '../types';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
 
 // Map category sang tiếng Việt (gợi ý, không bắt buộc khớp 100%)
 const CATEGORY_LABEL: Record<string, string> = {
