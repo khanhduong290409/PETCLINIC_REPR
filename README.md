@@ -6,6 +6,14 @@ A full-stack web application for managing a veterinary clinic — covering appoi
 
 🎬 **Video Demo:** [https://youtu.be/FUWncQzzPsE](https://youtu.be/FUWncQzzPsE)
 
+🔑 **Demo Accounts:**
+
+| Role | Email | Password |
+|------|-------|----------|
+| 👤 User | `test@example.com` | `password123` |
+| 🩺 Doctor | `doctor@petclinic.com` | `doctor123` |
+| 🛠️ Admin | `admin@petclinic.com` | `admin123` |
+
 ---
 
 ## 📸 Screenshots
