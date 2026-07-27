@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                // Health check cho UptimeRobot ping giu Render va Neon DB song
+                .requestMatchers("/api/health").permitAll()
                 // Webhook SePay — không có JWT, tự bảo vệ bằng API key riêng trong PaymentService
                 .requestMatchers("/api/payment/webhook").permitAll()
                 // Public GET — khách chưa đăng nhập vẫn xem được
