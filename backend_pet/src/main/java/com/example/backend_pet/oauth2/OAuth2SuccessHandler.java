@@ -42,3 +42,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.sendRedirect(frontendUrl + "/oauth2/callback?token=" + token);
     }
 }
+
+    // khi mà xác thực thành công (google) spring đổi code lấy info user oAuth2User OAuth2User oAuth2User = super.loadUser(userRequest); ở customeoauth2
+    // sau đó tự lưu nó vào Principal nên oAuth2User ở đây OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal(); là chỉ việc lấy nó ra từ principal
+    //việc user được lấy bằng email => user được lấy info thẳng từ db rồi mới tạo token
+

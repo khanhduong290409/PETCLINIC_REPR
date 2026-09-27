@@ -46,3 +46,5 @@ public class MedicalRecord extends BaseEntity {
     @Builder.Default
     private List<String> imageUrls = new ArrayList<>();
 }
+// @ElementCollection là cách JPA lưu danh sách giá trị đơn giản (String, int...) 
+// vào bảng phụ mà không cần tạo entity riêng — Hibernate tự lo toàn bộ SQL.

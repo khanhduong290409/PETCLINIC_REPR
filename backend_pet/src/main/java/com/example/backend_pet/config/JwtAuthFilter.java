@@ -36,6 +36,7 @@ private final JwtUtils jwtUtils;
                         List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                //ta set auth vào securityContextholder vì nó được dùng ở .authorizeHttpRequests trong securityConfig 
                 
                 /*
                 SecurityContextHolder      // kho lưu trữ toàn cục của Spring Security
@@ -47,6 +48,8 @@ private final JwtUtils jwtUtils;
                 // Bất kỳ chỗ nào trong code cũng có thể đọc được
                 //SecurityContextHolder.getContext().getAuthentication().getName()
                 // → "user@gmail.com"
+
+
 
 
 

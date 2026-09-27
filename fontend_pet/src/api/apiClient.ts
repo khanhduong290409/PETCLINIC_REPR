@@ -23,6 +23,16 @@ export function parseJwt(token: string): Record<string, unknown> {
   //return JSON.parse(window.atob(base64)); ( không có dòng chuyễn dữ liệu bytes)
   //lỗi này chỉ xảy ra với login google vì login google lấy info user từ token để gán vào tên user ở fontend dẫn đến lỗi
   //còn với login bth thì lấy info user bằng api trực tiếp
+  //giải pháp : 
+  /**
+   * Base64 string
+   ↓ atob
+bytes (nhưng kẹt trong string)
+   ↓ charCodeAt + Uint8Array.from
+bytes thật (dạng số 0–255 trong Uint8Array)
+   ↓ TextDecoder.decode (theo quy tắc UTF-8)
+chữ ("Tá")
+   */
 
 }
 

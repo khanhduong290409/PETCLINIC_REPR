@@ -76,13 +76,13 @@ export interface DashboardData {
   totalAppointments: number;
   todayAppointments: number;
   totalCustomers: number;
-  revenueThisMonth: number;
-  revenueByDay: DailyRevenue[];
-  orderStatusCounts: StatusCount[];
-  appointmentStatusCounts: StatusCount[];
-  topProducts: ProductSale[];
-  recentOrders: RecentOrder[];
-  upcomingAppointments: UpcomingAppointment[];
+  revenueThisMonth: number;//card doanh thu thang nay
+  revenueByDay: DailyRevenue[];//linechart doanh thu 30 ngay
+  orderStatusCounts: StatusCount[];//piechart trạng thái đơn hàng
+  appointmentStatusCounts: StatusCount[];//barchart lịch khám theo trạng thái
+  topProducts: ProductSale[];//barchart nằm ngang top 5 sản phẩm
+  recentOrders: RecentOrder[];//bảng 5 đơn hàng mới nhất
+  upcomingAppointments: UpcomingAppointment[];//bảng 5 lịch khám sắp tới
 }
 
 export interface AdminOrderItem {

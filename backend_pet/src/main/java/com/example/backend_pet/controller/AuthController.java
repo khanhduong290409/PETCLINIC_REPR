@@ -19,6 +19,7 @@ public class AuthController {
     }
 
     // POST /api/auth/register - Đăng ký
+    //@Valid kích hoạt validation cho object được truyền vào - nó đọc các annotation như @NotBlank, @Email,... trên các field của DTO và kiểm tra trước khi cho vào method
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);

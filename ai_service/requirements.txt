@@ -1,0 +1,23 @@
+# Moi truong train + phan tich du lieu (KHONG phai moi truong chay service).
+# Giai doan 3 se tao them requirements-service.txt gon hon cho Docker:
+# service chi can fastapi + uvicorn + scikit-learn + numpy, khong can jupyter/matplotlib.
+#
+# Cai dat:
+#   python -m venv ai_service/.venv
+#   ai_service/.venv/Scripts/python.exe -m pip install -r ai_service/requirements.txt
+#
+# Python 3.14.7 / Windows. Ngay ghim: 2026-09-14.
+
+# --- Thu vien dung truc tiep trong script ---
+scikit-learn==1.9.1
+pandas==3.0.5
+matplotlib==3.11.2
+jupyter==1.1.1
+
+# --- Phu thuoc loi, ghim de ket qua lap lai duoc ---
+# RandomForest dung bo sinh so ngau nhien cua numpy. Doi phien ban numpy/scipy/joblib
+# co the lam lech ket qua du da dat random_state=42 - luc do so R1 trong bao cao
+# se khong khop voi so chay lai. Ba dong nay la de tranh dung chuyen do.
+numpy==2.5.3
+scipy==1.18.1
+joblib==1.6.0

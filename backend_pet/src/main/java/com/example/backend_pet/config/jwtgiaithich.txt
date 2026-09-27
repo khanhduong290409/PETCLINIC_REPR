@@ -108,3 +108,75 @@ Bước cuối — build và trả về chuỗi JWT hoàn chỉnh:
 base64(header) + "." + base64(payload) + "." + signature
 
 eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGdtYWlsLmNvbSIsInVzZXJJZCI6NDIsInJvbGUiOiJBRE1JTiJ9.xyz123
+
+
+
+QUY TRÌNH CHECK VÀ GIẢI MÃ VÀ SO SÁNH TOKEN
+    public Claims extractClaims(String token) {
+        return Jwts.parser()//tạo parser để đọc token
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+verifyWith(getKey()) làm gì?
+Nó không mã hoá gì cả — nó chỉ nói với parser:
+
+"Khi mày gặp token, hãy dùng cái key này để tính lại signature rồi so sánh"
+
+Việc so sánh thực sự xảy ra bên trong .parseSignedClaims(token) — không phải ở verifyWith.
+.parseSignedClaims(token) làm gì — chi tiết từng bước
+
+token = "eyJhbGci...  .  eyJzdWIi...  .  SflKxwRJ..."
+              │               │               │
+           header          payload        signature
+Bước 1 — Tách chuỗi thành 3 phần bằng dấu .
+
+
+header_b64    = "eyJhbGci..."
+payload_b64   = "eyJzdWIi..."
+signature_cũ  = "SflKxwRJ..."   ← signature client gửi lên
+Bước 2 — Tính lại signature từ đầu bằng key từ verifyWith
+
+
+signature_mới = HMAC_SHA256(
+                    header_b64 + "." + payload_b64,
+                    secretKey
+                )
+              → "SflKxwRJ..."
+Bước 3 — So sánh 2 signature
+
+
+signature_mới  ==  signature_cũ  ?
+  "SflKxwRJ..."    "SflKxwRJ..."
+        └────── KHỚP ──────┘
+                   ↓
+             tiếp tục bước 4
+Nếu không khớp → throw SignatureException ngay, dừng lại không chạy tiếp.
+
+Bước 4 — Kiểm tra hết hạn
+
+
+exp trong payload = 1716220800  (Unix timestamp)
+Thời điểm hiện tại             = 1716134400
+
+1716220800 > 1716134400  → còn hạn → tiếp tục
+Nếu hết hạn → throw ExpiredJwtException, dừng lại.
+
+Bước 5 — Trả về Jws<Claims> object (bọc cả header + payload)
+
+.getPayload() làm gì?
+parseSignedClaims trả về Jws<Claims> — một object bọc cả header lẫn payload:
+
+
+Jws<Claims>
+├── getHeader()   → {"alg":"HS256"}
+└── getPayload()  → Claims {
+                        sub      = "user@gmail.com",
+                        userId   = 42,
+                        role     = "ADMIN",
+                        iat      = Date(...),
+                        exp      = Date(...)
+                    }
+.getPayload() chỉ lấy ra phần payload (Claims) — bỏ header đi vì không cần.

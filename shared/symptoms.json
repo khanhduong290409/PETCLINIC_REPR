@@ -1,0 +1,125 @@
+{
+  "version": 4,
+  "species": "DOG",
+  "note": "FEATURE VECTOR = mang 'symptoms' NOI TIEP mang 'medicalHistory' (dung thu tu nay). THU TU phan tu trong hai mang do CHINH LA THU TU COT dua vao model. Chi duoc THEM vao CUOI moi mang. Khong chen giua, khong xoa, khong doi thu tu - lam vay model se du doan sai HOAN TOAN ma KHONG bao loi. Moi lan thay doi phai tang 'version' va retrain lai model.",
+  "changelogV3": "2026-09-13 (QD-10): thu hep pham vi con LOAI CHO theo yeu cau giang vien. Benh 34 -> 20 (bo 17 benh cua meo/tho/hamster/chim, them rabies + leptospirosis + ckd_dog). Trieu chung 46 -> 50 (them 4 ma o CUOI mang: abdominal_pain, oral_ulceration, aggression, jaw_drop). Feature vector = 50 + 14 = 64 cot. Chua train model nao voi v2 nen viec bo benh khong lam hong gi.",
+  "changelogV4": "2026-09-13: them ma 'paralysis' o CUOI mang symptoms, sau khi lap bang anh xa mapping_dogfinal3.csv. Ly do: cot 'paralysis' cua dogfinal3 xuat hien 21/165 dong (13%) ma khong co ma tuong ung. Trieu chung nay phuc vu HAI benh (dai the liet, care giai doan muon than kinh) nen khong tao ra lop qua de nhu 'hydrophobia'. Feature vector = 51 + 14 = 65 cot.",
+
+  "symptomGroups": [
+    { "code": "digestive", "vi": "Tiêu hóa" },
+    { "code": "systemic", "vi": "Toàn thân" },
+    { "code": "respiratory", "vi": "Hô hấp" },
+    { "code": "skin", "vi": "Da lông" },
+    { "code": "ear_eye", "vi": "Tai mắt" },
+    { "code": "urogenital", "vi": "Tiết niệu - sinh dục" },
+    { "code": "neuro_motor", "vi": "Vận động - thần kinh" },
+    { "code": "dental", "vi": "Răng miệng" }
+  ],
+
+  "symptoms": [
+    { "code": "vomiting",             "vi": "Nôn",                                  "group": "digestive" },
+    { "code": "diarrhea",             "vi": "Tiêu chảy",                            "group": "digestive" },
+    { "code": "bloody_diarrhea",      "vi": "Tiêu chảy ra máu",                     "group": "digestive" },
+    { "code": "anorexia",             "vi": "Bỏ ăn, chán ăn",                       "group": "digestive" },
+    { "code": "weight_loss",          "vi": "Sụt cân",                              "group": "digestive" },
+    { "code": "abdominal_distension", "vi": "Chướng bụng",                          "group": "digestive" },
+    { "code": "constipation",         "vi": "Táo bón, không đi ngoài",              "group": "digestive" },
+    { "code": "drooling",             "vi": "Chảy dãi",                             "group": "digestive" },
+    { "code": "increased_appetite",   "vi": "Ăn nhiều bất thường",                  "group": "digestive" },
+
+    { "code": "fever",                "vi": "Sốt",                                  "group": "systemic" },
+    { "code": "lethargy",             "vi": "Li bì, mệt mỏi",                       "group": "systemic" },
+    { "code": "dehydration",          "vi": "Mất nước",                             "group": "systemic" },
+    { "code": "pale_gums",            "vi": "Niêm mạc nhợt",                        "group": "systemic" },
+    { "code": "jaundice",             "vi": "Vàng da, vàng niêm mạc",               "group": "systemic" },
+    { "code": "sudden_collapse",      "vi": "Ngã quỵ đột ngột",                     "group": "systemic" },
+
+    { "code": "coughing",             "vi": "Ho",                                   "group": "respiratory" },
+    { "code": "sneezing",             "vi": "Hắt hơi",                              "group": "respiratory" },
+    { "code": "nasal_discharge",      "vi": "Chảy nước mũi",                        "group": "respiratory" },
+    { "code": "dyspnea",              "vi": "Khó thở",                              "group": "respiratory" },
+    { "code": "open_mouth_breathing", "vi": "Thở há mồm",                           "group": "respiratory" },
+    { "code": "tail_bobbing",         "vi": "Đuôi nhấp nhô theo nhịp thở",          "group": "respiratory" },
+
+    { "code": "itching",              "vi": "Ngứa, gãi nhiều",                      "group": "skin" },
+    { "code": "hair_loss",            "vi": "Rụng lông",                            "group": "skin" },
+    { "code": "skin_redness",         "vi": "Đỏ da",                                "group": "skin" },
+    { "code": "skin_lesion",          "vi": "Lở loét, vảy da",                      "group": "skin" },
+    { "code": "visible_parasites",    "vi": "Thấy ve, bọ chét trên lông",           "group": "skin" },
+    { "code": "lump_mass",            "vi": "Khối u sờ thấy",                       "group": "skin" },
+    { "code": "self_plucking",        "vi": "Tự nhổ lông",                          "group": "skin" },
+
+    { "code": "head_shaking",         "vi": "Lắc đầu, gãi tai",                     "group": "ear_eye" },
+    { "code": "ear_discharge",        "vi": "Chảy dịch tai",                        "group": "ear_eye" },
+    { "code": "ear_odor",             "vi": "Tai có mùi hôi",                       "group": "ear_eye" },
+    { "code": "eye_discharge",        "vi": "Chảy ghèn, chảy nước mắt",             "group": "ear_eye" },
+    { "code": "conjunctivitis",       "vi": "Mắt đỏ, sưng mí",                      "group": "ear_eye" },
+
+    { "code": "polydipsia",           "vi": "Uống nhiều nước",                      "group": "urogenital" },
+    { "code": "polyuria",             "vi": "Tiểu nhiều",                           "group": "urogenital" },
+    { "code": "dysuria",              "vi": "Rặn tiểu, tiểu khó",                   "group": "urogenital" },
+    { "code": "hematuria",            "vi": "Tiểu ra máu",                          "group": "urogenital" },
+    { "code": "no_urination",         "vi": "Không tiểu được",                      "group": "urogenital" },
+    { "code": "vaginal_discharge",    "vi": "Chảy dịch mủ âm đạo",                  "group": "urogenital" },
+
+    { "code": "lameness",             "vi": "Đi khập khiễng",                       "group": "neuro_motor" },
+    { "code": "seizure",              "vi": "Co giật",                              "group": "neuro_motor" },
+    { "code": "ataxia",               "vi": "Đi loạng choạng, mất thăng bằng",      "group": "neuro_motor" },
+    { "code": "reluctance_to_move",   "vi": "Ngại vận động",                        "group": "neuro_motor" },
+
+    { "code": "bad_breath",           "vi": "Hôi miệng",                            "group": "dental" },
+    { "code": "difficulty_eating",    "vi": "Khó nhai, rơi thức ăn",                "group": "dental" },
+    { "code": "gum_swelling",         "vi": "Sưng lợi",                             "group": "dental" },
+
+    { "code": "abdominal_pain",       "vi": "Đau bụng, ấn bụng thấy đau",           "group": "digestive" },
+    { "code": "oral_ulceration",      "vi": "Loét miệng, loét lưỡi",                "group": "dental" },
+    { "code": "aggression",           "vi": "Hung dữ bất thường, thay đổi tính nết","group": "neuro_motor" },
+    { "code": "jaw_drop",             "vi": "Trễ hàm dưới, không ngậm được miệng",  "group": "neuro_motor" },
+    { "code": "paralysis",            "vi": "Liệt chi, liệt một phần cơ thể",       "group": "neuro_motor" }
+  ],
+
+  "medicalHistoryNote": "Tien su benh - de bai yeu cau dung lam dau vao. Cung la co nhi phan nhu symptoms, noi tiep vao SAU mang symptoms trong feature vector. 'vaccinated' va 'not_vaccinated' la hai co RIENG BIET: tick 1 trong 2 = da biet chac, khong tick cai nao = khong ro. Tuong tu voi 'neutered' va 'not_neutered'.",
+
+  "medicalHistory": [
+    { "code": "vaccinated",              "vi": "Đã tiêm phòng đầy đủ" },
+    { "code": "not_vaccinated",          "vi": "Chưa tiêm phòng hoặc tiêm chưa đủ" },
+    { "code": "neutered",                "vi": "Đã triệt sản" },
+    { "code": "not_neutered",            "vi": "Chưa triệt sản" },
+    { "code": "deworming_overdue",       "vi": "Chưa tẩy giun định kỳ" },
+    { "code": "chronic_illness",         "vi": "Có bệnh mạn tính" },
+    { "code": "allergy_history",         "vi": "Tiền sử dị ứng" },
+    { "code": "parasite_history",        "vi": "Tiền sử ký sinh trùng" },
+    { "code": "skin_condition_history",  "vi": "Tiền sử bệnh da liễu" },
+    { "code": "kidney_disease_history",  "vi": "Tiền sử bệnh thận" },
+    { "code": "urinary_history",         "vi": "Tiền sử bệnh đường tiết niệu" },
+    { "code": "dental_issue_history",    "vi": "Tiền sử bệnh răng miệng" },
+    { "code": "heart_condition_history", "vi": "Tiền sử bệnh tim" },
+    { "code": "recent_surgery",          "vi": "Mới phẫu thuật gần đây" }
+  ],
+
+  "diseasesNote": "20 benh cho. Truong 'species' giu lai du chi con mot gia tri, de FastAPI kiem tra duoc pet.species truoc khi du doan va de mo rong lai sang meo ma khong phai doi schema. 17 benh dau giu nguyen thu tu tu v2, 3 benh cuoi la them moi (QD-10).",
+
+  "diseases": [
+    { "code": "parvo",                 "vi": "Parvovirus (Parvo)",                        "species": ["DOG"], "severity": "URGENT", "note": "Chủ yếu chó con dưới 6 tháng chưa tiêm đủ vaccine" },
+    { "code": "distemper",             "vi": "Bệnh Care (Carré)",                         "species": ["DOG"], "severity": "URGENT", "note": "Giai đoạn muộn có thể kèm triệu chứng thần kinh" },
+    { "code": "kennel_cough",          "vi": "Ho cũi chó",                                "species": ["DOG"], "severity": "SOON",   "note": "Tiền sử tiếp xúc nơi đông chó" },
+    { "code": "tick_borne_disease",    "vi": "Ký sinh trùng máu do ve (Ehrlichia/Babesia)","species": ["DOG"],"severity": "URGENT", "note": "Rất phổ biến ở Việt Nam" },
+    { "code": "intestinal_worms",      "vi": "Giun sán đường ruột",                       "species": ["DOG"], "severity": "NORMAL", "note": "Phổ biến ở chó con chưa tẩy giun" },
+    { "code": "flea_tick_infestation", "vi": "Ve, bọ chét",                               "species": ["DOG"], "severity": "NORMAL", "note": "" },
+    { "code": "otitis_externa",        "vi": "Viêm tai ngoài",                            "species": ["DOG"], "severity": "SOON",   "note": "Hay gặp ở giống tai cụp như Poodle, Cocker" },
+    { "code": "pyoderma",              "vi": "Viêm da mủ",                                "species": ["DOG"], "severity": "SOON",   "note": "Thường thứ phát sau dị ứng hoặc ký sinh trùng" },
+    { "code": "arthritis_dysplasia",   "vi": "Viêm khớp, loạn sản khớp háng",             "species": ["DOG"], "severity": "NORMAL", "note": "Chó lớn tuổi, giống lớn" },
+    { "code": "pyometra",              "vi": "Viêm tử cung tích mủ",                      "species": ["DOG"], "severity": "URGENT", "gender": "FEMALE", "note": "Chỉ chó cái chưa triệt sản, thường trên 5 tuổi" },
+    { "code": "dermatophytosis",       "vi": "Nấm da (nấm vòng)",                         "species": ["DOG"], "severity": "NORMAL", "note": "Có thể lây sang người" },
+    { "code": "ear_mites",             "vi": "Ve tai (Otodectes)",                        "species": ["DOG"], "severity": "NORMAL", "note": "" },
+    { "code": "diabetes_mellitus",     "vi": "Tiểu đường",                                "species": ["DOG"], "severity": "SOON",   "note": "Liên quan béo phì" },
+    { "code": "gastroenteritis",       "vi": "Viêm dạ dày - ruột cấp",                    "species": ["DOG"], "severity": "SOON",   "note": "Chẩn đoán nền, hay chồng lấn với Parvo và ngộ độc" },
+    { "code": "food_poisoning",        "vi": "Ngộ độc thức ăn",                           "species": ["DOG"], "severity": "URGENT", "note": "" },
+    { "code": "periodontal_disease",   "vi": "Viêm nha chu",                              "species": ["DOG"], "severity": "NORMAL", "note": "" },
+    { "code": "food_allergy",          "vi": "Dị ứng thức ăn, viêm da dị ứng",            "species": ["DOG"], "severity": "NORMAL", "note": "" },
+
+    { "code": "rabies",                "vi": "Bệnh dại",                                  "species": ["DOG"], "severity": "URGENT", "note": "Triệu chứng hành vi là chính. Nghi dại phải cách ly và khai báo cơ quan thú y, không xử lý như ca khám thường" },
+    { "code": "leptospirosis",         "vi": "Bệnh do xoắn khuẩn Leptospira",             "species": ["DOG"], "severity": "URGENT", "note": "Lây sang người. MSD ghi rõ không giới hạn tuổi, giống hay giới tính" },
+    { "code": "ckd_dog",               "vi": "Bệnh thận mạn",                             "species": ["DOG"], "severity": "SOON",   "note": "Tỷ lệ mắc tăng từ 5-6 tuổi trở đi. Uống nhiều, tiểu nhiều là dấu hiệu sớm nhất" }
+  ]
+}
