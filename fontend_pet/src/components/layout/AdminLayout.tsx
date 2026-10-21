@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   CalendarDays,
+  Clock,
   ShoppingBag,
   Users,
   Package,
@@ -19,6 +20,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
   { to: "/admin/appointments", label: "Lịch khám", icon: CalendarDays },
+  { to: "/admin/time-slots", label: "Khung giờ", icon: Clock },
   { to: "/admin/orders", label: "Đơn hàng", icon: ShoppingBag },
   { to: "/admin/users", label: "Người dùng", icon: Users },
   { to: "/admin/products", label: "Sản phẩm", icon: Package },

@@ -14,7 +14,10 @@ import {
   XCircle,
   FileText,
   Check,
+  List,
+  CalendarDays,
 } from 'lucide-react';
+import DoctorWeekSchedule from './DoctorWeekSchedule';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { doctorApi } from '../../api/doctorApi';
@@ -85,6 +88,7 @@ export default function DoctorAppointments() {
   const [filterStatus, setFilterStatus] = useState<StatusKey>('ALL');
   const [completing, setCompleting] = useState<string | null>(null); // bookingCode đang xử lý
   const [confirmGroup, setConfirmGroup] = useState<BookingGroup | null>(null); // group đang chờ xác nhận trong modal
+  const [viewMode, setViewMode] = useState<'list' | 'week'>('list');
 
   useEffect(() => {
     loadAppointments();
@@ -93,7 +97,7 @@ export default function DoctorAppointments() {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const data = await doctorApi.getMyAppointments(user!.id);
+      const data = await doctorApi.getMyAppointments();
       setAppointments(data);
     } catch (err) {
       console.error(err);
@@ -107,7 +111,7 @@ export default function DoctorAppointments() {
     setCompleting(group.bookingCode);
     try {
       // Dùng id của pet đầu tiên (= appointmentId) để backend tìm bookingCode
-      await doctorApi.completeAppointment(group.pets[0].id, user!.id);
+      await doctorApi.completeAppointment(group.pets[0].id);
       // Reload lại danh sách để cập nhật trạng thái
       await loadAppointments();
       setConfirmGroup(null);
@@ -228,6 +232,26 @@ export default function DoctorAppointments() {
           </div>
         </div>
 
+        {/* Chuyển chế độ xem */}
+        <div className="inline-flex bg-white ring-1 ring-gray-200 rounded-xl p-1 mb-4">
+          <ViewModeButton
+            active={viewMode === 'list'}
+            icon={<List size={15} />}
+            label="Danh sách"
+            onClick={() => setViewMode('list')}
+          />
+          <ViewModeButton
+            active={viewMode === 'week'}
+            icon={<CalendarDays size={15} />}
+            label="Lịch tuần"
+            onClick={() => setViewMode('week')}
+          />
+        </div>
+
+        {viewMode === 'week' && <DoctorWeekSchedule groups={bookingGroups} />}
+
+        {viewMode === 'list' && (
+        <>
         {/* Filter pills */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           {FILTER_TABS.map((tab) => (
@@ -401,6 +425,8 @@ export default function DoctorAppointments() {
             })}
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Modal xác nhận đã khám xong */}
@@ -479,6 +505,32 @@ function StatCard({
       </div>
       <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
     </div>
+  );
+}
+
+// Nút chuyển "Danh sách | Lịch tuần"
+function ViewModeButton({
+  active,
+  icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition ${
+        active ? 'bg-sky-600 text-white shadow-sm' : 'text-gray-600 hover:bg-sky-50 hover:text-sky-700'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 

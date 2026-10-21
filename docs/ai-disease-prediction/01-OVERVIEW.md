@@ -28,7 +28,7 @@
 | [12] | Dataset `animal-disease-prediction` | Baseline, trộn phần dùng được |
 | [13] | Dataset `veterinary-clinical-dataset` | Baseline, trộn phần dùng được |
 
-⚠️ **Cảnh báo thực tế về [12] và [13]:** các dataset thú y trên Kaggle thường nhỏ, nhiễu, và phần lớn là **gia súc** (bò, trâu, dê, cừu) chứ không phải chó/mèo. Phải khảo sát trước rồi mới quyết định trộn bao nhiêu — xem [03-DATA.md](03-DATA.md).
+**Thực tế:** đã khảo sát [12] và [13] — cả hai không train được ([12] chỉ 431 dòng / 135 nhãn, [13] không có cột nhãn). Chi tiết ở `ai_service/reports/kaggle_survey.md`. [10] [11] không dùng vì đã bỏ nhánh sinh dữ liệu từ y văn (QĐ-14). Dữ liệu train thực tế là `dogfinal3.csv`.
 
 ## Mục tiêu cụ thể của hệ thống
 
@@ -36,49 +36,44 @@
 
 | Nhóm | Trường | Nguồn |
 |---|---|---|
-| Đặc điểm | species, breed, ageMonths, gender, weightKg | Lấy tự động từ entity `Pet` |
-| Triệu chứng | mảng symptom code (nhị phân) | Bác sĩ / khách tick chọn trên UI |
-| Diễn biến | durationDays | Nhập tay |
-| Tiền sử | chẩn đoán các lần khám trước | Lấy từ `MedicalRecord` của cùng pet |
+| Triệu chứng | mảng symptom code (nhị phân; giao diện hiện 31 mã có trong dữ liệu train) | Người dùng tick chọn ở trang `/ai-diagnosis` |
+
+Giống, tuổi, giới tính, cân nặng, tiền sử **không** đưa vào model — `dogfinal3` không có các cột này (QĐ-14). Phải nêu rõ là giới hạn trong báo cáo.
 
 **Đầu ra**
 
-- Top-3 bệnh nghi ngờ, mỗi bệnh kèm % tin cậy
-- Mức độ khẩn cấp (dùng cho actor phụ)
-- Đoạn diễn giải tiếng Việt do Groq LLM sinh (vì sao nghĩ tới bệnh này, nên làm xét nghiệm gì để xác nhận)
-- Nếu độ tin cậy top-1 < 40% → trả về "không đủ dữ kiện, cần khám lâm sàng" thay vì đoán bừa
+- Top-3 bệnh nghi ngờ, mỗi bệnh kèm % xác suất
+- Mức độ khẩn cấp URGENT / SOON, mô tả và khuyến nghị cho bệnh khả năng cao nhất
+- Cảnh báo khi xác suất top-1 < 50%
 
 ## Phạm vi
 
 **Trong phạm vi**
 
-- 6 loài theo enum `Pet.Species`: DOG, CAT, BIRD, RABBIT, HAMSTER, OTHER
-  - Người dùng đã chọn phủ cả 6 loài thay vì chỉ chó/mèo. Kéo theo vấn đề mất cân bằng lớp nghiêm trọng ở nhóm thỏ/hamster/chim — biện pháp xử lý xem [04-MODEL.md](04-MODEL.md).
-  - `OTHER` không có bệnh riêng; hệ thống trả về thông báo chưa hỗ trợ.
-- ~30 bệnh phổ biến (xem [03-DATA.md](03-DATA.md))
-- Vòng phản hồi: bác sĩ xác nhận AI đúng/sai → tích lũy dữ liệu thật để đánh giá và retrain
+- Chỉ loài **chó**
+- **6 bệnh** của `dogfinal3`: `parvo` · `distemper` · `kennel_cough` · `leptospirosis` · `ckd_dog` · `rabies`
+- Dữ liệu train/test: **chỉ dữ liệu thật** — 141 ca của `dogfinal3.csv`
 
 **Ngoài phạm vi**
 
-- Chẩn đoán qua hình ảnh (X-quang, siêu âm) — ảnh trong `MedicalRecord.imageUrls` không đưa vào model
+- Loài khác, bệnh khác ngoài 6 bệnh trên
+- Dữ liệu sinh từ y văn
+- Chẩn đoán qua hình ảnh (X-quang, siêu âm)
 - Kê đơn thuốc tự động
-- Dự đoán cho gia súc / vật nuôi kinh tế
 
 ## Ràng buộc y đức và pháp lý
 
 Đây là phần bắt buộc phải thể hiện trong cả sản phẩm lẫn báo cáo:
 
 1. **Luôn hiển thị disclaimer** trên mọi giao diện có kết quả AI: *"Kết quả mang tính tham khảo, không thay thế chẩn đoán của bác sĩ thú y."*
-2. **Không tự động điền** vào ô `diagnosis` — bác sĩ phải chủ động bấm nút chấp nhận.
-3. **Khách hàng (USER) không được thấy tên bệnh cụ thể** — chỉ thấy mức độ ưu tiên khám (Thường / Nên khám sớm / Khẩn cấp). Tránh việc khách tự chẩn đoán, hoảng loạn, hoặc tự mua thuốc.
-4. **Ghi log mọi lần dự đoán** kèm người thực hiện và thời điểm, phục vụ truy vết.
-5. **Nêu rõ giới hạn dữ liệu trong báo cáo**: phần lớn dữ liệu train là sinh tổng hợp từ ma trận xác suất trích từ y văn, không phải hồ sơ bệnh án thật.
+2. **Nói rõ giới hạn ngay trên giao diện**: chỉ áp dụng cho chó, chỉ nhận diện được 6 bệnh — bệnh khác sẽ không được phát hiện.
+3. **Khuyến nghị luôn dẫn về phòng khám**, không gợi ý thuốc. Có nút đặt lịch khám ngay dưới kết quả (QĐ-15).
+4. **Nêu rõ giới hạn dữ liệu trong báo cáo**: chỉ 141 ca thật, chỉ có triệu chứng, chỉ 6 bệnh.
 
 ## Tiêu chí "xong"
 
-- [ ] Notebook train có đầy đủ: train/test split 80/20 stratified, so sánh ≥3 thuật toán, confusion matrix, bảng Accuracy/Precision/Recall/F1 (macro + per-class)
-- [ ] FastAPI service chạy được, deploy public, có `/health`
-- [ ] Bác sĩ dùng được trong trang ghi bệnh án end-to-end
-- [ ] Khách hàng thấy mức ưu tiên khi đặt lịch
-- [ ] Bảng `disease_predictions` ghi nhận được phản hồi đúng/sai của bác sĩ
-- [ ] Trang thống kê Admin hiển thị độ chính xác trên dữ liệu thực tế
+Theo dõi ở [PROGRESS.md](PROGRESS.md). Tóm tắt:
+
+- [x] Script đánh giá: split 80/20 stratified, so sánh 3 model, confusion matrix, Accuracy/Precision/Recall/F1 (macro + per-class)
+- [ ] FastAPI service deploy public, có `/health`
+- [x] Trang `/ai-diagnosis` dùng được end-to-end ở local *(xác nhận 2026-10-05)*

@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class AppointmentRequest {
-    private Long userId;
+    // userId không nhận từ body — lấy từ JWT trong controller
     private List<Long> petIds;        // Hỗ trợ đặt nhiều pet 1 lần
     private List<Long> serviceIds;  // Hỗ trợ đặt nhiều dịch vụ 1 lần
     private String appointmentDate;   // "2026-02-20"

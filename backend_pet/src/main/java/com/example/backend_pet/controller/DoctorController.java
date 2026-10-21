@@ -1,5 +1,6 @@
 package com.example.backend_pet.controller;
 
+import com.example.backend_pet.config.JwtUtils;
 import com.example.backend_pet.dto.AppointmentResponse;
 import com.example.backend_pet.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +15,26 @@ import java.util.List;
 public class DoctorController {
 
     private final AppointmentService appointmentService;
+    private final JwtUtils jwtUtils;
 
-    // GET /api/doctor/appointments?doctorId=2
-    @GetMapping("/appointments")
-    public ResponseEntity<List<AppointmentResponse>> getMyAppointments(@RequestParam Long doctorId) {
-        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
+    // doctorId lấy từ JWT, không nhận từ URL — tránh xem / sửa lịch của bác sĩ khác bằng cách đổi số
+    private Long extractDoctorId(String authHeader) {
+        String token = authHeader.substring(7);
+        return jwtUtils.extractClaims(token).get("userId", Long.class);
     }
 
-    // PUT /api/doctor/appointments/{id}/complete?doctorId=2
+    // GET /api/doctor/appointments - Lịch khám được phân công cho bác sĩ đang đăng nhập
+    @GetMapping("/appointments")
+    public ResponseEntity<List<AppointmentResponse>> getMyAppointments(
+            @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(extractDoctorId(authHeader)));
+    }
+
+    // PUT /api/doctor/appointments/{id}/complete - Xác nhận khám xong (service kiểm tra đúng bác sĩ được phân công)
     @PutMapping("/appointments/{id}/complete")
     public ResponseEntity<List<AppointmentResponse>> completeAppointment(
             @PathVariable Long id,
-            @RequestParam Long doctorId) {
-        return ResponseEntity.ok(appointmentService.completeAppointmentGroup(id, doctorId));
+            @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(appointmentService.completeAppointmentGroup(id, extractDoctorId(authHeader)));
     }
 }

@@ -16,6 +16,10 @@ Folder đó chứa: tổng quan đề bài, kiến trúc, thiết kế dữ li�
 
 Quy ước: đọc `PROGRESS.md` đầu session, cập nhật cuối session. Không tự ý đảo ngược quyết định đã ghi trong `DECISIONS.md`.
 
+## Các chức năng web khác (khung giờ đặt lịch, lịch bác sĩ, bảo mật API)
+
+Tiến độ và quyết định thiết kế: **[docs/web-features/PROGRESS.md](docs/web-features/PROGRESS.md)**.
+
 ## ⚠️ Quy ước làm việc — BẮT BUỘC ĐỌC
 
 **[WORKING-STYLE.md](WORKING-STYLE.md)** — style code, workflow, cách giải thích. Đọc đầu mỗi session.
@@ -23,7 +27,7 @@ Quy ước: đọc `PROGRESS.md` đầu session, cập nhật cuối session. Kh
 Tóm tắt:
 
 - **Code**: rõ ràng > ngắn gọn. Tránh stream lồng nhau, ternary lồng nhau, viết tắt "thông minh"
-- **Workflow**: lên plan 5 bước → code **từng file một** → tự review → gửi bản đã review → chờ phản hồi rồi mới sang file tiếp
+- **Workflow**: lên plan → chờ duyệt → code **từng file một** → tự review, tự fix → tự sang file tiếp (không chờ xác nhận giữa các file)
 - **Giải thích**: ngắn gọn, đúng trọng tâm; chỉ giải thích thêm khi thật sự quan trọng
 - Comment và chuỗi hiển thị: **tiếng Việt**. Tên biến, hàm, class: tiếng Anh
 - Hạn chế thêm thư viện mới — nêu lý do trước

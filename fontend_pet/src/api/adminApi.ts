@@ -1,4 +1,5 @@
-import { getAuthHeaders } from './apiClient';
+import { getAuthHeaders, readErrorMessage } from './apiClient';
+import type { SlotAvailability } from './appointmentApi';
 
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin`;
 const SERVICES_API = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/services`;
@@ -50,6 +51,29 @@ export interface DoctorInfo {
   id: number;
   fullName: string;
   email: string;
+}
+
+export interface CustomerSearchResult {
+  id: number;
+  fullName: string;
+  phone: string | null;
+  email: string;
+  pets: { id: number; name: string; species: string }[];
+}
+
+// customerId = null → khách mới, dùng newCustomerName + newCustomerPhone
+export interface WalkInAppointmentPayload {
+  customerId: number | null;
+  newCustomerName: string;
+  newCustomerPhone: string;
+  petIds: number[];
+  newPetName: string;
+  newPetSpecies: string;
+  serviceIds: number[];
+  appointmentDate: string;
+  appointmentTime: string;
+  doctorId: number;
+  notes: string;
 }
 
 export interface DailyRevenue { date: string; revenue: number; }
@@ -120,7 +144,28 @@ export const adminApi = {
       method: 'PUT',
       headers: getAuthHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to assign doctor');
+    // Bác sĩ trùng giờ bị backend từ chối → hiện đúng lý do
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể phân công bác sĩ. Thử lại.'));
+    return res.json();
+  },
+
+  // === Khách đặt tại quầy ===
+
+  async searchCustomers(keyword: string): Promise<CustomerSearchResult[]> {
+    const res = await fetch(`${API}/customers/search?q=${encodeURIComponent(keyword)}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to search customers');
+    return res.json();
+  },
+
+  async createWalkInAppointments(payload: WalkInAppointmentPayload): Promise<AdminAppointment[]> {
+    const res = await fetch(`${API}/walk-in-appointments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể tạo lịch. Thử lại.'));
     return res.json();
   },
 
@@ -138,7 +183,76 @@ export const adminApi = {
       method: 'PUT',
       headers: getAuthHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to update status');
+    // Khôi phục lịch đã hủy có thể bị từ chối vì slot đầy → hiện đúng lý do
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể cập nhật trạng thái. Thử lại.'));
+    return res.json();
+  },
+
+  // === Quản lý khung giờ ===
+
+  async getSlotSettings(): Promise<{ defaultSlotCapacity: number }> {
+    const res = await fetch(`${API}/slot-settings`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch slot settings');
+    return res.json();
+  },
+
+  // Số khung giờ sắp tới sẽ bị vượt nếu đổi mặc định sang capacity
+  async countSlotsOverCapacity(capacity: number): Promise<number> {
+    const res = await fetch(`${API}/slot-settings/over-capacity?capacity=${capacity}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to count over-capacity slots');
+    const data: { count: number } = await res.json();
+    return data.count;
+  },
+
+  async updateDefaultCapacity(capacity: number): Promise<{ defaultSlotCapacity: number }> {
+    const res = await fetch(`${API}/slot-settings?capacity=${capacity}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể lưu sức chứa mặc định'));
+    return res.json();
+  },
+
+  async getTimeSlots(date: string): Promise<SlotAvailability[]> {
+    const res = await fetch(`${API}/time-slots?date=${date}`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch time slots');
+    return res.json();
+  },
+
+  async getAppointmentsInSlot(date: string, time: string): Promise<AdminAppointment[]> {
+    const res = await fetch(`${API}/time-slots/appointments?date=${date}&time=${time}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch appointments in slot');
+    return res.json();
+  },
+
+  // capacity = null → quay về sức chứa mặc định
+  async updateTimeSlot(payload: {
+    date: string;
+    time: string;
+    capacity: number | null;
+    disabled: boolean;
+    note: string;
+  }): Promise<SlotAvailability[]> {
+    const res = await fetch(`${API}/time-slots`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể lưu khung giờ'));
+    return res.json();
+  },
+
+  async setDayDisabled(date: string, disabled: boolean, note: string): Promise<SlotAvailability[]> {
+    const res = await fetch(`${API}/time-slots/day`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ date, disabled, note }),
+    });
+    if (!res.ok) throw new Error(await readErrorMessage(res, 'Không thể cập nhật ngày'));
     return res.json();
   },
 

@@ -11,6 +11,19 @@ export function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Đọc thông báo lỗi tiếng Việt backend trả về ({ error: "..." }), không có thì dùng câu mặc định
+export async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = await response.json();
+    if (body && typeof body.error === 'string') {
+      return body.error;
+    }
+  } catch {
+    // body không phải JSON
+  }
+  return fallback;
+}
+
 // Decode JWT payload (không verify, chỉ đọc data)
 export function parseJwt(token: string): Record<string, unknown> {
   const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');

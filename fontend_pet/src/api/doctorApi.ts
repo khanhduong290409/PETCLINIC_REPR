@@ -22,17 +22,18 @@ export interface DoctorAppointment {
   notes: string;
 }
 
+// Không gửi doctorId — backend lấy bác sĩ đang đăng nhập từ JWT
 export const doctorApi = {
-  async getMyAppointments(doctorId: number): Promise<DoctorAppointment[]> {
-    const res = await fetch(`${API}/appointments?doctorId=${doctorId}`, {
+  async getMyAppointments(): Promise<DoctorAppointment[]> {
+    const res = await fetch(`${API}/appointments`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to fetch appointments');
     return res.json();
   },
 
-  async completeAppointment(appointmentId: number, doctorId: number): Promise<DoctorAppointment[]> {
-    const res = await fetch(`${API}/appointments/${appointmentId}/complete?doctorId=${doctorId}`, {
+  async completeAppointment(appointmentId: number): Promise<DoctorAppointment[]> {
+    const res = await fetch(`${API}/appointments/${appointmentId}/complete`, {
       method: 'PUT',
       headers: getAuthHeaders(),
     });

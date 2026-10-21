@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, X, Camera, FileText, Scale, Calendar, Heart, PawP
 import { useAuth } from '../contexts/AuthContext';
 import { petApi } from '../api/petApi';
 import type { PetResponse, PetRequest } from '../api/petApi';
+import ConfirmModal from '../components/ConfirmModal';
 
 // Map species sang tiếng Việt
 const SPECIES_MAP: Record<string, string> = {
@@ -51,6 +52,11 @@ export default function MyPets() {
   const [editingPetId, setEditingPetId] = useState<number | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+
+  // Modal xác nhận xóa + modal báo lỗi
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   // State cho ảnh upload
@@ -204,17 +210,24 @@ export default function MyPets() {
     }
   };
 
-  // Xóa pet
-  const handleDelete = async (petId: number, petName: string) => {
-    if (!user) return;
-    if (!confirm(`Bạn có chắc muốn xóa ${petName}?`)) return;
+  // Xóa pet — mở modal xác nhận trước
+  const handleDelete = (petId: number, petName: string) => {
+    setDeleteTarget({ id: petId, name: petName });
+  };
 
+  const confirmDelete = async () => {
+    if (!user || !deleteTarget) return;
     try {
-      await petApi.deletePet(petId, user.id);
+      setDeleting(true);
+      await petApi.deletePet(deleteTarget.id, user.id);
+      setDeleteTarget(null);
       fetchPets();
     } catch (err) {
       console.error('Failed to delete pet:', err);
-      alert('Không thể xóa. Vui lòng thử lại.');
+      setDeleteTarget(null);
+      setErrorMessage('Không thể xóa. Vui lòng thử lại.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -270,6 +283,26 @@ export default function MyPets() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50/60 via-white to-white">
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="Xóa thú cưng"
+        message={deleteTarget && `Bạn có chắc muốn xóa ${deleteTarget.name}? Hành động không thể hoàn tác.`}
+        confirmLabel="Xóa"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmModal
+        open={errorMessage !== null}
+        title="Có lỗi xảy ra"
+        message={errorMessage}
+        confirmLabel="Đóng"
+        cancelLabel={null}
+        onConfirm={() => setErrorMessage(null)}
+        onCancel={() => setErrorMessage(null)}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header gradient + thống kê */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 p-6 md:p-8 mb-6 shadow-lg">

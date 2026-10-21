@@ -2,6 +2,8 @@ package com.example.backend_pet.config;
 
 import java.util.List;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,8 +48,14 @@ public class SecurityConfig {
 
             //.authorizeHttpRequests nó sẽ tự động SecurityContextHolder.getContext().getAuthentication() để lấy authentication để lọc request thoả yêu cầu
             .authorizeHttpRequests(a -> a
+                // SSE thông báo (/api/notifications/stream) gửi dữ liệu qua lượt dispatch ASYNC; JwtAuthFilter không chạy lại
+                // ở lượt đó nên nếu không mở ra, Spring Security sẽ chặn giữa chừng. Lượt REQUEST đầu tiên vẫn đã kiểm tra JWT.
+                .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // API của bác sĩ và ghi bệnh án — chỉ role DOCTOR. Đọc bệnh án (GET) khách vẫn dùng nên chưa chặn ở đây
+                .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/medical/**").hasRole("DOCTOR")
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 // Health check cho UptimeRobot ping giu Render va Neon DB song
                 .requestMatchers("/api/health").permitAll()
@@ -58,6 +66,8 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/services/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/product-reviews/**").permitAll()
+                // AI symptoms list — public (frontend load danh sách triệu chứng)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/ai/symptoms").permitAll()
                 .anyRequest().authenticated()
                 //từ chối request và trả về lỗi với các request còn lại
                 // Tất cả còn lại phải đăng nhập(check trong SecurityContextHolder.getContext() có lưu auth không nếu có thì cho qua, không thì ném lỗi )

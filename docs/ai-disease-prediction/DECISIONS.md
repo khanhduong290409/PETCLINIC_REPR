@@ -1,99 +1,177 @@
 # Nhật ký quyết định
 
-> Ghi lại các quyết định đã chốt **cùng với phương án đã loại và lý do loại**.
-> Mục đích: session sau không phải bàn lại từ đầu, và không vô tình đảo ngược một quyết định có chủ đích.
+> Ghi lại các quyết định đã chốt **cùng lý do**.
 > Muốn đổi một quyết định ở đây → nêu vấn đề với người dùng trước, đừng tự đổi.
+>
+> File chia hai phần: **Phần A — đang hiệu lực** (đọc phần này là đủ để làm việc) và **Phần B — đã thay thế** (chỉ để tra cứu lịch sử).
+> Toàn văn các quyết định cũ trước lần dọn 2026-10-05 nằm ở commit `6e430a9`.
 
----
+## Tóm tắt — đang hiệu lực
 
-## QĐ-01 · Kiến trúc: FastAPI riêng + Groq diễn giải
-
-**Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
-
-Model chạy trong một service Python FastAPI độc lập. Spring Boot gọi sang qua `RestTemplate`. Groq LLM được gọi ở tầng Spring Boot **sau khi** đã có kết quả, chỉ để viết đoạn diễn giải tiếng Việt.
-
-**Lý do:** yêu cầu phi chức năng bắt buộc Random Forest/XGBoost + confusion matrix + Accuracy/Precision/Recall/F1 — đó là hệ sinh thái scikit-learn. Dùng Python gốc thì notebook train và các biểu đồ cho báo cáo làm được trực tiếp, không phải vòng vo. Việc gọi service AI bên ngoài đã có sẵn pattern trong `ChatService`, nên phần Java gần như không có rủi ro.
-
-Tách Groq khỏi đường đi của con số dự đoán để metrics trong báo cáo chỉ phản ánh RandomForest, không bị LLM làm nhiễu.
-
-**Đã loại:**
-- *Export ONNX chạy trong Java* — thêm thư viện nặng vào `pom.xml`, convert sklearn→ONNX rườm rà, khó debug khi sai số. Trái nguyên tắc "hạn chế lib mới" của project.
-- *Chỉ dùng LLM Groq prompt thẳng* — dễ nhất nhưng **không đáp ứng yêu cầu phi chức năng**: không có train/test split, không có confusion matrix. Mất điểm phần lõi của đề tài.
-
-**Đánh đổi chấp nhận:** phải deploy thêm một service; free tier có cold start. Giảm nhẹ bằng Hugging Face Spaces (ngủ sau ~48h thay vì 15 phút) + UptimeRobot ping.
-
----
-
-## QĐ-02 · Dữ liệu: sinh từ y văn, trộn thêm Kaggle
-
-**Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
-
-Xây ma trận P(triệu chứng | bệnh) từ [10] Ettinger và [11] Nelson & Couto, sinh ~7.900 ca bằng Bernoulli sampling có tiêm nhiễu. Khảo sát 2 dataset Kaggle được chỉ định rồi trộn phần dùng được.
-
-**Lý do:** các dataset thú y trên Kaggle thường nhỏ, nhiễu và phần lớn là gia súc, không đủ để train một model chó/mèo tử tế. Sinh từ y văn cho phép kiểm soát chất lượng và bảo vệ được nguồn khi báo cáo. Vẫn phải khảo sát Kaggle vì đó là dataset giảng viên chỉ định — kể cả khi kết luận là không dùng, việc trình bày quá trình khảo sát và lý do loại vẫn là một mục có giá trị trong báo cáo.
-
-**Đã loại:**
-- *Ưu tiên Kaggle trước* — rủi ro cao: nếu dataset không dùng được thì mất thời gian mà vẫn phải quay về sinh dữ liệu.
-- *Chỉ sinh từ sách, bỏ hẳn Kaggle* — sạch hơn nhưng khó trả lời câu hỏi "sao không dùng dataset đã chỉ định".
-
-**Ràng buộc bắt buộc kèm theo:**
-1. Phải tiêm đủ 4 loại nhiễu, mục tiêu accuracy **78–88%**. Nếu ra > 92% là dấu hiệu dữ liệu giả, phải quay lại tăng nhiễu.
-2. Báo cáo **phải nêu rõ** phần lớn dữ liệu là sinh tổng hợp.
-3. **Không được bịa số trang / trích dẫn** Ettinger hay Nelson cho tới khi đã thực sự tra sách. Cột "Xác minh" trong [03-DATA.md](03-DATA.md) theo dõi việc này.
-
-### Tên gọi chính thức của phương pháp *(bổ sung 2026-09-07)*
-
-**Knowledge-based synthetic data generation** — sinh dữ liệu tổng hợp dựa trên tri thức chuyên gia.
-
-Đầy đủ hơn: *probabilistic synthetic patient generation from a literature-derived symptom–disease probability matrix.*
-
-Ghép từ ba kỹ thuật có tên riêng, nêu đúng tên khi viết báo cáo:
-
-| Bước | Tên kỹ thuật |
+| QĐ | Nội dung một dòng |
 |---|---|
-| Đọc sách, đổi "hầu hết" → 0.85 | **Expert knowledge elicitation** (*verbal-to-numeric probability mapping*) |
-| Bảng 34 bệnh × 60 xác suất | **Symptom–disease probability matrix** |
-| Tung xu sinh từng ca | **Independent Bernoulli sampling** |
-
-**Tiền lệ trích dẫn được — đây không phải cách tự chế:**
-
-- **SymCAT** — cơ sở dữ liệu triệu chứng–bệnh kèm xác suất biên từng triệu chứng. Nhiều nghiên cứu về chẩn đoán tự động sinh bệnh nhân giả bằng đúng quy trình này (Bernoulli trial trên mỗi triệu chứng theo xác suất tương ứng). Xem BSODA, arXiv:2012.01065.
-- **Sherman Kent, *Words of Estimative Probability*, CIA, 1964** — thang quy đổi từ ngữ định tính sang xác suất số (*almost certain* = 93% ± 6, *probable* = 75% ± 12...), kể cả cách cho khoảng ± thay vì một số cứng. Là tiền lệ cho bảng thang đo ở [03-DATA.md](03-DATA.md).
-
-**Câu trả lời khi bị hỏi "sao em tự sinh dữ liệu":**
-
-> "Đây là quy trình chuẩn của mảng automatic diagnosis khi không tiếp cận được EHR thật. SymCAT và các nghiên cứu dựa trên nó đều sinh bệnh nhân tổng hợp bằng Bernoulli sampling trên ma trận xác suất triệu chứng–bệnh. Điểm khác của đồ án là nguồn xác suất lấy từ y văn thú y thay vì cơ sở dữ liệu y khoa người, vì mảng thú y chưa có tài nguyên tương đương."
-
-### Giả định ngầm và giới hạn đã biết
-
-Ma trận + tung xu độc lập **chính là một mô hình sinh Naive Bayes**, mang theo giả định **conditional independence**: khi đã biết bệnh, các triệu chứng độc lập với nhau.
-
-Giả định này **sai trên lâm sàng** — nôn nhiều và mất nước đi kèm nhau chặt hơn nhiều so với hai đồng xu tung độc lập. Ta đang bỏ qua tương quan giữa các triệu chứng.
-
-Bản nâng cấp có tên là **Bayesian network** (mô hình hóa được cả quan hệ giữa các triệu chứng). **Cố ý không làm:** cần xác định thêm cấu trúc phụ thuộc cho từng bệnh — nhân đôi khối lượng tra sách, đổi lấy cải thiện mà ở quy mô đồ án gần như không đo được.
-
-**Bắt buộc ghi vào mục Giới hạn của báo cáo**, kèm câu "hướng phát triển: thay Bernoulli độc lập bằng Bayesian network". Tự nêu ra là hiểu sâu; bị giảng viên chỉ ra là lỗ hổng.
+| **16** | **Đổi dữ liệu sang `cleaned_animal`: nhiều loài, bệnh ≥ 3 dòng (44 bệnh / 351 dòng), 3-fold stratified CV** |
+| **15** | **Chẩn đoán AI là trang riêng `/ai-diagnosis`, người dùng thấy tên bệnh, bắt buộc đăng nhập, không lưu lịch sử** *(phần "chỉ chó, 6 bệnh" của khung lưu ý đổi theo QĐ-16)* |
+| 12 | Đánh giá: báo cáo per-class, có Dummy, không trộn nguồn *(phần split 80/20 + 5-fold đổi theo QĐ-16)* |
+| 01 | Model chạy trong FastAPI riêng, Spring Boot gọi sang |
+| 04 | `shared/symptoms.json` là nguồn sự thật duy nhất cho danh sách triệu chứng |
+| 06 | Chỉ tách một service — gọi đúng tên Strangler Fig |
+| 07 | `ai_service` stateless, không có database riêng |
 
 ---
 
-## QĐ-03 · Phạm vi: phủ cả 6 loài
+# Phần A — Đang hiệu lực
 
-**Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt (người dùng chọn khác đề xuất ban đầu)
+## QĐ-16 · Đổi dữ liệu sang `cleaned_animal`, quay lại nhiều loài
 
-Hỗ trợ đủ 6 giá trị của `Pet.Species`: DOG, CAT, BIRD, RABBIT, HAMSTER, OTHER. `OTHER` không có bệnh riêng, trả về thông báo chưa hỗ trợ.
+**Ngày:** 2026-10-17 · **Trạng thái:** Đã chốt (quyết định của người dùng) · **Thay thế QĐ-10, QĐ-14, phần split của QĐ-12**
 
-**Bối cảnh:** đề xuất ban đầu là chỉ chó + mèo (dữ liệu y khoa dồi dào, >90% ca khám thực tế, model chính xác hơn hẳn). Người dùng chọn phủ đủ 6 loài để khớp với enum sẵn có trong hệ thống.
+**Bối cảnh:** giảng viên không chấp nhận `dogfinal3` vì không phải nguồn chính thống, và hỏi vì sao không dùng 2 dataset trong `ai_service/data/`. Giảng viên chấp nhận "dữ liệu ít thì train ít". Đo lại cả 2 dataset (2026-10-17):
 
-**Hệ quả đã biết:** nhóm thỏ/hamster/chim chỉ có ~70–90 mẫu/bệnh so với 350–400 của chó/mèo. Macro F1 nhóm này sẽ thấp hơn rõ rệt.
+| Dataset | Kết luận | Lý do (số đo được) |
+|---|---|---|
+| `cleaned_animal_disease_prediction.csv` — tài liệu tham khảo [12] của đề bài | **Dùng** | 431 dòng, 8 loài, có giống/tuổi/giới tính/cân nặng/nhiệt độ/nhịp tim. 139 nhãn gốc nhưng nhiều nhãn là tên đồng nghĩa (`Parvovirus` / `Canine Parvovirus`) → gộp tay trong cùng loài (`mapping_cleaned_animal.csv`) còn **44 bệnh có ≥ 3 dòng, 351 dòng** |
+| `veterinary_clinical_data.csv` | **Loại, kể cả học không giám sát** | Dữ liệu sinh ngẫu nhiên: 324/5.020 dòng chó có triệu chứng gia súc/gia cầm (*giảm đẻ trứng, sưng bầu vú, "Signs in ewe"*), có "Death" là triệu chứng; 28,6% dòng lặp cùng một triệu chứng 2–3 lần (nếu chọn ngẫu nhiên đều chỉ ~1,1%); `MedicalHistory` chia đều ~800–1.000 mỗi loại, tuổi trung bình giống nhau giữa các nhóm. KMeans k = 5/10/20/40 cho silhouette 0,06–0,11 (≈ không có cụm). Dù có cụm thì cụm không mang tên bệnh → không tính được precision/recall/F1/confusion matrix |
 
-**Ba biện pháp bắt buộc kèm theo** (chi tiết ở [04-MODEL.md](04-MODEL.md)):
-1. **Species mask** khi suy luận — loại bỏ cặp loài–bệnh bất khả rồi chuẩn hóa lại xác suất
-2. **Báo cáo metrics tách theo nhóm loài**, không gộp thành một con số duy nhất
-3. **Cơ chế từ chối trả lời** khi độ tin cậy < 0.40
+**Quyết định:**
 
-Cả ba đều biến hạn chế thành nội dung phân tích tốt cho báo cáo, thay vì che giấu.
+| Hạng mục | Quyết định |
+|---|---|
+| Dữ liệu train | **Chỉ** `cleaned_animal`, qua `mapping_cleaned_animal.csv` (gộp tên đồng nghĩa, ánh xạ triệu chứng) |
+| Phạm vi | **Tất cả 8 loài** (số bệnh / số dòng): Chó 6 / 63 · Mèo 7 / 56 · Bò 6 / 57 · Ngựa 8 / 56 · Cừu 4 / 32 · Dê 4 / 31 · Lợn 5 / 29 · Thỏ 4 / 27 |
+| Ngưỡng | Bệnh **≥ 3 dòng** là model chính. Bệnh dưới ngưỡng liệt kê trong báo cáo là "chưa đủ dữ liệu" |
+| Đánh giá | **3-fold stratified CV** (mỗi lượt 2 train / 1 test mỗi bệnh, xoay 3 lượt để mọi dòng được test đúng 1 lần), báo cáo `mean ± std`. Không dùng hold-out 80/20 vì lớp 3 dòng không chia được |
+| Thí nghiệm so sánh | Ngưỡng ≥ 5 dòng (32 bệnh / 310 dòng, 5-fold CV) |
+| Feature | 173 cột: loài (one-hot) + **giống** (one-hot, theo yêu cầu người dùng) + cờ triệu chứng + tuổi, cân nặng, nhiệt độ, nhịp tim, số ngày bệnh, giới tính |
+| Nguồn triệu chứng | **Chỉ 4 cột chữ `Symptom_1..4`. Bỏ 9 cột Yes/No** (`Vomiting`, `Diarrhea`...) — đo trên 431 dòng, không nhìn nhãn: cột Yes/No gần như ngẫu nhiên, mâu thuẫn với cột chữ (vd. cột chữ ghi Diarrhea → cột `Diarrhea` = Yes 56%, không ghi → vẫn 48%). Giữ chúng làm RF giảm 0.425 → 0.385 |
+| Ô bỏ trống khi dự đoán | Ô số → trung vị của loài. Giống / giới tính → dự đoán với mọi giống / giới tính của loài rồi lấy trung bình có trọng số theo tần suất. Response trả `imputed_fields` để giao diện báo cho người dùng |
+| Model chạy trong `app.py` | RF 300 cây, `random_state=42`, train trên **toàn bộ** 351 dòng (hiệu năng đã báo cáo bằng CV) |
+| Loài | Species mask trong `app.py`: chỉ trả về bệnh của đúng loài đã chọn |
 
-**Lối thoát nếu cần:** nếu tới giai đoạn 2 macro F1 nhóm exotic quá thấp, cân nhắc cắt 4 bệnh chim + 3 bệnh hamster (34 → 27 lớp). **Phải bàn với người dùng trước**, vì đây là quyết định họ đã chủ động lựa chọn.
+**Kết quả (2026-10-18, [`ca_metrics.md`](../../ai_service/reports/ca_metrics.md), đánh giá ở [`ca_results.md`](../../ai_service/reports/ca_results.md)):** RF accuracy **0.425 ± 0.052**, precision / recall / F1 macro **0.309 / 0.349 / 0.305**. Dummy (bệnh phổ biến nhất của loài) 0.330 / F1 macro 0.094. Thấp hơn nhiều so với `dogfinal3` (0.886) vì 44 bệnh / 8 loài, mỗi dòng chỉ ≤ 4 triệu chứng chung chung. **Không tinh chỉnh tham số để nâng số.**
+
+**Giới hạn phải nêu trong báo cáo:** ~3–21 dòng mỗi bệnh là rất nhỏ; với lớp 3 dòng, recall chỉ nhận các giá trị 0 / 33 / 67 / 100%, sai một ca là lệch 33 điểm. Nguồn Kaggle không mô tả quy trình thu thập. Model chỉ phù hợp gợi ý top-3 tham khảo.
+
+`dogfinal3.csv` không còn dùng trong train/test; chỉ còn ở chương khảo sát dataset của báo cáo (kèm lý do: giảng viên đánh giá không chính thống).
+
+---
+
+## QĐ-15 · Chẩn đoán AI là một trang riêng, hiện tên bệnh cho người dùng
+
+**Ngày:** 2026-10-05 · **Trạng thái:** Đã chốt (quyết định của người dùng) · **Thay thế [QĐ-05](#phần-b--đã-thay-thế-chỉ-để-tra-cứu)**
+
+Chẩn đoán AI **tách khỏi luồng đặt lịch**, thành trang độc lập `/ai-diagnosis` (link "Chẩn đoán AI" trên navbar). Người dùng tự chọn triệu chứng, bấm "Phân tích", xem **tên bệnh**, % xác suất, mức độ khẩn cấp, mô tả và khuyến nghị.
+
+| Hạng mục | Quyết định |
+|---|---|
+| Vị trí | Trang riêng `fontend_pet/src/pages/AiDiagnosis.tsx`. Đặt lịch và bệnh án **không còn** dính AI (đã gỡ toàn bộ) |
+| Tên bệnh | **Hiện cho người dùng** — đảo ngược QĐ-05 |
+| Đăng nhập | **Bắt buộc** (`ProtectedRoute` + `/api/ai/predict` cần JWT). `/api/ai/symptoms` vẫn public |
+| Lịch sử | **Không lưu** — `ai_service` và Spring Boot đều không ghi kết quả |
+| Lưu ý bắt buộc trên trang | Chỉ tham khảo, không thay thế bác sĩ · chỉ áp dụng cho chó · **chỉ nhận diện được 6 bệnh** (liệt kê tên) · ca nguy kịch đi khám ngay |
+| Độ tin cậy thấp | Xác suất top-1 **< 0.5** → hiện cảnh báo "triệu chứng chưa khớp rõ với 6 bệnh" |
+| Danh sách triệu chứng | Chỉ **31 mã** có trong dữ liệu train (`/symptoms` tự lọc). 20 mã luôn = 0 không hiện vì chọn vào cũng không đổi kết quả |
+
+**Vì sao bù được rủi ro mà QĐ-05 lo:** lo ngại cũ là khách tự chẩn đoán, hoảng loạn, tự mua thuốc. Trang mới giảm thiểu bằng: khung lưu ý luôn hiện, mỗi bệnh có khuyến nghị dẫn về phòng khám (không gợi ý thuốc), cảnh báo độ tin cậy thấp, nút "Đặt lịch khám với bác sĩ" ngay dưới kết quả.
+
+---
+
+## QĐ-14 · Phạm vi chốt cuối: 6 bệnh của `dogfinal3`, chỉ dữ liệu thật
+
+**Ngày:** 2026-10-05 · **Trạng thái:** ⚠️ **Đã bị QĐ-16 thay thế** (2026-10-17) — giữ lại để tra cứu · *Từng thay thế phần còn lại của QĐ-02, QĐ-08, QĐ-11, QĐ-12 (R2/R3), QĐ-13*
+
+Chức năng chỉ chẩn đoán **6 bệnh** có trong `dogfinal3.csv`:
+
+| Mã | Tên | Nhãn gốc `dogfinal3` | Số ca | Mức độ |
+|---|---|---|---|---|
+| `distemper` | Bệnh Care (Carré) | `caninedistemper` | 25 | URGENT |
+| `rabies` | Bệnh dại | `rabies` | 25 | URGENT |
+| `parvo` | Parvovirus | `canineparvovirus` | 24 | URGENT |
+| `leptospirosis` | Bệnh Leptospira | `leptospirosis` | 24 | URGENT |
+| `kennel_cough` | Ho cũi chó | `kennelcough` | 22 | SOON |
+| `ckd_dog` | Bệnh thận mạn | `kidneydisease` | 21 | SOON |
+| | | | **141** | |
+
+**Bối cảnh:** sau báo cáo R1 (15/09), yêu cầu mới là chỉ làm đúng các bệnh có dữ liệu thật và **không dùng dữ liệu sinh từ y văn**. Xem [`R1_extended_summary.md`](../../ai_service/reports/R1_extended_summary.md).
+
+**Hệ quả:**
+
+| Hạng mục | Quyết định |
+|---|---|
+| Dữ liệu train | **Chỉ** `dogfinal3.csv` (141 dòng sau khi bỏ `heartworm`), qua `mapping_dogfinal3.csv` |
+| Feature | 51 cờ triệu chứng nhị phân của `symptoms.json`. **Không** dùng giống/tuổi/giới tính/cân nặng/tiền sử — `dogfinal3` không có các cột này |
+| Nhánh y văn (ma trận xác suất, sinh dữ liệu, R2, R3) | **Bỏ hẳn** |
+| `cleaned_animal`, `veterinary_clinical_data`, `symtomdata` | Không dùng trong train/test. Chỉ còn xuất hiện ở chương khảo sát dataset của báo cáo |
+| Model | Random Forest là model chính (yêu cầu phi chức năng). Logistic Regression + Dummy chỉ để so sánh trong báo cáo |
+| Model chạy trong `app.py` | **Đúng model R1**: RF 300 cây, `random_state=42`, train 112 dòng của split 80/20, **không augmentation** |
+| Thí nghiệm phụ đã làm | So sánh 70/30 vs 80/20; augmentation lật bit (kết quả âm tính — báo cáo trung thực, **không** thử tham số tới khi ra số đẹp) |
+
+**Vì sao bỏ augmentation (2026-10-05):** đã đo, augmentation không cải thiện (LR giữ 0.931, RF giảm 0.862 → 0.828). Giảng viên đồng ý: tăng cường không thay đổi nhiều thì dùng model chưa tăng cường. Augmentation chỉ còn là một thí nghiệm trong báo cáo.
+| 14 bệnh còn lại trong `symptoms.json` | Không dùng. Không mở rộng khi chưa có dữ liệu thật |
+
+**Giới hạn phải nêu trong báo cáo:** 141 dòng là nhỏ; đầu vào chỉ có triệu chứng nên chưa đáp ứng đủ phần "giống, tuổi, giới tính, tiền sử" của đề bài — đây là hệ quả của việc chỉ dùng dữ liệu thật, phải nói rõ chứ không che.
+
+---
+
+## QĐ-10 · Chỉ loài chó · bỏ `heartworm` · giữ `rabies`
+
+**Ngày:** 2026-09-13 · **Trạng thái:** ⚠️ **Đã bị QĐ-16 thay thế** (2026-10-17, quay lại nhiều loài) — giữ lại để tra cứu
+
+**Chỉ chó:** yêu cầu của giảng viên là thu hẹp còn một loài. Chọn chó vì không tìm được tập dữ liệu dạng bảng nào cho mèo.
+
+**Bỏ `heartworm`** (mất 24/165 dòng của `dogfinal3`):
+
+1. Chẩn đoán thật dựa trên **xét nghiệm kháng nguyên**, không dựa trên triệu chứng
+2. MSD ghi *"Most dogs have no, or only mild, clinical signs"* → ca có triệu chứng là tập con thiên lệch
+3. Triệu chứng trùng lặp nặng với `kennel_cough` (ho, khó thở, ngất)
+
+⚠️ Không dùng lý do "xác suất triệu chứng đều bằng 0" — câu đó sai.
+
+**Giữ `rabies`** — đã đo trên 141 dòng:
+
+| | Kết quả đo |
+|---|---|
+| `aggression` | 18 dòng, **cả 18 đều là rabies** → precision gần 1.00 |
+| Ca rabies không có `aggression` | 7/25 → recall không thể đạt 100% (đo được 0.80) |
+| `jaw_drop` | 0/141 dòng — không xuất hiện |
+
+**Bắt buộc khi báo cáo:** báo cáo per-class; nêu rõ precision rabies cao là **đặc tính của bệnh**, không phải thành tích của model.
+
+**Dòng 52 (vector toàn 0, chỉ có `pica` — mã đã bỏ khi ánh xạ): giữ, không xóa.** Bỏ một dòng vì biết trước model sẽ đoán sai là chọn dữ liệu theo kết quả mong muốn.
+
+---
+
+## QĐ-12 · Giao thức đánh giá
+
+**Ngày:** 2026-09-13 · **Trạng thái:** Đã chốt *(phần R2/R3 đã bỏ theo QĐ-14)*
+
+> ⚠️ Hai gạch đầu dòng về split 80/20 và 5-fold dưới đây là của `dogfinal3`, đã đổi thành **3-fold stratified CV** theo QĐ-16. Các quy tắc còn lại vẫn hiệu lực.
+
+- Split **80/20 stratified**, `random_state=42` → 112 train / 29 test *(scikit-learn làm tròn lên, không phải 113/28)*
+- **Kèm 5-fold stratified CV**, báo cáo `mean ± std`. Lý do: test 29 dòng ≈ 5 ca/lớp, sai một ca là recall nhảy ~20 điểm
+- **Báo cáo cả hai con số** (hold-out và CV), bất kể con số nào đẹp hơn
+- Báo cáo **per-class** precision/recall/F1 + confusion matrix
+- Có model **Dummy** làm sàn so sánh
+- **Đo và công bố** rò rỉ do dòng trùng lặp (2/29 dòng test), **không** xóa dòng trùng
+- Không trộn dữ liệu nguồn khác vào tập train (model sẽ học nguồn dữ liệu thay vì học bệnh)
+
+---
+
+## QĐ-01 · Kiến trúc: FastAPI riêng
+
+**Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
+
+Model chạy trong service Python FastAPI độc lập (`ai_service/app.py`). Spring Boot gọi sang qua HTTP.
+
+**Lý do:** yêu cầu Random Forest + confusion matrix + Accuracy/Precision/Recall/F1 là hệ sinh thái scikit-learn. Dùng Python thì script đánh giá và service dùng chung một code đọc dữ liệu.
+
+**Đã loại:**
+- *Export ONNX chạy trong Java* — thêm thư viện nặng, khó debug
+- *Chỉ prompt Groq LLM* — không có train/test split, không có confusion matrix → không đáp ứng yêu cầu phi chức năng
+
+**Groq diễn giải kết quả:** chưa làm, là tùy chọn. Nếu làm thì Groq chỉ viết diễn giải **sau khi** đã có kết quả, không tham gia vào con số dự đoán.
+
+**Đánh đổi:** phải deploy thêm một service, free tier có cold start → Hugging Face Spaces + UptimeRobot ping.
 
 ---
 
@@ -101,52 +179,27 @@ Cả ba đều biến hạn chế thành nội dung phân tích tốt cho báo c
 
 **Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
 
-Danh sách triệu chứng và bệnh nằm ở một file duy nhất `shared/symptoms.json`, cả Python, Java và React đều đọc từ đó.
+Danh sách triệu chứng nằm ở một file duy nhất `shared/symptoms.json`. FastAPI đọc để dựng feature vector, React lấy qua `/api/ai/symptoms`.
 
-**Lý do:** thứ tự phần tử trong mảng `symptoms` chính là thứ tự cột của feature vector. Nếu ba tầng tự khai báo riêng, chỉ cần lệch một dòng là model dự đoán sai hoàn toàn **mà không hề báo lỗi** — loại bug tốn hàng ngày để truy.
+**Lý do:** thứ tự phần tử trong mảng `symptoms` chính là thứ tự cột feature vector. Khai báo riêng ở nhiều nơi thì lệch một dòng là model đoán sai hoàn toàn **mà không báo lỗi**.
 
-**Quy tắc bảo vệ:** chỉ thêm vào cuối mảng, không chèn giữa, không xóa. Mỗi lần đổi phải tăng `version` và retrain. FastAPI đối chiếu `version` lúc khởi động, lệch thì từ chối chạy.
-
----
-
-## QĐ-05 · Khách hàng không được thấy tên bệnh
-
-**Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
-
-Actor phụ (USER) chỉ nhận về mức độ ưu tiên khám — NORMAL / SOON / URGENT — không bao giờ nhận tên bệnh cụ thể.
-
-**Lý do:** tránh khách tự chẩn đoán, hoảng loạn không cần thiết, hoặc tự mua thuốc điều trị. Đúng tinh thần đề bài: kết quả cuối cùng vẫn cần bác sĩ xác nhận.
-
-**Chi tiết triển khai quan trọng:** việc lọc bỏ tên bệnh phải làm ở **tầng Spring Boot**, không phải ẩn ở React. Nếu chỉ ẩn trên giao diện thì tên bệnh vẫn nằm trong network response, mở DevTools là thấy.
+**Quy tắc:** chỉ thêm vào cuối mảng, không chèn giữa, không xóa. Đổi file thì tăng `version` và **chạy lại các script đánh giá** để số liệu báo cáo còn khớp. (`app.py` train lại mỗi lần khởi động nên service tự khớp.)
 
 ---
 
-## QĐ-06 · Chỉ tách một service, gọi đúng tên là Strangler Fig
+## QĐ-06 · Chỉ tách một service — gọi đúng tên Strangler Fig
 
 **Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
 
-Chỉ trích xuất **duy nhất** `ai_service`. Không tách thêm `notification-service`, `payment-service` hay bất kỳ chức năng nào khác.
+Chỉ trích xuất **duy nhất** `ai_service`. Không tách thêm service nào khác.
 
-**Bối cảnh:** người dùng muốn thể hiện hiểu biết về microservices cho CV và cho giảng viên. Đã bàn kỹ ba điều:
+**Lý do:** microservices là thuộc tính của cả hệ thống, không phải của một service. Đập monolith ra mất 3–5 tuần, phá nhiều khóa ngoại, thêm cold start trên Render — demo sẽ tệ đi rõ rệt.
 
-1. **`ai_service` đã là một microservice hoàn chỉnh rồi** — stateless, deploy độc lập, container riêng, một trách nhiệm duy nhất. Không có gì để "làm thật hơn" ở phía nó. Thứ còn thiếu để gọi là kiến trúc microservices nằm ở **monolith bên cạnh**, không nằm trong `ai_service`.
-2. **Microservices là thuộc tính của cả hệ thống**, không phải của từng service. Ví von: sơ đồ 4-3-3 là thuộc tính của cả đội bóng, một cầu thủ không "đá theo sơ đồ 4-3-3" được.
-3. Muốn microservices thật thì phải đập monolith ra — ước tính 3–5 tuần, phá vỡ nhiều khóa ngoại (`Appointment` → User/Pet/PetService, `Order` → User/Product), cần 3 database, 4 cold start trên Render free tier. **Demo trực tiếp sẽ tệ đi rõ rệt** — mà link demo chạy mượt mới là thứ nhà tuyển dụng thực sự bấm vào.
+**Cách bù giá trị chứng minh:** tăng chất lượng pattern thay vì số lượng service — timeout, retry, circuit breaker, graceful degradation; **cố ý bỏ** Eureka/Config Server và giải thích được vì sao (over-engineering với vài endpoint cố định).
 
-**Quyết định của người dùng:** chỉ làm một service, không tìm thêm chức năng thứ hai.
+**Cách viết vào báo cáo/CV** (không viết "áp dụng kiến trúc Microservices"):
 
-**Cách bù đắp giá trị chứng minh** — thay vì tăng số lượng service, tăng chất lượng pattern:
-- Dùng đúng tên **Strangler Fig Pattern** (Martin Fowler) — bóc tách dần monolith có sẵn là cách chuẩn của ngành, không cần biện minh
-- Cài **circuit breaker, retry + timeout, correlation ID, graceful degradation** — đây mới là thứ người phỏng vấn backend hỏi tới
-- **Cố ý bỏ** Eureka và Config Server, và giải thích được vì sao bỏ (over-engineering với 3 endpoint cố định). Biết khi nào *không* dùng một công cụ cũng là biểu hiện của hiểu biết
-
-**Cách viết vào báo cáo và CV** (không được viết "áp dụng kiến trúc Microservices"):
-
-> Áp dụng Strangler Fig Pattern để bóc tách dần monolith: trích xuất chức năng dự đoán bệnh thành dedicated ML inference service (Python/FastAPI, Random Forest, 34 lớp bệnh, macro-F1 0.8x), tích hợp với Spring Boot qua REST; áp dụng circuit breaker, retry/timeout và graceful degradation để luồng khám bệnh vẫn hoạt động khi service AI gián đoạn.
-
-Chi tiết định vị kiến trúc và bảng pattern → [02-ARCHITECTURE.md](02-ARCHITECTURE.md).
-
-**Nếu sau này muốn làm microservices thật:** nên làm ở project riêng sau khi nộp đồ án, hoặc trên nhánh git riêng — để `main` luôn còn bản chạy được.
+> Áp dụng Strangler Fig Pattern để bóc tách dần monolith: trích xuất chức năng dự đoán bệnh thành ML inference service riêng (Python/FastAPI, Random Forest, 6 lớp bệnh), tích hợp với Spring Boot qua REST; cấu hình timeout và trả lỗi mềm để hệ thống chính vẫn hoạt động khi service AI gián đoạn.
 
 ---
 
@@ -154,303 +207,28 @@ Chi tiết định vị kiến trúc và bảng pattern → [02-ARCHITECTURE.md]
 
 **Ngày:** 2026-08-12 · **Trạng thái:** Đã chốt
 
-`ai_service` không có database. Bảng `disease_predictions` nằm trong Postgres (Neon) của monolith.
+`ai_service` không có database. Hiện kết quả dự đoán **không được lưu ở đâu** (QĐ-15). Nếu sau này cần lưu thì lưu trong Postgres (Neon) của monolith.
 
-**Lý do 1 — hiểu đúng nguyên tắc.** "Database per service" nghĩa là *không service nào dùng chung DB với service khác*, **không** phải *mỗi service phải có một DB*. Một service stateless thỏa mãn nguyên tắc này một cách hiển nhiên. `ai_service` không vi phạm gì cả.
+**Lý do:**
+1. "Database per service" nghĩa là *không dùng chung DB*, không phải *mỗi service phải có DB*
+2. Inference service chuẩn (TF Serving, TorchServe, SageMaker Endpoint) đều không có DB — feature vào, prediction ra
+3. Nếu lưu, kết quả dự đoán gắn với `Pet`/`User` — thuộc dữ liệu của monolith
 
-**Lý do 2 — stateless là hình dạng chuẩn của inference service.** TensorFlow Serving, TorchServe, KServe, Seldon, SageMaker Endpoint — **không cái nào có database**. Chúng là hàm thuần túy: feature vào, prediction ra. Đây không phải bản rút gọn của một microservice "đầy đủ", mà là cách ngành thực sự xây model server.
+*Ghi chú:* nếu backend đã từng chạy với bản tích hợp cũ thì DB còn 2 cột `symptom_codes`, `ai_prediction` trong bảng `appointments` (Hibernate `ddl-auto=update` không tự xóa cột). Code không còn dùng; có thể `ALTER TABLE appointments DROP COLUMN ...` bằng tay nếu muốn dọn.
 
-**Lý do 3 — dữ liệu thuộc bounded context của phòng khám.** Bản ghi dự đoán chứa: bác sĩ nào bấm, cho thú cưng nào, trong lần khám nào, bác sĩ xác nhận đúng/sai, chẩn đoán thật. Đó là **hồ sơ lâm sàng**, gắn chặt với `Pet`/`Appointment`/`User`. Việc bác sĩ xác nhận đúng/sai là một hành vi y tế, cùng loại với ghi chẩn đoán.
-
-**Chi phí nếu tách DB** — ba màn hình đều mất khả năng JOIN:
-
-| Màn hình | Hiện tại | Nếu tách DB |
-|---|---|---|
-| Lịch sử dự đoán của pet | 1 JOIN | 2 lời gọi API + ghép tay |
-| Panel bác sĩ trong bệnh án | khóa ngoại `appointmentId` | mất FK, phải tự xử lý dữ liệu mồ côi |
-| Thống kê Admin | GROUP BY | gộp ở tầng ứng dụng |
-
-Cộng thêm: Neon free tier chỉ cho một project.
-
-**Nếu sau này cần dữ liệu để retrain:** monolith mở `GET /api/admin/predictions/export` (chỉ đọc, có phân quyền) cho script retrain kéo về. **Tuyệt đối không** cho `ai_service` cắm thẳng vào DB của monolith — đó mới là vi phạm nguyên tắc thật sự.
-
-**Câu trả lời khi bị hỏi trong phỏng vấn:**
-
-> "Service AI được thiết kế stateless theo mô hình model serving chuẩn — nó chỉ làm suy luận. Dữ liệu dự đoán thuộc hồ sơ bệnh án nên monolith sở hữu. Nhờ stateless nên service scale ngang được tự do và không có vấn đề đồng bộ dữ liệu."
+**Tuyệt đối không** cho `ai_service` cắm thẳng vào DB của monolith.
 
 ---
 
-## QĐ-08 · Quy tắc gán số trong ma trận xác suất
+# Phần B — Đã thay thế *(chỉ để tra cứu)*
 
-**Ngày:** 2026-09-07 · **Trạng thái:** Đã chốt
-
-Ba quy tắc bắt buộc khi điền `disease_matrix.csv`. Bảng thang đo đầy đủ ở [03-DATA.md](03-DATA.md).
-
-**1. Lấy điểm giữa khoảng.** Thang đo cho khoảng (*most cases* → 0.80–0.90), nhưng file CSV cần đúng một số vì bộ sinh dữ liệu cần một ngưỡng duy nhất để so sánh. Luôn lấy điểm giữa (→ 0.85).
-
-*Lý do:* ai làm lại quy trình cũng ra đúng con số đó; không bị nghi chọn số cho đẹp kết quả; nhiễu đã tiêm có kiểm soát ở bước sau nên không cần thêm ngẫu nhiên ở đây.
-
-*Đã loại:* bốc ngẫu nhiên trong khoảng — mất khả năng lặp lại mà không được gì thêm.
-
-**2. "Sách không nhắc tới" = `0.02`, không phải `0.00`.**
-
-*Lý do:* `0.00` nghĩa là *tuyệt đối không bao giờ*. Model học thành luật cứng, chỉ cần gặp một ca thật có triệu chứng đó là loại thẳng bệnh đúng ra khỏi danh sách. "Không nhắc" chỉ có nghĩa là *hiếm*, không phải *bất khả*.
-
-**3. 🔒 Ma trận chốt xong TRƯỚC khi train lần đầu. Không sửa sau khi đã nhìn thấy accuracy.**
-
-*Lý do:* train ra 71%, chỉnh vài con số, train lại được 85% → con số 85% đó **vô nghĩa**. Đó là điều chỉnh dữ liệu cho khớp kết quả mong muốn, lập luận thành vòng tròn, và không có câu trả lời nào cho "sao chọn 0.85 mà không phải 0.70" ngoài "vì nó cho accuracy đẹp hơn".
-
-*Ngoại lệ duy nhất:* tra lại sách và phát hiện đọc nhầm. Mỗi lần sửa phải ghi vào chính file này kèm câu trích trong sách.
-
-*Accuracy thấp thì xử lý ở tầng model* (đổi thuật toán, tune hyperparameter, thêm feature), **không** xử lý bằng cách sửa dữ liệu.
-
-**Hệ quả cho phần "chồng lấn có chủ ý" (QĐ-02, nhiễu loại 4):** không ép, không chỉnh tay cho hai bệnh giống nhau. Đọc sách trung thực thì chồng lấn tự khắc xuất hiện, vì các bệnh khó phân biệt trên lâm sàng vốn được mô tả bằng những từ gần giống nhau. Nếu tra xong mà hai bệnh nổi tiếng khó phân biệt lại ra vector rất khác nhau → dấu hiệu **đọc thiếu**, quay lại đọc kỹ hơn.
-
----
-
-## QĐ-09 · Không tìm thêm dataset ngoài nữa
-
-**Ngày:** 2026-09-07 · **Trạng thái:** Đã chốt
-
-Đã khảo sát mở rộng ngoài 2 dataset Kaggle được chỉ định. **Không tập nào thay thế được kế hoạch sinh dữ liệu.** Dừng tìm, không quay lại việc này nữa.
-
-| Tập | Vì sao loại |
-|---|---|
-| Pet Health Symptoms (Kaggle / HuggingFace) | 2.000 dòng nhưng nhãn chỉ là **5 nhóm thô** (da liễu / tiêu hóa / ký sinh trùng / viêm tai / vận động), dạng text tự do. Và **do Gemini 2.5 Pro sinh ra** |
-| UCI Horse Colic | Dữ liệu lâm sàng **thật** nhưng là **ngựa**, ~370 dòng, nhãn là "sống/chết/cần mổ" chứ không phải tên bệnh |
-| Disease Symptom Prediction (Kaggle) | **Bệnh người**, không phải thú y |
-| VetCompass (RVC) | Phần open access chỉ là tập con đính kèm từng bài báo, đã redact — không phải bộ triệu chứng → bệnh |
-| SAVSNET (Liverpool) | EHR thú y thật, quy mô lớn, nhưng phải **nộp đơn + ký thỏa thuận nghiên cứu**. Không kịp cho đồ án |
-
-**Nguyên nhân gốc:** dữ liệu thú y thật nằm trong hệ thống EHR của phòng khám, đều đóng và phải xin phép. Cái mở thì hoặc quá nhỏ, hoặc không có nhãn, hoặc là sinh tổng hợp. Đây là đặc thù của ngành thú y, không phải do tìm chưa kỹ.
-
-**Ghi nhận đáng dùng cho báo cáo:** tập "Pet Health Symptoms" trên Kaggle **cũng là dữ liệu sinh tổng hợp, bằng LLM**. Điều này xác nhận sinh dữ liệu tổng hợp là cách làm được chấp nhận trong bài toán này — và cách của đồ án chặt chẽ hơn hẳn (sinh từ vector xác suất đọc trong y văn, có nguồn tra cứu từng bệnh; họ thì prompt LLM "hãy sáng tạo tối đa"). Đưa so sánh này vào chương phương pháp.
-
-**Việc kèm theo, chưa làm:** mở rộng `ai_service/reports/kaggle_survey.md` thành `dataset_survey.md` — khảo sát 5 tập thay vì 2, kèm lý do loại từng tập. Tùy chọn, không chặn giai đoạn 1.
-
-> ⚠️ **QĐ-09 đã được mở lại ngày 2026-09-07** sau khi giảng viên thu hẹp phạm vi còn một loài. Bài toán đổi (1 loài thay vì 6) nên kết luận cũ không còn áp dụng. Kết quả khảo sát lần hai → QĐ-11.
-
----
-
-## QĐ-10 · Thu hẹp phạm vi: chỉ loài CHÓ, 20 bệnh
-
-**Ngày:** 2026-09-07 · **Trạng thái:** Đã chốt · **Thay thế [QĐ-03](#qđ-03--phạm-vi-phủ-cả-6-loài)**
-
-Hệ thống chỉ dự đoán cho **DOG**. Danh sách bệnh rút từ 34 xuống **20**.
-
-**Bối cảnh — đây là yêu cầu từ giảng viên, không phải lựa chọn kỹ thuật.** Sau khi báo cáo rằng 2 dataset được chỉ định không dùng để train được, giảng viên thu hẹp đề tài: chỉ cần làm **một loài (chó hoặc mèo)**; được phép làm cả hai nếu tìm đủ dữ liệu cho cả hai.
-
-**Vì sao chọn chó chứ không phải mèo:** khảo sát lại (QĐ-11) không tìm được tập dữ liệu dạng bảng nào cho mèo. Toàn bộ nguồn dùng được đều là chó. Không phải chọn theo sở thích mà theo dữ liệu sẵn có.
-
-### 20 bệnh
-
-**17 bệnh chó có sẵn trong `symptoms.json` v2:**
-`parvo` `distemper` `kennel_cough` `tick_borne_disease` `pyoderma` `intestinal_worms` `flea_tick_infestation` `otitis_externa` `arthritis_dysplasia` `pyometra` `dermatophytosis` `ear_mites` `diabetes_mellitus` `gastroenteritis` `food_poisoning` `periodontal_disease` `food_allergy`
-
-**3 bệnh thêm mới** — lý do thêm là để tập kiểm định ngoại lai dùng được: `rabies` `leptospirosis` `ckd_dog`
-
-**17 bệnh loại bỏ vì khác loài:** 6 bệnh chỉ mèo + 4 thỏ + 3 hamster + 4 chim.
-Loại vì **thu hẹp phạm vi**, KHÔNG phải vì thiếu nguồn — MSD Vet Manual có đủ trang cho tất cả. Mở lại được bất cứ lúc nào nếu phạm vi thay đổi.
-
-### Hai bệnh đã cân nhắc riêng
-
-**`rabies` — GIỮ.** Dại là bệnh của chó, ở Việt Nam chó là nguồn lây chính. Chiếm 25/165 dòng của tập kiểm định `dogfinal3`.
-
-*Rủi ro đã biết:* `aggression` và `jaw_drop` chỉ xuất hiện ở đúng bệnh này → model học được luật gần như tuyệt đối, lớp này sẽ quá dễ và kéo macro-F1 lên. **Bắt buộc báo cáo metrics per-class**, không được chỉ khoe macro-F1.
-
-> #### ✏️ Hiệu chỉnh 2026-09-14 — đã đo thật, mô tả rủi ro trên chỉ đúng một nửa
->
-> Đo `aggression` và `jaw_drop` trên 141 dòng thật của `dogfinal3`:
->
-> | | Kết quả đo |
-> |---|---|
-> | `jaw_drop` | **0/141 dòng** — không xuất hiện trong dữ liệu thật |
-> | `aggression` | 18 dòng, **cả 18 đều là rabies** (không lẫn bệnh nào khác) |
-> | `aggression` phủ được | **18/25 ca rabies = 72%**, không phải 100% |
->
-> **Đúng về precision, sai về recall.** Thấy `aggression` thì đoán rabies gần như chắc đúng (precision ≈ 1.00), nhưng còn **7/25 ca rabies không hề có `aggression`** — chúng chỉ có `paralysis`, `drooling`, `fever`, tức triệu chứng dùng chung với bệnh khác. Một trong bảy ca đó (dòng 52) sau khi áp bảng ánh xạ thì **thành vector toàn 0**, vì triệu chứng duy nhất được ghi là `pica` — mã đã cố ý bỏ.
->
-> Nên recall của rabies **không thể đạt 100%**, dự kiến rơi vào khoảng 70–85%.
->
-> **Quyết định giữ `rabies` không đổi**, và số liệu này làm nó vững hơn: lớp này không "quá dễ" như lo ban đầu, 28% số ca vẫn phải đoán bằng triệu chứng không đặc hiệu. `jaw_drop` thì không làm R1 dễ đi chút nào vì nó không có mặt.
->
-> **Hai điều kiện bắt buộc khi báo cáo:**
-> 1. Báo cáo precision/recall/F1 **từng lớp**. Nêu rõ precision rabies cao là **đặc tính của bệnh** (`aggression` gần như độc quyền), không phải thành tích của model.
-> 2. Ở R2/R3, `jaw_drop` có trong dữ liệu sinh nhưng luôn = 0 ở tập test thật → recall rabies sẽ thấp hơn kỳ vọng. Đây là **kết quả hợp lệ, không phải lỗi ma trận**. Không được sửa ma trận vì lý do này (QĐ-08 luật 3).
->
-> **Dòng 52 (vector toàn 0): giữ, không xóa.** Bỏ một dòng vì biết trước model sẽ đoán sai chính là chọn dữ liệu theo kết quả mong muốn — đúng thứ QĐ-08 luật 3 cấm. Giữ và ghi chú trong báo cáo, chi phí chỉ 0,7% accuracy.
-
-**`heartworm` — BỎ.** Bốn lý do, xếp theo độ mạnh:
-
-1. **Chẩn đoán thật dựa trên xét nghiệm kháng nguyên/microfilaria, không dựa trên triệu chứng** → nằm ngoài khả năng của phương pháp dự đoán theo triệu chứng
-2. **Thiên lệch chọn mẫu:** MSD ghi *"Most dogs have no, or only mild, clinical signs"*. Ca có triệu chứng chỉ là tập con nhỏ và thiên lệch
-3. **Trùng lặp nặng** với `kennel_cough` (ho, khó thở, ngất)
-4. MSD **không cho dữ liệu tuổi/giống/giới** → không điền được `disease_constraints.csv`
-
-⚠️ *Lý do KHÔNG dùng:* "xác suất các triệu chứng đều bằng 0". Sai — MSD vẫn cho triệu chứng khi bệnh biểu hiện (ho là phổ biến nhất), dòng ma trận sẽ có số thật.
-
-*Chi phí:* mất 24/165 dòng của `dogfinal3` và 2/71 dòng của `cleaned_animal`.
-
-**Không thêm** `lyme_disease`, `pancreatitis`, `canine_influenza`: mỗi bệnh chỉ có 2 dòng trong tập kiểm định, không đáng một lượt tra sách và một lớp mới.
-
-### Hệ quả
-
-| Việc | Thay đổi |
-|---|---|
-| `symptoms.json` | v2 → **v3**. Thêm 4 mã: `abdominal_pain` `oral_ulceration` `aggression` `jaw_drop` → 50 triệu chứng + 14 tiền sử = **64 feature** |
-| `disease_matrix.csv` | 34 × 60 → **20 × 64** |
-| `disease_constraints.csv` | 34 dòng → 20, bỏ cột `species` |
-| Công tra sách | ~34 lượt → **20 lượt** |
-| **Species mask** (QĐ-03) | **Không cần nữa** — một loài thì không có cặp loài–bệnh bất khả |
-| Bảng metrics tách nhóm loài (QĐ-03) | Không còn ý nghĩa. Thay bằng phần **kiểm định trên 2 tập ngoại lai** |
-| Cơ chế từ chối trả lời (QĐ-03) | **Giữ nguyên** — vẫn cần |
-
-Ba biện pháp bù của QĐ-03 mất 2 còn 1. Đổi lại có kiểm định trên dữ liệu thật — mạnh hơn ablation trên dữ liệu tự sinh.
-
----
-
-## QĐ-11 · Ba nguồn dữ liệu và vai trò từng nguồn
-
-**Ngày:** 2026-09-07 · **Trạng thái:** Đã chốt
-
-| Nguồn | Quy mô | Vai trò | Train? |
+| QĐ | Nội dung cũ | Bị thay bởi | Còn giữ lại gì |
 |---|---|---|---|
-| Ma trận y văn → sinh tổng hợp | ~20 bệnh × ~300 ≈ 6.000 dòng | **Tập train chính** | ✅ |
-| `dogfinal3.csv` | 165 dòng, 7 bệnh, dữ liệu phòng khám **thật** (Cagayan de Oro, Philippines), Unlicense | **Tập dữ liệu thật** — split 8/2, vừa train vừa test. Xem **QĐ-12** | ✅ 80% |
-| `cleaned_animal` lọc chó | 71 dòng / 10 bệnh sau khi gộp nhãn (từ 75 dòng thô) | **Tập kiểm định thứ hai** + là dataset [12] giảng viên chỉ định | ❌ |
-| `symtomdata.csv` | 23.999 dòng, 12 bệnh | **Loại khỏi mọi khâu kỹ thuật** | ❌ |
-
-**Vì sao ma trận vẫn phải là nguồn train chính:** hai tập kiểm định cộng lại chỉ 236 dòng, và **chỉ `cleaned_animal` có cột giống/tuổi/giới tính/cân nặng**. Đề bài bắt buộc dùng các trường này ([01-OVERVIEW.md](01-OVERVIEW.md)). Không tập nào thay được việc sinh dữ liệu.
-
-**Vì sao loại `symtomdata.csv`** — đã đo trực tiếp:
-
-- Đúng **2.000 mẫu mỗi bệnh**, không lệch một con → sinh tự động
-- **29,2% dòng trùng lặp hoàn toàn** → split ngẫu nhiên là rò rỉ dữ liệu, accuracy giả 97%+
-- Tần suất triệu chứng trong mỗi bệnh **đều ~0.44**: ở Parvo, `vomiting` 0.45 ngang bằng `sepsis` 0.44 và `Redness around Eye area` 0.42. Không có cấu trúc xác suất lâm sàng nào
-- Nhãn thô: `Cancers`, `Allergies`, `Skin Rashes` là **nhóm bệnh**, không phải chẩn đoán
-- Không có cột giống/tuổi/giới tính
-
-**Giữ lại đúng một thứ:** bảng tần suất ~0.44 nói trên, đưa vào `kaggle_survey.md` làm **dẫn chứng định lượng** cho chương phương pháp — trả lời câu "sao không dùng dataset 24.000 dòng có sẵn". Đối chiếu với `dogfinal3` (dữ liệu thật): Parvo có `bloodystool` 0.62, `vomiting` 0.62, `fever` 0.58, tụt dần tới 0.12 — có thứ bậc, có đuôi. Đó là hình dạng của dữ liệu lâm sàng thật.
-
-### 🔒 Quy tắc niêm phong `dogfinal3.csv` — ĐÃ THAY ĐỔI 2026-09-13
-
-> **Quy tắc gốc (2026-09-07):** không mở `dogfinal3.csv` cho tới khi ma trận chốt xong, để giữ nó làm tập kiểm định ngoại lai sạch.
->
-> **Đã bỏ** theo yêu cầu giảng viên — `dogfinal3` giờ được split 8/2 để train và test. Xem **QĐ-12**.
->
-> **Phần còn giữ lại:** vẫn **không được dùng `dogfinal3` để chỉnh ma trận xác suất**. Ma trận chỉ lấy từ y văn. Nếu chỉnh ma trận theo `dogfinal3` thì chế độ R2 ở QĐ-12 mất hết ý nghĩa.
-
-⚠️ **Ghi nhận để minh bạch:** ngày 2026-09-07 đã mở xem tần suất triệu chứng của **`canineparvovirus` (1/7 bệnh)** của `dogfinal3`. Nêu rõ điều này khi báo cáo kết quả R2.
-
----
-
-## QĐ-12 · Thiết kế thí nghiệm 3 chế độ trên dữ liệu thật
-
-**Ngày:** 2026-09-13 · **Trạng thái:** Đã chốt · **Sửa đổi QĐ-11**
-
-**Bối cảnh — yêu cầu của giảng viên:** *"em cứ chia 8/2 train và test cho dữ liệu thật ghi nhận kết quả"*, sau khi có kết quả rồi mới sinh dữ liệu từ y văn và test lại, ghi nhận tiếp.
-
-Đây không phải "dùng 400 dòng làm tập train chính" mà là **ablation study**: đo xem việc bổ sung dữ liệu sinh từ y văn có thực sự cải thiện kết quả hay không.
-
-### Ba chế độ — cùng một tập test, khác cách train
-
-| | Train bằng | Test trên | Trả lời câu hỏi |
-|---|---|---|---|
-| **R1** | 113 dòng thật (80%) | 28 dòng thật (20%) | **Mốc đối chứng** — giảng viên yêu cầu |
-| **R2** | Chỉ dữ liệu sinh từ y văn | 28 dòng thật | **Ma trận y văn có đúng với lâm sàng không?** Không dùng dòng thật nào để train |
-| **R3** | Dữ liệu sinh + 113 dòng thật | 28 dòng thật | Kết hợp có tốt hơn từng cái riêng lẻ không? |
-
-**R2 là con số đắt giá nhất của cả đồ án** — nó đo trực tiếp khoảng cách giữa y văn và thực tế lâm sàng. Rất ít đồ án sinh viên đo được đại lượng này.
-
-### Tập dữ liệu
-
-`dogfinal3.csv` bỏ 24 dòng `heartworm` (bệnh này đã loại ở QĐ-10) → **141 dòng / 6 bệnh**:
-
-`caninedistemper` 25 · `rabies` 25 · `canineparvovirus` 24 · `leptospirosis` 24 · `kennelcough` 22 · `kidneydisease` 21
-
-Ba chế độ phải dùng **cùng bộ nhãn** thì so sánh mới công bằng.
-
-`cleaned_animal` (71 dòng chó) giữ nguyên vai trò **tập kiểm định thứ hai**, không tham gia vào R1/R2/R3 — nó có từ vựng triệu chứng khác hẳn, trộn vào sẽ làm nhiễu phép so sánh.
-
-### Quy trình đánh giá
-
-- Split **80/20 stratified**, `random_state=42` — đúng yêu cầu giảng viên và yêu cầu phi chức năng
-- **Kèm thêm 5-fold stratified cross-validation**, báo cáo `mean ± std`
-
-**Vì sao phải có cross-validation:** tập test chỉ **28 dòng**, khoảng 4–5 dòng mỗi lớp. Sai một ca là recall của lớp đó nhảy ~20 điểm. Với 5-fold, mỗi dòng được dùng làm test đúng một lần → đánh giá trên cả 141 dòng thay vì 28. Đây là cách xử lý tiêu chuẩn cho tập nhỏ, không phải lách yêu cầu.
-
-Báo cáo **cả hai**: con số 80/20 (theo yêu cầu) và con số CV (đáng tin hơn).
-
-### Vì sao thiết kế này mạnh hơn phương án niêm phong
-
-Phương án cũ cho một con số trên dữ liệu thật nhưng **không có gì để so sánh với nó** — không biết 65% là tốt hay tệ. Thiết kế 3 chế độ cho một mốc đối chứng đo trên cùng tập test, nên mọi con số đều đọc được.
-
-### Rủi ro đã biết
-
-1. **Tập test 28 dòng** → giảm nhẹ bằng 5-fold CV như trên
-2. **R2 chỉ chấm được 6 lớp** trong khi model biết 20 bệnh → model R2 bị bất lợi vì có nhiều lựa chọn sai hơn. Báo cáo **hai biến thể**: R2 giới hạn softmax trong 6 lớp, và R2 đầy đủ 20 lớp. Nêu rõ sự khác biệt
-3. **`dogfinal3` không có cột giống/tuổi/giới tính/cân nặng** → R1 chỉ dùng được feature triệu chứng. Ghi rõ trong báo cáo rằng R1 chạy trên tập feature hẹp hơn R2/R3
-
-### Việc phát sinh, thành đường găng
-
-Cần **bảng ánh xạ 52 cột triệu chứng + 7 nhãn bệnh** của `dogfinal3` sang mã trong `symptoms.json` → `ai_service/data/mapping_dogfinal3.csv`. Trước đây xếp "làm sau", giờ chặn mọi việc khác.
-
-### Lợi ích cho tiến độ
-
-**R1 chạy được ngay, không cần chờ tra y văn.** Có confusion matrix và bảng metrics trên dữ liệu thật trong vài ngày — đúng thứ cần để báo cáo mốc 21/08–03/09 đang trễ.
-
----
-
-## QĐ-13 · Phạm vi đánh giá R2 và vai trò `cleaned_animal`
-
-**Ngày:** 2026-09-14 · **Trạng thái:** Đã chốt · **Bổ sung [QĐ-12](#qđ-12--thiết-kế-thí-nghiệm-3-chế-độ-trên-dữ-liệu-thật)**
-
-Ba việc chốt cùng lúc, đều xoay quanh một câu hỏi: đo R2 trên bao nhiêu dữ liệu thì vừa.
-
-### A. R2 được chấm thêm trên **cả 141 dòng**, ngoài con số 28 dòng
-
-**R2 không dùng dòng thật nào để train**, nên chấm nó trên toàn bộ 141 dòng là hoàn toàn hợp lệ — không có rò rỉ dữ liệu. Đây là đặc quyền **chỉ R2 có**.
-
-**R1 và R3 tuyệt đối không được làm vậy:** cả hai train trên 113 dòng thật, chấm trên 141 dòng nghĩa là 113 dòng đã thấy lúc train lại xuất hiện trong test → accuracy đẹp giả tạo.
-
-**Vì sao cần con số 141:** 28 dòng là quá ít để kết luận. Giả sử accuracy thật 70%:
-
-| Đo trên | Khoảng tin cậy 95% |
-|---|---|
-| 28 dòng | 70% **± 17 điểm** (53–87%) — gần như không kết luận được gì |
-| 141 dòng | 70% **± 7,6 điểm** (62–78%) |
-
-R2 là con số đắt giá nhất của cả đồ án (đo khoảng cách y văn ↔ lâm sàng), không nên để nó mang sai số ±17 điểm khi có sẵn cách đo tốt hơn miễn phí.
-
-Dự án **đã thừa nhận vấn đề 28 dòng là quá nhỏ** từ QĐ-12 — đó là lý do thêm 5-fold CV. R1/R3 phải dùng CV để lách; R2 có lối thoát sạch hơn.
-
-**Hai con số không chọi nhau:** 28 dòng nằm *trong* 141 dòng, nên R2-trên-28 chỉ là mẫu ngẫu nhiên 20% của R2-trên-141 — cùng một đại lượng, khác độ chính xác. Còn R1-trên-28 đo **một thứ khác** (model train khác hẳn), đó mới là lý do bảng so sánh buộc phải dùng chung tập test.
-
-### B. **Không** trộn `cleaned_animal` vào tập train của R1
-
-Đã cân nhắc và **loại**. Bốn lý do, xếp theo độ nặng:
-
-| | Vấn đề |
-|---|---|
-| 1 | **Chỉ trùng 4/6 bệnh.** Gộp nhãn xong lọc theo 6 bệnh được 51 dòng: parvo 21 · distemper 12 · kennel_cough 11 · leptospirosis 7 · **rabies 0** · **ckd_dog 0**. Bơm thêm dữ liệu cho 4 lớp, bỏ đói 2 lớp |
-| 2 | **Model sẽ học nguồn dữ liệu thay vì học bệnh** (*batch effect*). `cleaned_animal` chỉ có 16 giá trị triệu chứng + 9 cột nhị phân; `dogfinal3` phủ 33 mã. Trộn vào thì 51 dòng mới có hàng loạt cột = 0 **không phải vì con chó không có triệu chứng, mà vì dataset không hỏi tới**. Model học ngay quy luật "dòng nào thưa triệu chứng thì thuộc nhóm này". ⚠️ Cái bẫy: accuracy sẽ **tăng**, nhìn số tưởng tốt hơn |
-| 3 | **Mất tập kiểm định độc lập.** Bỏ species mask (QĐ-10) đã mất một bảng ablation; thứ dùng để bù chính là kiểm định ngoại lai. Đem đi train là tiêu nốt khoản bù |
-| 4 | **Chất lượng kém.** Cột `Appetite_Loss` chỉ có duy nhất giá trị `Yes` ở cả 75 dòng chó — cột chết |
-
-**Thay vào đó — dùng `cleaned_animal` làm tập kiểm định thứ hai cho R2.** Model R2 train thuần từ y văn, chưa từng thấy dòng lâm sàng nào, đem chấm trên **hai tập thật độc lập, khác quốc gia, khác từ vựng ghi chép**. Đây là bằng chứng mạnh hơn nhiều so với việc thêm 51 dòng vào tập train, và không tốn thêm công tra sách nào.
-
-*(Ghi chú số liệu: 75 dòng chó thô có **22 nhãn**, phần lớn là cùng một bệnh viết nhiều kiểu — `Canine Parvovirus` 12 + `Parvovirus` 9; `Kennel Cough` 9 + `Canine Cough` 1 + `Bordetella Infection` 1. Con số "71 dòng / 10 bệnh" ghi ở QĐ-11 là kết quả gộp theo phạm vi 10 bệnh, khác với phép lọc 6 bệnh ở đây.)*
-
-### C. 🔒 Hai quy tắc trình bày — khóa TRƯỚC khi chạy
-
-Có hai con số cho cùng một chế độ là mảnh đất tốt để vô tình chọn lọc kết quả. Chốt cách trình bày ngay bây giờ, trước khi nhìn thấy bất kỳ con số nào:
-
-1. **Hai bảng tách hẳn nhau.** Bảng *"So sánh R1/R2/R3"* — cả ba đều 28 dòng, ghi rõ `n=28` ngay tiêu đề. Bảng *"Đánh giá riêng R2"* — 141 dòng + `cleaned_animal`, ghi rõ `n` từng cột. **Không được để chung một bảng.**
-2. **Báo cáo cả hai con số bất kể con số nào đẹp hơn.** Không được chọn khoe con số có lợi.
-
-Quy tắc 2 là QĐ-08 luật 3 áp cho khâu trình bày: chốt giao thức trước khi thấy kết quả, đúng như chốt ma trận trước khi train.
-
-### Đã loại
-
-- *Chỉ chấm R2 trên 28 dòng cho "nhất quán"* — bảng so sánh vẫn nguyên vẹn dù có thêm con số 141 hay không, nên bỏ nó chỉ là vứt 80% bằng chứng sẵn có cho câu hỏi quan trọng nhất mà không đổi lại được gì.
-- *Chấm R2 trên 141 dòng rồi bỏ luôn con số 28* — mất khả năng so sánh với R1/R3, tức mất chính cái trục của QĐ-12.
+| 02 | Sinh ~7.900 ca từ ma trận xác suất y văn (Ettinger, Nelson), trộn Kaggle | QĐ-14 | Không |
+| 03 | Phủ 6 loài, 34 bệnh, species mask, metrics tách theo loài | QĐ-10 → QĐ-14 | Không |
+| 05 | Khách không được thấy tên bệnh, chỉ thấy mức ưu tiên; lọc ở Spring Boot | QĐ-15 | Tinh thần "kết quả cuối do bác sĩ xác nhận" → thành khung lưu ý + nút đặt lịch trên trang mới |
+| 08 | Quy tắc gán số trong ma trận xác suất | QĐ-14 (bỏ ma trận) | Tinh thần "chốt giao thức trước khi thấy kết quả" → đã chuyển vào QĐ-12 |
+| 09 | Dừng tìm thêm dataset | Mở lại khi đổi phạm vi, tìm được `dogfinal3` | Bảng lý do loại 5 dataset — dùng cho chương khảo sát |
+| 11 | Ba nguồn dữ liệu: y văn (train chính) + `dogfinal3` + `cleaned_animal` | QĐ-14 | Lý do loại `symtomdata.csv` (2.000 mẫu/bệnh đều tăm tắp, 29,2% dòng trùng, tần suất triệu chứng đều ~0.44) — dùng cho chương khảo sát |
+| 12 (R2/R3) | Ba chế độ R1/R2/R3 so sánh dữ liệu thật với dữ liệu sinh | QĐ-14 | Chỉ còn R1 = giao thức đánh giá ở QĐ-12 phần A |
+| 13 | Chấm R2 trên 141 dòng; `cleaned_animal` làm tập kiểm định thứ hai | QĐ-14 | Lý do không trộn `cleaned_animal` vào train → đã chuyển vào QĐ-12 |

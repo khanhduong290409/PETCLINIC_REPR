@@ -60,20 +60,20 @@ return countBySpecies;
 **Quy trình bắt buộc cho mọi task:**
 
 ```
-1. Lên plan (5 bước)  →  chờ duyệt
+1. Lên plan  →  chờ duyệt
 2. Code file thứ nhất
 3. Tự review file đó
-4. Gửi file đã review cho người dùng xem
-5. Người dùng phản hồi  →  sang file tiếp theo
+4. Có sai sót  →  tự fix, review lại
+5. File đã ổn  →  tự sang file tiếp theo (không chờ xác nhận)
 ```
 
 Quy tắc:
 
-- **Lên plan trước khi code**, chia thành 5 bước
-- **Mỗi lần chỉ code một file.** Không viết 5 file rồi mới gửi
-- **Tự review trước khi gửi** — không gửi bản nháp đầu tiên
-- **Gửi bản sau khi đã review**, kèm một câu tóm tắt file đó làm gì
-- **Dừng lại chờ phản hồi** trước khi sang file tiếp theo
+- **Lên plan trước khi code** và chờ duyệt plan
+- **Mỗi lần chỉ code một file**, xong file nào review file đó
+- **Tự review và tự fix** — không để lại bản nháp đầu tiên
+- Plan đã duyệt thì **không dừng chờ xác nhận giữa các file** *(đổi ngày 2026-10-18)*; chỉ dừng hỏi khi gặp quyết định người dùng phải chọn
+- Cuối task tóm tắt từng file đã làm gì
 
 ### Checklist tự review
 

@@ -64,8 +64,16 @@ public class MedicalService {
                 .build();
     }
 
-    public MedicalResponse saveRecord(Long appointmentId, MedicalRequest medicalRequest) {
-        MedicalRecord record = medicalRecordRepository.findByAppointmentId(appointmentId).orElse(null);
+    // doctorId lấy từ JWT ở controller — chỉ bác sĩ được phân công lịch này mới được ghi bệnh án
+    public MedicalResponse saveRecord(Long appointmentId, Long doctorId, MedicalRequest medicalRequest) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        if (appointment.getDoctor() == null || !appointment.getDoctor().getId().equals(doctorId)) {
+            throw new RuntimeException("Bạn không được phân công lịch khám này");
+        }
+
+        MedicalRecord record = medicalRecordRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Medical record not found"));
         System.out.println("medicalrequest: " + medicalRequest.toString());
         System.out.println("record truoc khi set value: " + record.toString());
 

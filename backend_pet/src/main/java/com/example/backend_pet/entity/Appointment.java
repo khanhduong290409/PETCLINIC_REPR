@@ -58,6 +58,12 @@ public class Appointment extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String notes; // Ghi chú từ user khi đặt lịch
 
+    // Đã gửi email nhắc lịch trước ngày khám chưa — để job nhắc lịch không gửi trùng.
+    // Để Boolean (cho phép null) vì ddl-auto=update không thêm được cột NOT NULL vào bảng đã có dữ liệu;
+    // null được hiểu là chưa gửi.
+    @Column(name = "reminder_sent")
+    private Boolean reminderSent;
+
     public enum AppointmentStatus {
         PENDING, CONFIRMED, COMPLETED, CANCELLED
     }

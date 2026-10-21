@@ -1,4 +1,4 @@
-import { API_BASE_URL, getAuthHeaders } from './apiClient';
+import { API_BASE_URL, getAuthHeaders, readErrorMessage } from './apiClient';
 
 export interface ServiceResponse {
   id: number;
@@ -10,8 +10,8 @@ export interface ServiceResponse {
   category: string;
 }
 
+// userId không gửi lên — backend lấy từ JWT
 export interface AppointmentRequest {
-  userId: number;
   petIds: number[];
   serviceIds: number[];
   appointmentDate: string;
@@ -40,6 +40,19 @@ export interface AppointmentResponse {
   createdAt: string;
 }
 
+// Tình trạng chỗ trống của một khung giờ
+export interface SlotAvailability {
+  time: string; // "09:00"
+  bookedCount: number;
+  capacity: number;
+  customCapacity: number | null; // null = đang theo sức chứa mặc định
+  remaining: number;
+  disabled: boolean;
+  past: boolean;
+  available: boolean;
+  note: string | null;
+}
+
 export const appointmentApi = {
   async getServices(): Promise<ServiceResponse[]> {
     const response = await fetch(`${API_BASE_URL}/services`);
@@ -53,7 +66,18 @@ export const appointmentApi = {
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to create appointments');
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response, 'Không thể đặt lịch. Vui lòng thử lại.'));
+    }
+    return response.json();
+  },
+
+  // date dạng "2026-10-10"
+  async getAvailability(date: string): Promise<SlotAvailability[]> {
+    const response = await fetch(`${API_BASE_URL}/appointments/availability?date=${date}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch availability');
     return response.json();
   },
 

@@ -1,6 +1,8 @@
 # Dữ liệu ngoài
 
-Dữ liệu thật, không do project này sinh ra. Dùng cho thí nghiệm 3 chế độ R1/R2/R3 — xem [QĐ-12](../../../docs/ai-disease-prediction/DECISIONS.md).
+Dữ liệu thật, không do project này sinh ra.
+
+> ⚠️ **Từ 2026-10-18 (QĐ-16): `dogfinal3.csv` không còn dùng để train.** Giảng viên đánh giá nguồn này không chính thống. Dữ liệu train hiện tại là `../cleaned_animal_disease_prediction.csv` — xem mục cuối file. `dogfinal3` chỉ còn cho chương khảo sát của báo cáo và để chạy lại số liệu R1 cũ.
 
 ---
 
@@ -37,19 +39,17 @@ Dữ liệu thật, không do project này sinh ra. Dùng cho thí nghiệm 3 ch
 
 ---
 
-## Vì sao file này được commit còn dataset Kaggle thì không
+## Dữ liệu train hiện tại — `../cleaned_animal_disease_prediction.csv` (QĐ-16)
 
-`ai_service/.gitignore` chặn `data/kaggle_raw/*`, nhưng **không** chặn thư mục này. Cố ý:
+| | |
+|---|---|
+| **Nguồn** | Kaggle, dataset `animal-disease-prediction` — tài liệu tham khảo [12] của đề bài |
+| **Kích thước** | 61,768 byte · 431 dòng dữ liệu + 1 dòng tiêu đề · 8 loài, 139 nhãn gốc |
+| **SHA256** | `769D56C41C6B8616BFBE696FB20CCA0052EA469B70F92E58C18845D22372166E` |
+| **Dùng như thế nào** | Qua [`../mapping_cleaned_animal.csv`](../mapping_cleaned_animal.csv) → 44 bệnh / 351 dòng. Đọc bằng `ai_service/scripts/load_cleaned_animal.py` |
+| **Trong repo?** | Có — nằm thẳng trong `ai_service/data/` vì `app.py` train từ file này lúc khởi động. *Điều khoản phân phối lại của Kaggle không ghi rõ — kiểm tra lại trước khi để repo public* |
 
-| | `dogfinal3.csv` | `kaggle_raw/cleaned_animal_disease_prediction.csv` |
-|---|---|---|
-| Giấy phép | Unlicense — miền công cộng, **phân phối lại được** | Kaggle, điều khoản không rõ ràng |
-| Vai trò | **Tập train của R1** + tập test của cả 3 chế độ | Tập kiểm định thứ hai |
-| Trong repo? | ✅ Commit | ❌ Gitignore, tải lại thủ công |
-
-Lý do chính: `dogfinal3` **nằm trong đường đi của con số báo cáo**. Kết quả R1/R2/R3 không lặp lại được nếu file này không đi cùng code. Dataset Kaggle chỉ dùng kiểm định phụ nên tải lại được, và giấy phép không cho phân phối lại chắc chắn.
-
-Muốn lấy lại `cleaned_animal_disease_prediction.csv`: tải dataset `animal-disease-prediction` (tài liệu tham khảo [12] của đề bài) từ Kaggle, đặt vào `ai_service/data/kaggle_raw/`.
+`../veterinary_clinical_data.csv` (tài liệu [13]) cũng nằm trong `data/` nhưng **không dùng** — dữ liệu sinh ngẫu nhiên, lý do ở QĐ-16.
 
 ---
 

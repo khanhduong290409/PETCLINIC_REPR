@@ -1,20 +1,33 @@
 package com.example.backend_pet.controller;
 
 import com.example.backend_pet.dto.AppointmentResponse;
+import com.example.backend_pet.dto.CustomerSearchResponse;
 import com.example.backend_pet.dto.DashboardResponse;
+import com.example.backend_pet.dto.DayLockRequest;
 import com.example.backend_pet.dto.DoctorResponse;
 import com.example.backend_pet.dto.OrderResponse;
+import com.example.backend_pet.dto.SlotAvailabilityResponse;
+import com.example.backend_pet.dto.TimeSlotUpdateRequest;
 import com.example.backend_pet.dto.UserResponse;
+import com.example.backend_pet.dto.WalkInAppointmentRequest;
+import com.example.backend_pet.entity.Pet;
 import com.example.backend_pet.entity.User;
+import com.example.backend_pet.repository.PetRepository;
 import com.example.backend_pet.repository.UserRepository;
+import com.example.backend_pet.service.AppointmentNotificationService;
 import com.example.backend_pet.service.AppointmentService;
 import com.example.backend_pet.service.DashboardService;
 import com.example.backend_pet.service.OrderService;
+import com.example.backend_pet.service.TimeSlotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,9 +36,12 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final AppointmentService appointmentService;
+    private final AppointmentNotificationService appointmentNotificationService;
     private final UserRepository userRepository;
+    private final PetRepository petRepository;
     private final OrderService orderService;
     private final DashboardService dashboardService;
+    private final TimeSlotService timeSlotService;
 
     // GET /api/admin/dashboard - Số liệu tổng quan
     @GetMapping("/dashboard")
@@ -80,6 +96,100 @@ public class AdminController {
             @PathVariable Long id,
             @RequestParam String status) {
         return ResponseEntity.ok(appointmentService.updateStatus(id, status));
+    }
+
+    // === Khách đặt tại quầy ===
+
+    // GET /api/admin/customers/search?q=0901 - Tìm khách theo SĐT / email / tên, kèm danh sách pet
+    @GetMapping("/customers/search")
+    public ResponseEntity<List<CustomerSearchResponse>> searchCustomers(@RequestParam String q) {
+        String keyword = q.trim();
+        List<CustomerSearchResponse> result = new ArrayList<>();
+        // Từ khóa quá ngắn sẽ trả về gần như toàn bộ user
+        if (keyword.length() < 2) {
+            return ResponseEntity.ok(result);
+        }
+
+        List<User> customers = userRepository.searchByKeyword(User.Role.USER, keyword);
+        int maxResults = 10;
+        for (User customer : customers) {
+            if (result.size() >= maxResults) {
+                break;
+            }
+            List<CustomerSearchResponse.PetInfo> pets = new ArrayList<>();
+            for (Pet pet : petRepository.findByOwnerId(customer.getId())) {
+                pets.add(new CustomerSearchResponse.PetInfo(pet.getId(), pet.getName(), pet.getSpecies().name()));
+            }
+            result.add(new CustomerSearchResponse(
+                    customer.getId(), customer.getFullName(), customer.getPhone(), customer.getEmail(), pets));
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    // POST /api/admin/walk-in-appointments - Tạo lịch cho khách tại quầy (đã xác nhận, có bác sĩ)
+    @PostMapping("/walk-in-appointments")
+    public ResponseEntity<List<AppointmentResponse>> createWalkInAppointments(
+            @RequestBody WalkInAppointmentRequest request) {
+        List<AppointmentResponse> created = appointmentService.createWalkInAppointments(request);
+        // Khách mới tại quầy dùng email giả → EmailService tự bỏ qua; khách đã có tài khoản thật thì vẫn nhận mail
+        appointmentNotificationService.sendBookingCreatedEmail(created.get(0).getBookingCode());
+        return ResponseEntity.ok(created);
+    }
+
+    // === Quản lý khung giờ ===
+
+    // GET /api/admin/slot-settings - Sức chứa mặc định hiện tại
+    @GetMapping("/slot-settings")
+    public ResponseEntity<Map<String, Integer>> getSlotSettings() {
+        return ResponseEntity.ok(Map.of("defaultSlotCapacity", timeSlotService.getDefaultCapacity()));
+    }
+
+    // GET /api/admin/slot-settings/over-capacity?capacity=2
+    // Số khung giờ sắp tới sẽ bị vượt nếu đổi mặc định sang capacity — để cảnh báo trước khi lưu
+    @GetMapping("/slot-settings/over-capacity")
+    public ResponseEntity<Map<String, Integer>> countSlotsOverCapacity(@RequestParam int capacity) {
+        return ResponseEntity.ok(Map.of("count", timeSlotService.countSlotsOverCapacity(capacity)));
+    }
+
+    // PUT /api/admin/slot-settings?capacity=4 - Đổi sức chứa mặc định
+    @PutMapping("/slot-settings")
+    public ResponseEntity<Map<String, Integer>> updateSlotSettings(@RequestParam int capacity) {
+        int savedCapacity = timeSlotService.updateDefaultCapacity(capacity);
+        return ResponseEntity.ok(Map.of("defaultSlotCapacity", savedCapacity));
+    }
+
+    // GET /api/admin/time-slots?date=2026-10-10 - Tình trạng 19 khung giờ trong ngày
+    @GetMapping("/time-slots")
+    public ResponseEntity<List<SlotAvailabilityResponse>> getTimeSlots(@RequestParam String date) {
+        return ResponseEntity.ok(timeSlotService.getAvailability(LocalDate.parse(date)));
+    }
+
+    // GET /api/admin/time-slots/appointments?date=2026-10-10&time=09:00 - Lịch trong một khung giờ
+    @GetMapping("/time-slots/appointments")
+    public ResponseEntity<List<AppointmentResponse>> getAppointmentsInSlot(
+            @RequestParam String date,
+            @RequestParam String time) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsInSlot(
+                LocalDate.parse(date), LocalTime.parse(time)));
+    }
+
+    // PUT /api/admin/time-slots - Chỉnh riêng một khung giờ, trả về tình trạng cả ngày sau khi sửa
+    @PutMapping("/time-slots")
+    public ResponseEntity<List<SlotAvailabilityResponse>> updateTimeSlot(@RequestBody TimeSlotUpdateRequest request) {
+        LocalDate date = LocalDate.parse(request.getDate());
+        boolean disabled = Boolean.TRUE.equals(request.getDisabled());
+        timeSlotService.updateSlot(date, LocalTime.parse(request.getTime()),
+                request.getCapacity(), disabled, request.getNote());
+        return ResponseEntity.ok(timeSlotService.getAvailability(date));
+    }
+
+    // PUT /api/admin/time-slots/day - Khóa / mở lại cả ngày
+    @PutMapping("/time-slots/day")
+    public ResponseEntity<List<SlotAvailabilityResponse>> setDayDisabled(@RequestBody DayLockRequest request) {
+        LocalDate date = LocalDate.parse(request.getDate());
+        boolean disabled = Boolean.TRUE.equals(request.getDisabled());
+        timeSlotService.setDayDisabled(date, disabled, request.getNote());
+        return ResponseEntity.ok(timeSlotService.getAvailability(date));
     }
 
     // GET /api/admin/doctors - Lấy danh sách bác sĩ (để admin chọn assign)

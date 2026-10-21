@@ -17,15 +17,18 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminTimeSlots from "./pages/admin/AdminTimeSlots";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
 import MedicalRecord from "./pages/doctor/MedicalRecord";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import Profile from "./pages/Profile";
+import AiDiagnosis from "./pages/AiDiagnosis";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import "./index.css"
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,9 +49,20 @@ const router = createBrowserRouter([
       { path: "appointments", element: <MyAppointments /> },
       { path: "appointments/:bookingCode/records", element: <AppointmentMedicalRecords /> },
       { path: "profile", element: <Profile /> },
+      // Chẩn đoán AI — bắt buộc đăng nhập (QĐ-15)
+      { path: "ai-diagnosis", element: (
+        <ProtectedRoute allowedRoles={['USER', 'DOCTOR', 'ADMIN']}>
+          <AiDiagnosis />
+        </ProtectedRoute>
+      ) },
       { path: "admin/appointments", element: (
         <ProtectedRoute allowedRoles={['ADMIN']}>
           <AdminAppointments />
+        </ProtectedRoute>
+      ) },
+      { path: "admin/time-slots", element: (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+          <AdminTimeSlots />
         </ProtectedRoute>
       ) },
       { path: "admin/products", element: (
@@ -101,9 +115,11 @@ export default function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <CartProvider>
-          <RouterProvider router={router} />
-        </CartProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <RouterProvider router={router} />
+          </CartProvider>
+        </NotificationProvider>
       </AuthProvider>
     </ToastProvider>
   );

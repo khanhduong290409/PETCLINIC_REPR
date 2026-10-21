@@ -11,10 +11,13 @@ import {
   PawPrint,
   User,
   Stethoscope,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApi } from '../../api/adminApi';
 import type { AdminAppointment, DoctorInfo } from '../../api/adminApi';
+import WalkInAppointmentModal from './WalkInAppointmentModal';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
@@ -65,6 +68,9 @@ export default function AdminAppointments() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showWalkInModal, setShowWalkInModal] = useState(false);
+  // Lỗi từ backend (slot đầy, bác sĩ trùng giờ...) — hiện bằng modal
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -136,6 +142,28 @@ export default function AdminAppointments() {
     return c;
   }, [bookingGroups]);
 
+  // Bác sĩ còn rảnh ở ngày + giờ: chưa nhận lượt đặt nào khác (chưa hủy) cùng thời điểm.
+  // excludeBookingCode: bỏ qua chính lượt đang xét, để bác sĩ đang được xếp cho nó vẫn hiện trong danh sách.
+  // Backend vẫn kiểm tra lại khi lưu — đây chỉ để dropdown gọn hơn.
+  const getAvailableDoctors = (date: string, time: string, excludeBookingCode = ''): DoctorInfo[] => {
+    const busyDoctorIds = new Set<number>();
+    for (const apt of appointments) {
+      const sameSlot = apt.appointmentDate === date && apt.appointmentTime.startsWith(time);
+      if (!sameSlot) continue;
+      if (apt.status === 'CANCELLED') continue;
+      if (apt.bookingCode === excludeBookingCode) continue;
+      if (apt.doctorId !== null) {
+        busyDoctorIds.add(apt.doctorId);
+      }
+    }
+    return doctors.filter((doctor) => !busyDoctorIds.has(doctor.id));
+  };
+
+  const handleWalkInCreated = (created: AdminAppointment[]) => {
+    setAppointments((prev) => [...created, ...prev]);
+    setShowWalkInModal(false);
+  };
+
   const handleAssignDoctor = async (
     representativeId: number,
     value: string
@@ -150,7 +178,11 @@ export default function AdminAppointments() {
         return prev.map((a) => updatedMap.get(a.id) ?? a);
       });
     } catch (err) {
-      alert('Không thể phân công bác sĩ. Thử lại.');
+      if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage('Không thể phân công bác sĩ. Thử lại.');
+      }
     }
   };
 
@@ -165,7 +197,11 @@ export default function AdminAppointments() {
         return prev.map((a) => updatedMap.get(a.id) ?? a);
       });
     } catch (err) {
-      alert('Không thể cập nhật trạng thái. Thử lại.');
+      if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage('Không thể cập nhật trạng thái. Thử lại.');
+      }
     }
   };
 
@@ -205,7 +241,32 @@ export default function AdminAppointments() {
             Tổng <span className="font-semibold text-gray-700">{bookingGroups.length}</span> lượt đặt khám · Phân công bác sĩ và cập nhật trạng thái
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowWalkInModal(true)}
+          className="inline-flex items-center gap-1.5 bg-sky-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-sky-700 transition shadow-sm self-start sm:self-auto"
+        >
+          <Plus size={16} /> Tạo lịch tại quầy
+        </button>
       </div>
+
+      {showWalkInModal && (
+        <WalkInAppointmentModal
+          getAvailableDoctors={(date, time) => getAvailableDoctors(date, time)}
+          onClose={() => setShowWalkInModal(false)}
+          onCreated={handleWalkInCreated}
+        />
+      )}
+
+      <ConfirmModal
+        open={errorMessage !== null}
+        title="Không thể thực hiện"
+        message={errorMessage}
+        confirmLabel="Đóng"
+        cancelLabel={null}
+        onConfirm={() => setErrorMessage(null)}
+        onCancel={() => setErrorMessage(null)}
+      />
 
       {/* Filter pills */}
       <div className="flex gap-2 flex-wrap">
@@ -248,6 +309,11 @@ export default function AdminAppointments() {
               <tbody className="divide-y divide-gray-100">
                 {paginated.map((group) => {
                   const lockDoctorAssign = group.status === 'CANCELLED' || group.status === 'COMPLETED';
+                  const doctorOptions = getAvailableDoctors(
+                    group.appointmentDate,
+                    group.appointmentTime.substring(0, 5),
+                    group.bookingCode
+                  );
                   return (
                     <tr key={group.bookingCode} className="hover:bg-sky-50/30 transition">
                       {/* Mã đặt */}
@@ -319,7 +385,7 @@ export default function AdminAppointments() {
                             disabled={lockDoctorAssign}
                           >
                             <option value="">-- Chưa phân công --</option>
-                            {doctors.map((d) => (
+                            {doctorOptions.map((d) => (
                               <option key={d.id} value={d.id}>
                                 {d.fullName}
                               </option>

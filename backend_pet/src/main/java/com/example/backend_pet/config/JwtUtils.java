@@ -25,11 +25,19 @@ public class JwtUtils {
 
     //có file giải thích về công dụng của jwts
     public String generateToken(User user) {
+        // Đăng nhập Google: frontend chỉ đọc được thông tin user từ token → phải có SĐT,
+        // nếu không frontend tưởng chưa có SĐT và bắt cập nhật lại mỗi lần đăng nhập
+        String phone = "";
+        if (user.getPhone() != null) {
+            phone = user.getPhone();
+        }
+
         return Jwts.builder()//header(chứa dạng mã hoá) và payload chỉ chuyển sang base64 còn lại signature thì được mã hoá bằng secret key
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
                 .claim("fullName", user.getFullName())
+                .claim("phone", phone)
                 .issuedAt(new Date())//ngày tạo token
                 .expiration(new Date(System.currentTimeMillis() + expiration))//ngày hết hạn
                 .signWith(getKey())//dùng secret key để mã hoá

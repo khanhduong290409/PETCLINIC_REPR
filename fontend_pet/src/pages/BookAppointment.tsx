@@ -17,7 +17,7 @@ const isAbsoluteUrl = (url: string) => url.startsWith('http://') || url.startsWi
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentApi } from '../api/appointmentApi';
 import { petApi } from '../api/petApi';
-import type { ServiceResponse } from '../api/appointmentApi';
+import type { ServiceResponse, SlotAvailability } from '../api/appointmentApi';
 import type { PetResponse } from '../api/petApi';
 
 const SPECIES_MAP: Record<string, string> = {
@@ -36,12 +36,13 @@ const DEFAULT_PET_IMAGES: Record<string, string> = {
 
 const DAY_NAMES = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
-// Tạo danh sách giờ: 08:00 → 17:00, bước 30 phút
-const TIME_SLOTS = Array.from({ length: 19 }, (_, i) => {
-  const hour = Math.floor(i / 2) + 8;
-  const minute = i % 2 === 0 ? '00' : '30';
-  return `${String(hour).padStart(2, '0')}:${minute}`;
-});
+// Dòng chữ nhỏ dưới mỗi ô giờ
+function getSlotLabel(slot: SlotAvailability): string {
+  if (slot.past) return 'Đã qua';
+  if (slot.disabled) return 'Tạm khóa';
+  if (slot.remaining === 0) return 'Đã đầy';
+  return `Còn ${slot.remaining} chỗ`;
+}
 
 export default function BookAppointment() {
   const { user } = useAuth();
@@ -61,9 +62,46 @@ export default function BookAppointment() {
   const [appointmentTime, setAppointmentTime] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Chỗ trống từng khung giờ của ngày đang chọn — lấy từ backend
+  const [slots, setSlots] = useState<SlotAvailability[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState('');
+
   useEffect(() => {
     if (user) loadData();
   }, [user]);
+
+  useEffect(() => {
+    if (!appointmentDate) {
+      setSlots([]);
+      return;
+    }
+    loadSlots(appointmentDate);
+  }, [appointmentDate]);
+
+  const loadSlots = async (date: string) => {
+    try {
+      setLoadingSlots(true);
+      setSlotsError('');
+      const data = await appointmentApi.getAvailability(date);
+      setSlots(data);
+
+      // Giờ đang chọn không còn đặt được ở ngày mới → bỏ chọn
+      setAppointmentTime((currentTime) => {
+        const currentSlot = data.find((s) => s.time === currentTime);
+        if (currentSlot && currentSlot.available) {
+          return currentTime;
+        }
+        return '';
+      });
+    } catch (err) {
+      console.error('Failed to load slots:', err);
+      setSlots([]);
+      setSlotsError('Không tải được danh sách giờ trống. Vui lòng thử lại.');
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -145,12 +183,19 @@ export default function BookAppointment() {
       setError('Vui lòng chọn giờ khám'); return;
     }
 
+    // Kiểm tra sơ bộ đủ chỗ cho số pet — backend vẫn kiểm tra lại lần cuối
+    const selectedSlot = slots.find((s) => s.time === appointmentTime);
+    if (selectedSlot && selectedSlot.remaining < selectedPetIds.length) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setError(`Khung giờ ${appointmentTime} chỉ còn ${selectedSlot.remaining} chỗ, không đủ cho ${selectedPetIds.length} thú cưng`);
+      return;
+    }
+
     setSubmitting(true);
     setError('');
 
     try {
       await appointmentApi.createAppointments({
-        userId: user.id,
         petIds: selectedPetIds,
         serviceIds: selectedServiceIds,
         appointmentDate,
@@ -161,7 +206,14 @@ export default function BookAppointment() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to book:', err);
-      setError('Không thể đặt lịch. Vui lòng thử lại.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Không thể đặt lịch. Vui lòng thử lại.');
+      }
+      // Slot có thể vừa bị người khác đặt hết → tải lại để hiện đúng tình trạng
+      loadSlots(appointmentDate);
     } finally {
       setSubmitting(false);
     }
@@ -487,25 +539,45 @@ export default function BookAppointment() {
                   <label className="text-gray-700 mb-2 text-sm font-semibold flex items-center gap-1.5">
                     <Clock size={14} /> Giờ khám *
                   </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                    {TIME_SLOTS.map((time) => {
-                      const active = appointmentTime === time;
-                      return (
-                        <button
-                          key={time}
-                          type="button"
-                          onClick={() => setAppointmentTime(time)}
-                          className={`py-2 rounded-lg text-sm font-semibold transition border-2 ${
-                            active
-                              ? 'bg-sky-600 text-white border-sky-600 shadow'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-sky-400 hover:text-sky-700'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {!appointmentDate && (
+                    <p className="text-sm text-gray-400 italic">Chọn ngày để xem các giờ còn trống</p>
+                  )}
+                  {appointmentDate && loadingSlots && (
+                    <p className="text-sm text-gray-400">Đang tải giờ trống...</p>
+                  )}
+                  {appointmentDate && !loadingSlots && slotsError && (
+                    <p className="text-sm text-rose-600">{slotsError}</p>
+                  )}
+                  {appointmentDate && !loadingSlots && !slotsError && (
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                      {slots.map((slot) => {
+                        const active = appointmentTime === slot.time;
+
+                        let buttonClass = 'bg-white text-gray-700 border-gray-200 hover:border-sky-400 hover:text-sky-700';
+                        if (!slot.available) {
+                          buttonClass = 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed';
+                        } else if (active) {
+                          buttonClass = 'bg-sky-600 text-white border-sky-600 shadow';
+                        }
+
+                        return (
+                          <button
+                            key={slot.time}
+                            type="button"
+                            disabled={!slot.available}
+                            onClick={() => setAppointmentTime(slot.time)}
+                            title={slot.note || undefined}
+                            className={`py-1.5 rounded-lg text-sm font-semibold transition border-2 flex flex-col items-center ${buttonClass}`}
+                          >
+                            {slot.time}
+                            <span className={`text-[10px] font-medium ${active ? 'text-sky-100' : ''}`}>
+                              {getSlotLabel(slot)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </SectionCard>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, Shield, CheckCircle, AlertCircle, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,6 +30,15 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // F5 ở trang này: lúc mount AuthContext chưa khôi phục xong user (user = null) nên useState ở trên nhận ''.
+  // Đổ lại dữ liệu vào form khi user có mặt, nếu không form rỗng và lưu sẽ ghi đè thông tin cũ
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setPhone(user.phone || '');
+    }
+  }, [user]);
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -50,15 +59,23 @@ export default function Profile() {
     e.preventDefault();
     setError('');
 
-    if (!fullName.trim()) {
-      setError('Họ tên không được để trống');
+    // Ô để trống = giữ nguyên giá trị hiện tại (tên không bắt buộc phải nhập lại)
+    let newFullName = fullName.trim();
+    if (newFullName === '') {
+      newFullName = user.fullName;
+    }
+    let newPhone = phone.trim();
+    if (newPhone === '') {
+      newPhone = user.phone;
+    } else if (!/^\d{9,11}$/.test(newPhone)) {
+      setError('Số điện thoại không hợp lệ (9–11 chữ số)');
       return;
     }
 
     setLoading(true);
     try {
-      await userApi.updateProfile(user.id, { fullName: fullName.trim(), phone: phone.trim() });
-      updateUser(fullName.trim(), phone.trim());
+      await userApi.updateProfile(user.id, { fullName: newFullName, phone: newPhone });
+      updateUser(newFullName, newPhone);
       showToast('Cập nhật thông tin thành công');
     } catch {
       setError('Không thể cập nhật. Vui lòng thử lại.');
@@ -198,7 +215,7 @@ export default function Profile() {
                   {/* Full name */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Họ và tên <span className="text-rose-500">*</span>
+                      Họ và tên
                     </label>
                     <div className="relative">
                       <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -207,8 +224,7 @@ export default function Profile() {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition"
-                        placeholder="Nhập họ và tên"
-                        required
+                        placeholder="Để trống nếu giữ tên hiện tại"
                       />
                     </div>
                   </div>

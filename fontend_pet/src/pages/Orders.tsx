@@ -20,6 +20,7 @@ import { orderApi } from '../api/orderApi';
 import { productReviewApi } from '../api/productReviewApi';
 import type { OrderResponse, OrderItemResponse } from '../api/orderApi';
 import type { ProductReviewRequest } from '../api/productReviewApi';
+import ConfirmModal from '../components/ConfirmModal';
 
 // Map trạng thái sang tiếng Việt + màu + icon
 const STATUS_MAP: Record<
@@ -78,6 +79,7 @@ export default function Orders() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -134,7 +136,7 @@ export default function Orders() {
       closeReviewModal();
     } catch (err) {
       console.error('Failed to submit review:', err);
-      alert('Không thể gửi đánh giá. Vui lòng thử lại.');
+      setErrorMessage('Không thể gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setReviewSubmitting(false);
     }
@@ -193,6 +195,15 @@ export default function Orders() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50/60 via-white to-white">
+      <ConfirmModal
+        open={errorMessage !== null}
+        title="Có lỗi xảy ra"
+        message={errorMessage}
+        confirmLabel="Đóng"
+        cancelLabel={null}
+        onConfirm={() => setErrorMessage(null)}
+        onCancel={() => setErrorMessage(null)}
+      />
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header gradient + thống kê */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 p-6 md:p-8 mb-6 shadow-lg">

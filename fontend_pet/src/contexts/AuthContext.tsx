@@ -102,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: payload.userId as number,
       email: payload.sub as string,
       fullName: payload.fullName as string,
-      phone: '',
+      // Token cũ (trước khi backend thêm claim phone) không có → coi như chưa có SĐT
+      phone: (payload.phone as string | undefined) || '',
       role: payload.role as string,
     };
     saveSession(userData, token);

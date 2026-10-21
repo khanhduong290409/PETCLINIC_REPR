@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { medicalRecordApi, type MedicalRequest, type MedicalResponse } from "../../api/medicalRecordApi";
 import { petApi } from "../../api/petApi";
 import { useToast } from '../../contexts/ToastContext';
+import ConfirmModal from '../../components/ConfirmModal';
 
 import {
   ArrowLeft,
@@ -59,6 +60,7 @@ export default function MedicalRecord() {
     const [forms, setForms] = useState<Record<number, MedicalRequest>>({});
     const [saved, setSaved] = useState<Record<number, boolean>>({});
     const [saving, setSaving] = useState<number | null> (null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // State ảnh: list ảnh hiện tại của từng record (cả đã upload và chưa)
     const [images, setImages] = useState<Record<number, RecordImage[]>>({});
@@ -191,7 +193,7 @@ export default function MedicalRecord() {
         showToast('Lưu thông tin thành công')
 
       } catch (err) {
-        alert("Không thể lưu bệnh án. Thử lại.");
+        setErrorMessage("Không thể lưu bệnh án. Thử lại.");
       } finally {
         setSaving(null);
       }
@@ -210,6 +212,16 @@ export default function MedicalRecord() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50/60 via-white to-white">
+      <ConfirmModal
+        open={errorMessage !== null}
+        title="Có lỗi xảy ra"
+        message={errorMessage}
+        confirmLabel="Đóng"
+        cancelLabel={null}
+        onConfirm={() => setErrorMessage(null)}
+        onCancel={() => setErrorMessage(null)}
+      />
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header gradient */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 p-6 md:p-8 mb-6 shadow-lg">

@@ -23,6 +23,7 @@ import { appointmentApi } from '../api/appointmentApi';
 import { reviewApi } from '../api/reviewApi';
 import type { AppointmentResponse } from '../api/appointmentApi';
 import type { ReviewRequest } from '../api/reviewApi';
+import ConfirmModal from '../components/ConfirmModal';
 
 const STATUS_MAP: Record<
   string,
@@ -94,6 +95,11 @@ export default function MyAppointments() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewedCodes, setReviewedCodes] = useState<Set<string>>(new Set());
 
+  // Modal xác nhận hủy lịch + modal báo lỗi
+  const [cancelTarget, setCancelTarget] = useState<BookingGroup | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) {
       fetchAppointments();
@@ -138,7 +144,7 @@ export default function MyAppointments() {
       closeReviewModal();
     } catch (err) {
       console.error('Failed to submit review:', err);
-      alert('Không thể gửi đánh giá. Vui lòng thử lại.');
+      setErrorMessage('Không thể gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setReviewSubmitting(false);
     }
@@ -224,17 +230,24 @@ export default function MyAppointments() {
   const page = Math.min(currentPage, totalPages);
   const paginatedGroups = filteredGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleCancel = async (group: BookingGroup) => {
-    if (!user) return;
-    const petNames = group.pets.map((p) => p.name).join(', ');
-    if (!confirm(`Bạn có chắc muốn hủy lịch khám cho ${petNames}?`)) return;
+  // Mở modal xác nhận hủy
+  const handleCancel = (group: BookingGroup) => {
+    setCancelTarget(group);
+  };
 
+  const confirmCancel = async () => {
+    if (!user || !cancelTarget) return;
     try {
-      await appointmentApi.cancelAppointment(group.firstAppointmentId);
+      setCancelling(true);
+      await appointmentApi.cancelAppointment(cancelTarget.firstAppointmentId);
+      setCancelTarget(null);
       fetchAppointments();
     } catch (err) {
       console.error('Failed to cancel:', err);
-      alert('Không thể hủy. Vui lòng thử lại.');
+      setCancelTarget(null);
+      setErrorMessage('Không thể hủy. Vui lòng thử lại.');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -563,6 +576,30 @@ export default function MyAppointments() {
             )}
           </div>
         )}
+
+        <ConfirmModal
+          open={cancelTarget !== null}
+          title="Hủy lịch khám"
+          message={
+            cancelTarget &&
+            `Bạn có chắc muốn hủy lịch khám cho ${cancelTarget.pets.map((p) => p.name).join(', ')}?`
+          }
+          confirmLabel="Hủy lịch"
+          cancelLabel="Giữ lịch"
+          loading={cancelling}
+          onConfirm={confirmCancel}
+          onCancel={() => setCancelTarget(null)}
+        />
+
+        <ConfirmModal
+          open={errorMessage !== null}
+          title="Có lỗi xảy ra"
+          message={errorMessage}
+          confirmLabel="Đóng"
+          cancelLabel={null}
+          onConfirm={() => setErrorMessage(null)}
+          onCancel={() => setErrorMessage(null)}
+        />
 
         {/* Modal đánh giá */}
         {reviewModal && (

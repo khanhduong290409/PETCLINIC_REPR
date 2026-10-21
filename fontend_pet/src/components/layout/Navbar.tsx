@@ -1,9 +1,10 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, ClipboardList, Package, Stethoscope, LogOut, LayoutDashboard, PackageOpen, Users, Settings } from "lucide-react";
+import { ShoppingCart, ChevronDown, User, PawPrint, CalendarDays, Clock, ClipboardList, Package, Stethoscope, LogOut, LayoutDashboard, PackageOpen, Users, Settings, Brain } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../../assets/pawcare-logo.png";
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
+import NotificationBell from "../NotificationBell";
 
 export default function Navbar() {
   const { totalItems, toggleDrawer } = useCart();
@@ -141,11 +142,15 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
           <a href="#appointment-cta" className={anchorClass} onClick={handleBookClick}>
             Đặt lịch
           </a>
+          <NavLink to="/ai-diagnosis" className={navLinkClass}>Chẩn đoán AI</NavLink>
           <a href="#feedback" className={anchorClass} onClick={(e) => handleHomeAnchorClick(e, 'feedback')}>Feedback</a>
         </nav>
 
         {/* Right side */}
         <div className="flex items-center gap-1">
+          {/* Chuông thông báo lịch khám — chỉ khách và bác sĩ */}
+          {user && (user.role === 'USER' || user.role === 'DOCTOR') && <NotificationBell />}
+
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -179,6 +184,9 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                       <Link to="/book-appointment" onClick={handleCloseDropdown} className={dropdownItemClass}>
                         <CalendarDays size={15} className="text-gray-400" /> Đặt lịch
                       </Link>
+                      <Link to="/ai-diagnosis" onClick={handleCloseDropdown} className={dropdownItemClass}>
+                        <Brain size={15} className="text-gray-400" /> Chẩn đoán AI
+                      </Link>
                       <Link to="/appointments" onClick={handleCloseDropdown} className={dropdownItemClass}>
                         <ClipboardList size={15} className="text-gray-400" /> Lịch khám
                       </Link>
@@ -205,6 +213,11 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
                       >
                         <CalendarDays size={15} /> Quản lý lịch khám
+                      </Link>
+                      <Link to="/admin/time-slots" onClick={handleCloseDropdown}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <Clock size={15} /> Quản lý khung giờ
                       </Link>
                       <Link to="/admin/products" onClick={handleCloseDropdown}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
